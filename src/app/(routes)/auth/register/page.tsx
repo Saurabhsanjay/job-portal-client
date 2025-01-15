@@ -14,7 +14,9 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <Card className="mx-auto max-w-[500px] shadow-none border-none   md:shadow-lg pb-4">
+    <div className="flex items-center justify-center min-h-screen md:bg-gray-100">
+
+    <Card className="mx-auto max-w-[450px] shadow-none border-none  md:shadow-lg pb-4">
       <CardHeader>
         <div className="flex items-center justify-center">
           <Image src={logo} alt="Company Logo" className="w-40" />
@@ -129,6 +131,7 @@ export default function RegisterForm() {
         </a>
       </p>
     </Card>
+    </div>
   )
 }
 
