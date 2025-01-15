@@ -25,7 +25,7 @@ export default function RegisterForm() {
 
                     <div className="space-y-1">
                         <Label htmlFor="email">Email</Label>
-                        <Input
+                        <Input autoComplete='false'
                             id="email"
                             type="email"
                             placeholder="Enter your email"
@@ -36,7 +36,7 @@ export default function RegisterForm() {
                     <div className="space-y-1">
                         <Label htmlFor="password">Password</Label>
                         <div className="relative">
-                            <Input
+                            <Input autoComplete='false'
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Enter your password"
