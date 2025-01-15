@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { EyeIcon, EyeOffIcon, ChromeIcon as GoogleIcon } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, } from 'lucide-react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import Image from 'next/image'
 import logo from '../../../../../public/dummy-logo-5b.png'
