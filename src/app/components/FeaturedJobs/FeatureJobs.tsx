@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Briefcase, BookmarkIcon, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Briefcase, BookmarkIcon, CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 
-// Job type definition
 type Job = {
     id: number
     title: string
@@ -28,7 +27,7 @@ const jobs: Job[] = [
         title: "Finance Manager & Health",
         company: {
             name: "Microsoft",
-            logo: "https://placehold.co/400"
+            logo: "https://picsum.photos/400"
         },
         category: "Design",
         location: "New York",
@@ -41,7 +40,7 @@ const jobs: Job[] = [
         title: "General Ledger Accountant",
         company: {
             name: "Upwork",
-            logo: "https://placehold.co/400"
+            logo: "https://picsum.photos/400"
         },
         category: "Design",
         location: "New York",
@@ -53,7 +52,7 @@ const jobs: Job[] = [
         title: "Assistant / Store Keeper",
         company: {
             name: "Netflix",
-            logo: "https://placehold.co/400"
+            logo: "https://picsum.photos/400"
         },
         category: "Automotive Jobs",
         location: "New York",
@@ -65,7 +64,7 @@ const jobs: Job[] = [
         title: "Senior Software Engineer",
         company: {
             name: "Google",
-            logo: "https://placehold.co/400"
+            logo: "https://picsum.photos/400"
         },
         category: "Technology",
         location: "New York",
@@ -77,7 +76,7 @@ const jobs: Job[] = [
         title: "Product Designer",
         company: {
             name: "Apple",
-            logo: "https://placehold.co/400"
+            logo: "https://picsum.photos/400"
         },
         category: "Design",
         location: "New York",
@@ -86,40 +85,42 @@ const jobs: Job[] = [
         isVerified: true
     }
 ]
-
 export default function FeaturedJobs() {
     const [currentSlide, setCurrentSlide] = useState(0)
-    const slidesPerView = 3
+    const [slidesPerView, setSlidesPerView] = useState(3)
     const totalSlides = Math.ceil(jobs.length / slidesPerView)
 
-    // Auto-slide functionality
+    useEffect(() => {
+        const updateSlidesPerView = () => {
+            if (window.innerWidth < 640) setSlidesPerView(1)
+            else if (window.innerWidth < 1024) setSlidesPerView(2)
+            else setSlidesPerView(3)
+        }
+
+        updateSlidesPerView()
+        window.addEventListener('resize', updateSlidesPerView)
+
+        return () => window.removeEventListener('resize', updateSlidesPerView)
+    }, [])
+
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % totalSlides)
-        }, 1000) // Change slide every 5 seconds
+        }, 3000)
 
         return () => clearInterval(timer)
     }, [totalSlides])
 
-    const handleDotClick = (index: number) => {
-        setCurrentSlide(index)
-    }
-
-    const handlePrevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
-    }
-
-    const handleNextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % totalSlides)
-    }
+    const handleDotClick = (index: number) => setCurrentSlide(index)
+  
 
     return (
-        <div className="py-12 px-4 md:px-6 lg:px-8 bg-gray-50">
+        <div className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-10 space-y-2">
-                    <h2 className="text-2xl md:text-3xl font-bold">Featured Jobs</h2>
-                    <p className="text-muted-foreground">
-                        Know your worth and find the job that qualify your life
+                <div className="text-start mb-6 space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-semibold">Featured Jobs</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                        Know your worth and find the job that qualifies your life
                     </p>
                 </div>
 
@@ -129,13 +130,17 @@ export default function FeaturedJobs() {
                         style={{ transform: `translateX(-${currentSlide * 100 / slidesPerView}%)` }}
                     >
                         {jobs.map((job) => (
-                            <div key={job.id} className="w-full flex-shrink-0 px-3" style={{ flex: `0 0 ${100 / slidesPerView}%` }}>
-                                <Card className="p-6 hover:shadow-lg transition-shadow h-full">
+                            <div
+                                key={job.id}
+                                className="w-full flex-shrink-0 px-2 sm:px-3"
+                                style={{ flex: `0 0 ${100 / slidesPerView}%` }}
+                            >
+                                <Card className="p-4 sm:p-6 hover:shadow-lg transition-shadow h-full shadow-none">
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start space-x-4">
                                             <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100">
                                                 <Image
-                                                    src={job.company.logo || "/placeholder.svg"}
+                                                    src={job.company.logo}
                                                     alt={job.company.name}
                                                     fill
                                                     className="object-cover"
@@ -143,12 +148,10 @@ export default function FeaturedJobs() {
                                             </div>
                                             <div>
                                                 <div className="flex items-center space-x-2">
-                                                    <h3 className="font-semibold">{job.title}</h3>
-                                                    {job.isVerified && (
-                                                        <CheckCircle className="h-4 w-4 text-green-500" />
-                                                    )}
+                                                    <h3 className="font-semibold text-sm sm:text-base">{job.title}</h3>
+                                                   
                                                 </div>
-                                                <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                                                <div className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mt-1">
                                                     <Briefcase className="h-4 w-4" />
                                                     <span>{job.category}</span>
                                                     <MapPin className="h-4 w-4 ml-2" />
@@ -156,13 +159,7 @@ export default function FeaturedJobs() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-muted-foreground hover:text-primary"
-                                        >
-                                            <BookmarkIcon className="h-5 w-5" />
-                                        </Button>
+                                     
                                     </div>
 
                                     <div className="flex items-center space-x-2 mt-4">
@@ -185,33 +182,16 @@ export default function FeaturedJobs() {
                             </div>
                         ))}
                     </div>
-
-                    {/* Navigation Arrows */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:flex"
-                        onClick={handlePrevSlide}
-                    >
-                        <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-1/2 -translate-y-1/2 hidden lg:flex"
-                        onClick={handleNextSlide}
-                    >
-                        <ChevronRight className="h-6 w-6" />
-                    </Button>
                 </div>
 
-                {/* Dots Navigation */}
-                <div className="flex justify-center space-x-2 mt-8">
+                <div className="flex justify-center space-x-2 mt-6">
                     {Array.from({ length: totalSlides }).map((_, index) => (
                         <button
                             key={index}
                             onClick={() => handleDotClick(index)}
-                            className={`h-2 w-2 rounded-full transition-colors ${index === currentSlide ? 'bg-primary' : 'bg-gray-300 hover:bg-gray-400'
+                            className={`h-2 rounded-full transition-all ${index === currentSlide
+                                ? 'bg-primary w-6'
+                                : 'bg-gray-300 w-2 hover:bg-gray-400'
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />
@@ -221,4 +201,3 @@ export default function FeaturedJobs() {
         </div>
     )
 }
-

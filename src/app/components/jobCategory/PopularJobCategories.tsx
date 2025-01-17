@@ -1,83 +1,107 @@
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Code,
-  Briefcase,
-  LineChart,
-  Palette,
-  Stethoscope,
-  GraduationCap,
-  Building2,
-  ShoppingBag,
-} from "lucide-react";
+'use client'
 
-interface JobCategory {
-  icon: React.ReactNode;
-  title: string;
-  openings: number;
+import { Card } from "@/components/ui/card"
+import { Wallet, Megaphone, PenTool, Code2, Users2, UserCog, HeadphonesIcon, Stethoscope, Car } from 'lucide-react'
+
+type JobCategory = {
+  id: number
+  title: string
+  icon: React.ComponentType<{ className?: string }>
+  openPositions: number
 }
 
-const jobCategories: JobCategory[] = [
-  { icon: <Code className="h-8 w-8" />, title: "Technology", openings: 1500 },
+const categories: JobCategory[] = [
   {
-    icon: <Briefcase className="h-8 w-8" />,
-    title: "Business",
-    openings: 1200,
-  },
-  { icon: <LineChart className="h-8 w-8" />, title: "Finance", openings: 900 },
-  { icon: <Palette className="h-8 w-8" />, title: "Design", openings: 750 },
-  {
-    icon: <Stethoscope className="h-8 w-8" />,
-    title: "Healthcare",
-    openings: 1100,
+    id: 1,
+    title: "Accounting / Finance",
+    icon: Wallet,
+    openPositions: 1
   },
   {
-    icon: <GraduationCap className="h-8 w-8" />,
-    title: "Education",
-    openings: 800,
+    id: 2,
+    title: "Marketing",
+    icon: Megaphone,
+    openPositions: 5
   },
   {
-    icon: <Building2 className="h-8 w-8" />,
-    title: "Real Estate",
-    openings: 600,
+    id: 3,
+    title: "Design",
+    icon: PenTool,
+    openPositions: 7
   },
-  { icon: <ShoppingBag className="h-8 w-8" />, title: "Retail", openings: 950 },
-];
+  {
+    id: 4,
+    title: "Development",
+    icon: Code2,
+    openPositions: 6
+  },
+  {
+    id: 5,
+    title: "Human Resource",
+    icon: Users2,
+    openPositions: 0
+  },
+  {
+    id: 6,
+    title: "Project Management",
+    icon: UserCog,
+    openPositions: 1
+  },
+  {
+    id: 7,
+    title: "Customer Service",
+    icon: HeadphonesIcon,
+    openPositions: 4
+  },
+  {
+    id: 8,
+    title: "Health and Care",
+    icon: Stethoscope,
+    openPositions: 3
+  },
+  {
+    id: 9,
+    title: "Automotive Jobs",
+    icon: Car,
+    openPositions: 1
+  }
+]
 
-const PopularJobCategories = () => {
+export default function JobCategories() {
   return (
-    <section className="py-16 bg-orange-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div>
-          <h2 className="text-3xl font-bold text-center mb-12 text-orange-800">
-            Popular Job Categories
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {jobCategories.map((category, index) => (
-              <div key={index}>
-                <Card className="hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-orange-100 p-3 rounded-full">
-                        {category.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-orange-800">
-                          {category.title}
-                        </h3>
-                        <p className="text-orange-600">
-                          {category.openings} openings
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+    <div className="py-12 px-4 md:px-6 lg:px-8 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-start mb-10 space-y-2">
+          <h2 className="text-2xl md:text-3xl font-semibold">Popular Job Categories</h2>
+          <p className="text-muted-foreground">
+            2020 jobs live — 293 added today.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <Card
+              key={category.id}
+              className="p-6 border border-gray-100 hover:border-gray-200 transition-colors shadow-none group cursor-pointer hover:shadow-md"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-14 h-14 flex items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-500 transition-colors">
+                    <category.icon className="w-6 h-6 text-blue-500 group-hover:text-white transition-colors" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{category.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    ({category.openPositions} open position{category.openPositions !== 1 ? 's' : ''})
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
+            </Card>
+          ))}
         </div>
       </div>
-    </section>
-  );
-};
+    </div>
+  )
+}
 
-export default PopularJobCategories;
