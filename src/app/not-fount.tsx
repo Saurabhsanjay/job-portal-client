@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/ui/navbar/Navbar";
+import { Navbar } from "@/app/components/navbar/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -21,7 +21,7 @@ const NotFound = () => {
             Ooops! Page Not Found
           </h1>
           <p className="text-base">
-            Let's help you find what you're looking for
+            Let's help you find what you are looking for
           </p>
           <Link href="/">
             <button
