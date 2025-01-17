@@ -58,9 +58,16 @@ export default function RegisterForm() {
                                     {showPassword ? "Hide password" : "Show password"}
                                 </span>
                             </Button>
+                            <a
+                                href="/auth/forgot-password"
+                                className="absolute right-0 top-full text-sm text-primary mt-1 underline"
+                            >
+                                Forgot password?
+                            </a>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-4 py-2">
+
+                    <div className="flex items-center space-x-4 pt-6">
                         <Checkbox id="terms" required />
                         <label
                             htmlFor="terms"
@@ -76,8 +83,11 @@ export default function RegisterForm() {
                             </a>
                         </label>
                     </div>
+
                     <Button className="w-full" type="submit">
-Signin                    </Button>
+                        Sign In
+                    </Button>
+
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t" />
@@ -88,6 +98,7 @@ Signin                    </Button>
                             </span>
                         </div>
                     </div>
+
                     <Button variant="outline" className="w-full" type="button">
                         <svg
                             className="mr-2 h-4 w-4"
