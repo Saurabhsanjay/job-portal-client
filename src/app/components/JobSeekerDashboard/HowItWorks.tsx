@@ -31,7 +31,7 @@ export default function HowItWorks() {
                         Three Easy Steps to Your Next Job
                     </h2>
                     <p className="text-gray-600 max-w-2xl mx-auto">
-                        Start your job search journey with our streamlined application process. We've made it simple to find and apply for your dream position.
+                        Start your job search journey with our streamlined application process. We&apos;ve made it simple to find and apply for your dream position.
                     </p>
                 </div>
 

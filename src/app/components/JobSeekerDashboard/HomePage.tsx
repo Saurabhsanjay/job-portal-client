@@ -22,7 +22,7 @@ type SearchFormData = {
 
 export default function HeroSection() {
   const [isSearching, setIsSearching] = useState(false)
-  const { register, handleSubmit, control, formState: { errors } } = useForm<SearchFormData>({
+  const { register, handleSubmit, control } = useForm<SearchFormData>({
     defaultValues: {
       query: '',
       location: '',
@@ -38,6 +38,7 @@ export default function HeroSection() {
       console.log('Search data:', data)
       toast.success('Search completed successfully!')
       // Here you would typically redirect to search results page
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Failed to perform search. Please try again.')
     } finally {
@@ -84,7 +85,7 @@ export default function HeroSection() {
                   <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 mr-3 flex-shrink-0 transition-colors" />
                   <input
                     type="text"
-                    placeholder="Job title or company"
+                    placeholder="Job title,keywords..."
                     className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-500"
                     {...register("query", { required: true })}
                   />
