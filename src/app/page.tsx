@@ -1,4 +1,4 @@
-import Image from "next/image";
+import LandingPage from "./components/EmployerDashboard";
 
 export default function Home() {
   return (
