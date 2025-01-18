@@ -21,10 +21,10 @@ export default function DreamJob() {
 
             {/* Content */}
             <div className="relative max-w-3xl mx-auto px-4 py-16 sm:px-6 sm:py-24">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white mb-6">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-6">
                     Find Your Dream Job Today!
                 </h1>
-                <p className="text-lg sm:text-xl text-blue-100 mb-8">
+                <p className="text-base sm:text-lg text-blue-100 mb-8">
                     Join thousands of job seekers who found their perfect career match.
                     Create an account and start applying to top companies!
                 </p>

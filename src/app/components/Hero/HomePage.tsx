@@ -57,7 +57,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6 leading-loose"
+              className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6 leading-tight"
             >
               Join us & Explore <span className="text-blue-600">Thousands</span> of Jobs
             </motion.h1>
@@ -122,7 +122,7 @@ export default function HeroSection() {
                 <div className="p-2 md:p-0 flex items-center justify-center">
                   <Button
                     size="lg"
-                    className="w-full md:w-auto px-8 py-8 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-r-2xl shadow-lg hover:shadow-xl"
+                    className="w-full md:w-auto px-4 md:px-8 py-3 md:py-8 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-r-2xl shadow-lg hover:shadow-xl"
                     disabled={isSearching}
                   >
                     {isSearching ? (
@@ -162,7 +162,7 @@ export default function HeroSection() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 mb-4 group-hover:bg-blue-100 group-hover:scale-110 transition-all duration-300 shadow-md group-hover:shadow-lg">
                   <stat.icon className="h-8 w-8 text-blue-600" />
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                   {stat.number}
                 </div>
                 <div className="text-gray-600 group-hover:text-gray-900 transition-colors">{stat.label}</div>
