@@ -17,7 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/form";
 // import { toast } from "@/components/ui/use-toast"
 import { MapPin, Phone, Mail } from "lucide-react";
+import Image from "next/image";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -304,7 +304,7 @@ export default function ContactPage() {
               <Card key={index} className="flex flex-col h-full">
                 <CardHeader>
                   <div className="flex items-center space-x-4">
-                    <img
+                    <Image
                       src={testimonial.image || "/placeholder.svg"}
                       alt={testimonial.name}
                       className="rounded-full w-12 h-12 object-cover"
@@ -320,7 +320,7 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <blockquote className="italic text-muted-foreground">
-                    "{testimonial.quote}"
+                    &quot;{testimonial.quote}&ldquo;
                   </blockquote>
                 </CardContent>
               </Card>
