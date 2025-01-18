@@ -49,7 +49,7 @@ export default function TermCondition() {
         title="Terms & Conditions"
         description="Learn about your rights and responsibilities when using the Recruit-G platform."
       />
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 border-none">
         <CardContent className="p-6 space-y-6">
           {sections.map((section, index) => (
             <div key={index} className="space-y-4 text-left">

@@ -83,10 +83,10 @@ export default function ContactPage() {
       <section className="py-16 px-4 md:px-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <Card>
+          <Card className="border-none  md:shadow-lg">
             <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl md:text-2xl">Send us a message</CardTitle>
+              <CardDescription className="text-base md:text-md">
                 Fill out the form below and we will get back to you as soon as
                 possible.
               </CardDescription>
@@ -163,10 +163,10 @@ export default function ContactPage() {
 
           {/* Contact Information */}
           <div className="space-y-8">
-            <Card>
+            <Card className="border-none  md:shadow-lg">
               <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-xl md:text-2xl">Contact Information</CardTitle>
+                <CardDescription className="text-base md:text-md">
                   Reach out to us through any of these channels
                 </CardDescription>
               </CardHeader>
@@ -195,9 +195,9 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-none  md:shadow-lg">
               <CardHeader>
-                <CardTitle>Office Hours</CardTitle>
+                <CardTitle className="text-xl md:text-2xl">Office Hours</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
@@ -206,9 +206,9 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-none  md:shadow-lg">
               <CardHeader>
-                <CardTitle>Follow Us</CardTitle>
+                <CardTitle className="text-xl md:text-2xl">Follow Us</CardTitle>
               </CardHeader>
               <CardContent className="flex space-x-4">
                 <Button variant="outline" size="icon">

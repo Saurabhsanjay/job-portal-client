@@ -75,7 +75,7 @@ export default function AboutPage() {
                   "Access a wealth of tools to boost your professional growth.",
               },
             ].map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
+              <Card key={index} className="hover:shadow-lg shadow-none transition-shadow">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold mb-2">
                     {feature.title}
@@ -123,7 +123,7 @@ export default function AboutPage() {
                 image: "https://picsum.photos/400",
               },
             ].map((member, index) => (
-              <Card key={index} className="overflow-hidden">
+              <Card key={index} className="overflow-hidden shadow-none">
                 <Image
                   src={member.image || "/placeholder.svg"}
                   alt={member.name}
@@ -171,7 +171,7 @@ export default function AboutPage() {
         </p>
         <Button
           size="lg"
-          className="w-full md:w-auto px-4 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-2xl shadow-lg hover:shadow-xl"
+          className="w-full md:w-auto px-4 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-md md:rounded-l-none md:rounded-md shadow-lg hover:shadow-xl"
         >
           Sign Up Now
         </Button>

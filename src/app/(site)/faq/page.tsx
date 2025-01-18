@@ -67,12 +67,12 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="space-y-6 px-4 md:px-8 lg:px-16">
+    <div className="space-y-6 py-12 px-4 md:px-8 lg:px-16">
       <PageHeader
         title="Frequently Asked Questions"
-        description="Find answers to common questions about JobConnect. If you have additional queries, feel free to contact us."
+        description="Find answers to common questions about Recruit-G. If you have additional queries, feel free to contact us."
       />
-      <Card className="shadow-lg border border-gray-200">
+      <Card className="shadow-xl border-none border-gray-200">
         <CardContent className="p-6 space-y-4">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
