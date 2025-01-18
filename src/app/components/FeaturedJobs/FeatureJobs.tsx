@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MapPin, Briefcase, BookmarkIcon, CheckCircle } from 'lucide-react'
+import { MapPin, Briefcase, CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 
 type Job = {
@@ -17,6 +16,7 @@ type Job = {
     category: string
     location: string
     type: 'Full Time' | 'Part Time'
+    description: string
     isUrgent?: boolean
     isVerified: boolean
 }
@@ -32,6 +32,7 @@ const jobs: Job[] = [
         category: "Design",
         location: "New York",
         type: "Full Time",
+        description: "Join our team to manage financial health and operations. Great benefits included!",
         isUrgent: true,
         isVerified: true
     },
@@ -42,9 +43,10 @@ const jobs: Job[] = [
             name: "Upwork",
             logo: "https://picsum.photos/400"
         },
-        category: "Design",
-        location: "New York",
+        category: "Finance",
+        location: "California",
         type: "Full Time",
+        description: "Responsible for managing general ledger accounts and reconciliations.",
         isVerified: true
     },
     {
@@ -54,9 +56,10 @@ const jobs: Job[] = [
             name: "Netflix",
             logo: "https://picsum.photos/400"
         },
-        category: "Automotive Jobs",
-        location: "New York",
+        category: "Retail",
+        location: "Chicago",
         type: "Part Time",
+        description: "Assist in storekeeping and inventory management. Flexible hours available!",
         isVerified: true
     },
     {
@@ -67,8 +70,9 @@ const jobs: Job[] = [
             logo: "https://picsum.photos/400"
         },
         category: "Technology",
-        location: "New York",
+        location: "Seattle",
         type: "Full Time",
+        description: "Develop cutting-edge software solutions and work with a top-tier engineering team.",
         isVerified: true
     },
     {
@@ -79,12 +83,14 @@ const jobs: Job[] = [
             logo: "https://picsum.photos/400"
         },
         category: "Design",
-        location: "New York",
+        location: "San Francisco",
         type: "Full Time",
+        description: "Craft intuitive designs for Apple's innovative products. Join our design team!",
         isUrgent: true,
         isVerified: true
     }
 ]
+
 export default function FeaturedJobs() {
     const [currentSlide, setCurrentSlide] = useState(0)
     const [slidesPerView, setSlidesPerView] = useState(3)
@@ -112,22 +118,25 @@ export default function FeaturedJobs() {
     }, [totalSlides])
 
     const handleDotClick = (index: number) => setCurrentSlide(index)
-  
 
     return (
-        <div className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="py-24 px-4 sm:px-8 lg:px-10 bg-gray-50">
             <div className="max-w-7xl mx-auto">
-                <div className="text-start mb-6 space-y-2">
-                    <h2 className="text-2xl sm:text-3xl font-semibold">Featured Jobs</h2>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                        Know your worth and find the job that qualifies your life
+                {/* Section Header */}
+                <div className="text-start mb-12 space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-start">
+                        Featured Jobs
+                    </h2>
+                    <p className="text-sm sm:text-base text-muted-foreground text-start">
+                        Discover jobs that align with your passion and skills.
                     </p>
                 </div>
 
+                {/* Job Carousel */}
                 <div className="relative overflow-hidden">
                     <div
                         className="flex transition-transform duration-500 ease-in-out"
-                        style={{ transform: `translateX(-${currentSlide * 100 / slidesPerView}%)` }}
+                        style={{ transform: `translateX(-${(currentSlide * 100) / slidesPerView}%)` }}
                     >
                         {jobs.map((job) => (
                             <div
@@ -136,6 +145,7 @@ export default function FeaturedJobs() {
                                 style={{ flex: `0 0 ${100 / slidesPerView}%` }}
                             >
                                 <Card className="p-4 sm:p-6 hover:shadow-lg transition-shadow h-full shadow-none">
+                                    {/* Company Logo and Info */}
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start space-x-4">
                                             <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100">
@@ -149,7 +159,15 @@ export default function FeaturedJobs() {
                                             <div>
                                                 <div className="flex items-center space-x-2">
                                                     <h3 className="font-semibold text-sm sm:text-base">{job.title}</h3>
-                                                   
+                                                    {job.isVerified && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="bg-green-50 text-green-700 hover:bg-green-100"
+                                                        >
+                                                            <CheckCircle className="h-4 w-4 mr-1" />
+                                                            Verified
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mt-1">
                                                     <Briefcase className="h-4 w-4" />
@@ -159,9 +177,14 @@ export default function FeaturedJobs() {
                                                 </div>
                                             </div>
                                         </div>
-                                     
                                     </div>
 
+                                    {/* Job Description */}
+                                    <p className="text-sm text-muted-foreground mt-4 line-clamp-2">
+                                        {job.description}
+                                    </p>
+
+                                    {/* Badges */}
                                     <div className="flex items-center space-x-2 mt-4">
                                         <Badge
                                             variant="secondary"
@@ -178,25 +201,30 @@ export default function FeaturedJobs() {
                                             </Badge>
                                         )}
                                     </div>
+
+                                   
                                 </Card>
                             </div>
                         ))}
                     </div>
                 </div>
 
+                {/* Pagination Dots */}
                 <div className="flex justify-center space-x-2 mt-6">
                     {Array.from({ length: totalSlides }).map((_, index) => (
                         <button
                             key={index}
                             onClick={() => handleDotClick(index)}
                             className={`h-2 rounded-full transition-all ${index === currentSlide
-                                ? 'bg-primary w-6'
-                                : 'bg-gray-300 w-2 hover:bg-gray-400'
+                                    ? 'bg-primary w-6'
+                                    : 'bg-gray-300 w-2 hover:bg-gray-400'
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />
                     ))}
                 </div>
+
+                
             </div>
         </div>
     )
