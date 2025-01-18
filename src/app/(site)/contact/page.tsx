@@ -25,7 +25,6 @@ import {
 // import { toast } from "@/components/ui/use-toast"
 import { MapPin, Phone, Mail } from "lucide-react";
 import Image from "next/image";
-import Image from "next/image";
 
 const formSchema = z.object({
   name: z.string().min(2, {
