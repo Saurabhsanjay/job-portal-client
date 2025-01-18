@@ -10,7 +10,7 @@ export default function AboutPage() {
       <section className="relative h-[50vh] bg-primary text-primary-foreground flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden">
           <Image
-            src="/images/hero-background.jpg"
+            src="https://picsum.photos/400"
             alt="Job seekers"
             fill
             style={{ objectFit: "cover" }}
@@ -18,10 +18,10 @@ export default function AboutPage() {
           />
         </div>
         <div className="relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+          <h1 className="text-4xl md:text-6xl font-semibold mb-4">
             Connecting Talent with Opportunity
           </h1>
-          <p className="text-xl md:text-2xl max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl">
             Your journey to the perfect career starts here
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function AboutPage() {
       {/* Mission Statement */}
       <section className="py-16 px-4 md:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
+          <h2 className="text-3xl font-semibold mb-6">Our Mission</h2>
           <p className="text-lg mb-8">
             At JobConnect, we are on a mission to revolutionize the way people
             find and secure their dream jobs. We believe that everyone deserves
@@ -53,9 +53,10 @@ export default function AboutPage() {
       {/* Key Features */}
       <section className="bg-secondary py-16 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">
+          <h2 className="text-3xl font-semibold mb-12 text-center">
             Why Choose JobConnect
           </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -90,30 +91,36 @@ export default function AboutPage() {
       {/* Team Section */}
       <section className="py-16 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">
-            Meet Our Team
-          </h2>
+          <div className="text-start mb-12 space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-start">
+              Meet Our Team
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground text-start">
+              Meet the talented team driving our success with passion and
+              expertise.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               {
                 name: "Jane Doe",
                 role: "CEO",
-                image: "/images/team-member-1.jpg",
+                image: "https://picsum.photos/400",
               },
               {
                 name: "John Smith",
                 role: "CTO",
-                image: "/images/team-member-2.jpg",
+                image: "https://picsum.photos/400",
               },
               {
                 name: "Emily Brown",
                 role: "Head of HR",
-                image: "/images/team-member-3.jpg",
+                image: "https://picsum.photos/400",
               },
               {
                 name: "Michael Johnson",
                 role: "Lead Developer",
-                image: "/images/team-member-4.jpg",
+                image: "https://picsum.photos/400",
               },
             ].map((member, index) => (
               <Card key={index} className="overflow-hidden">
@@ -135,9 +142,9 @@ export default function AboutPage() {
       </section>
 
       {/* Testimonials/Stats */}
-      <section className="bg-primary text-primary-foreground py-16 px-4 md:px-8">
+      <section className="bg-gradient-to-br from-blue-100 via-white to-purple-100 py-16 px-4 md:px-8">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">Our Impact</h2>
+          <h2 className="text-3xl font-semibold mb-12">Our Impact</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { number: "1M+", label: "Job Seekers" },
@@ -145,7 +152,7 @@ export default function AboutPage() {
               { number: "500K+", label: "Successful Placements" },
             ].map((stat, index) => (
               <div key={index}>
-                <p className="text-4xl font-bold mb-2">{stat.number}</p>
+                <p className="text-4xl font-semibold mb-2">{stat.number}</p>
                 <p className="text-xl">{stat.label}</p>
               </div>
             ))}
@@ -155,14 +162,17 @@ export default function AboutPage() {
 
       {/* Call to Action */}
       <section className="py-16 px-4 md:px-8 text-center">
-        <h2 className="text-3xl font-bold mb-6">
+        <h2 className="text-3xl font-semibold mb-6">
           Ready to Start Your Journey?
         </h2>
         <p className="text-xl mb-8 max-w-2xl mx-auto">
           Join JobConnect today and take the first step towards your dream
           career.
         </p>
-        <Button size="lg" className="text-lg px-8">
+        <Button
+          size="lg"
+          className="w-full md:w-auto px-4 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-2xl shadow-lg hover:shadow-xl"
+        >
           Sign Up Now
         </Button>
       </section>

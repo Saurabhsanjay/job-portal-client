@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 // import { toast } from "@/components/ui/use-toast"
 import { MapPin, Phone, Mail } from "lucide-react";
+import Image from "next/image";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -68,9 +69,11 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-20 px-4">
+      <section className=" bg-gradient-to-br from-blue-100 via-white to-purple-50 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Get in Touch</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6 leading-tight">
+            Get in <span className="text-blue-600">Touch</span>
+          </h1>
           <p className="text-xl md:text-2xl">
             We are here to help you with any questions or concerns
           </p>
@@ -149,7 +152,7 @@ export default function ContactPage() {
                   />
                   <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full md:w-auto px-4 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-r-2xl shadow-lg hover:shadow-xl"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Sending..." : "Send Message"}
@@ -271,16 +274,21 @@ export default function ContactPage() {
       {/* Testimonial Section */}
       <section className="bg-secondary py-16 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">
-            What Our Users Say
-          </h2>
+          <div className="text-start mb-12 space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-start">
+              What Our Users Say
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground text-start">
+              Discover jobs that align with your passion and skills.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 name: "Sarah Johnson",
                 role: "Software Developer",
                 company: "Tech Innovators Inc.",
-                image: "/images/testimonial-1.jpg",
+                image: "https://picsum.photos/400",
                 quote:
                   "JobConnect helped me find my dream job in just two weeks! The AI-powered matching is incredibly accurate.",
               },
@@ -288,7 +296,7 @@ export default function ContactPage() {
                 name: "Michael Chen",
                 role: "HR Manager",
                 company: "Global Solutions Ltd.",
-                image: "/images/testimonial-2.jpg",
+                image: "https://picsum.photos/400",
                 quote:
                   "As an employer, I've found top talent quickly and efficiently. The quality of candidates is outstanding.",
               },
@@ -296,7 +304,7 @@ export default function ContactPage() {
                 name: "Emily Rodriguez",
                 role: "Marketing Specialist",
                 company: "Creative Minds Agency",
-                image: "/images/testimonial-3.jpg",
+                image: "https://picsum.photos/400",
                 quote:
                   "The career resources provided by JobConnect gave me the edge I needed in my job search. Highly recommended!",
               },
@@ -304,10 +312,12 @@ export default function ContactPage() {
               <Card key={index} className="flex flex-col h-full">
                 <CardHeader>
                   <div className="flex items-center space-x-4">
-                    <img
-                      src={testimonial.image || "/placeholder.svg"}
+                    <Image
+                      src={testimonial.image}
                       alt={testimonial.name}
-                      className="rounded-full w-12 h-12 object-cover"
+                      className="rounded-full object-cover"
+                      width={50}
+                      height={50}
                     />
                     <div>
                       <CardTitle className="text-lg">
