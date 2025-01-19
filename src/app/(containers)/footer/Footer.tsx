@@ -6,6 +6,8 @@ import { Briefcase, Send, Facebook, Twitter, Instagram, Linkedin, Phone, Mail, M
 import Link from "next/link"
 
 export default function Footer() {
+   
+        return null
     return (
         <footer className="bg-gradient-to-b from-white to-gray-50">
             <div className="container mx-auto px-6 sm:px-8 lg:px-16 py-20">

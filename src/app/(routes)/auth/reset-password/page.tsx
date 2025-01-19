@@ -41,8 +41,19 @@ export default function ResetPasswordForm() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen md:bg-gray-100">
-            <Card className="mx-auto max-w-[400px] w-full m-4 shadow-none border-none md:shadow-lg pb-4">
+        <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden ">
+            {/* Professional gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50" />
+
+            {/* Subtle grid pattern */}
+            <div className="absolute hidden md:block inset-0 bg-[linear-gradient(to_right,#8881_1px,transparent_1px),linear-gradient(to_bottom,#8881_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+            {/* Clean, professional decorative elements */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 hidden md:block" />
+            <div className="absolute top-0 right-0 w-1/3 h-32 bg-blue-50/40 blur-3xl hidden md:block" />
+            <div className="absolute bottom-0 left-0 w-1/3 h-32 bg-slate-50/40 blur-3xl hidden md:block" />
+
+            <Card className="relative mx-4 w-full max-w-[400px] shadow-none md:shadow-md border-none border-gray-200 bg-white">
                 <CardHeader>
                     <div className="flex items-center justify-center">
                         <Image src={logo || "/placeholder.svg"} alt="Company Logo" className="w-40" />
@@ -133,7 +144,7 @@ export default function ResetPasswordForm() {
                             )}
                         </div>
 
-                        <Button className="w-full" type="submit">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" type='submit'>
                             Confirm
                         </Button>
                     </form>

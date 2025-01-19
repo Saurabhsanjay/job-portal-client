@@ -11,8 +11,7 @@ export default function DreamJob() {
                 <Image
                     src={img}
                     alt="Dream Job Background"
-                    layout="fill"
-                    objectFit="cover"
+                    fill objectFit="cover"
                     priority
                 />
                 {/* Gradient Overlay */}

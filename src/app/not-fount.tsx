@@ -1,4 +1,4 @@
-import { Navbar } from "@/app/components/navbar/Navbar";
+import { Navbar } from "@/app/(containers)/navbar/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
