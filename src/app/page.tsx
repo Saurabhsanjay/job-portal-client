@@ -1,4 +1,4 @@
-import LandingPage from "./(containers)/JobSeekerDashboard";
+import LandingPage from "./(containers)/JobSeekerHome";
 
 export default function Home() {
   return (

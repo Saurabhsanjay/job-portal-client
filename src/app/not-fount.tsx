@@ -1,12 +1,12 @@
-import { Navbar } from "@/app/(containers)/navbar/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+// import Navbar from "./(containers)/navbar/Navbar";
 
 const NotFound = () => {
   return (
     <div className="h-screen">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="m-auto h-full flex flex-col justify-center  max-w-[1440px]">
         <div className="flex justify-center ">
           <Image
@@ -21,7 +21,7 @@ const NotFound = () => {
             Ooops! Page Not Found
           </h1>
           <p className="text-base">
-            Let's help you find what you are looking for
+            Let&apos;s help you find what you are looking for
           </p>
           <Link href="/">
             <button

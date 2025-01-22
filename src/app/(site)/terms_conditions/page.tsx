@@ -1,4 +1,4 @@
-import { PageHeader } from "@/app/(containers)/JobSeekerDashboard/PageHeader";
+import { PageHeader } from "@/app/(containers)/JobSeekerHome/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function TermCondition() {

@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { PageHeader } from "@/app/(containers)/JobSeekerDashboard/PageHeader";
+import { PageHeader } from "@/app/(containers)/JobSeekerHome/PageHeader";
 
 export default function FAQPage() {
   const faqs = [
