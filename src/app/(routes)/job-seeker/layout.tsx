@@ -10,7 +10,6 @@ import {
     Bell,
     Bookmark,
     Mail,
-    Package,
     Lock,
     LogOut,
     Trash2,
@@ -41,14 +40,14 @@ const navigation = [
     { name: "Applied Jobs", href: "/job-seeker/applied-jobs", icon: Briefcase, current: false },
     { name: "Shortlisted Jobs", href: "/job-seeker/shortlisted-jobs", icon: Bookmark, current: false },
     { name: "Saved Jobs", href: "/job-seeker/saved-jobs", icon: Heart, current: false },
-    { name: "Messages", href: "/jobs-seeker/messages", icon: Mail, current: false },
+    { name: "Messages", href: "/job-seeker/messages", icon: Mail, current: false },
     { name: "Job Alerts", href: "/job-seeker/alerts", icon: Bell, current: false },
 ]
 
 const secondaryNavigation = [
     { name: "Change Password", href: "/job-seeker/change-password", icon: Lock },
     { name: "Logout", href: "/job-seeker/logout", icon: LogOut },
-    { name: "Delete Profile", href: "/job-seeker/delete-profile", icon: Trash2 },
+    { name: "Delete Profile", href: "/job-seeker/delete-account", icon: Trash2 },
 ]
 
 export default function JobSeekerDashboardLayout({ children }: { children: React.ReactNode }) {

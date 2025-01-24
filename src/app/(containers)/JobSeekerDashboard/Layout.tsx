@@ -10,7 +10,7 @@ import {
     Bell,
     Bookmark,
     Mail,
-    Package,
+    
     Lock,
     LogOut,
     Trash2,
@@ -32,12 +32,6 @@ import {
 // import Dashboard from "./Dashboard"
 import Profile from "./Profile"
 import { Badge } from "@/components/ui/badge"
-import Resume from "./MyResume"
-import AppliedJobs from "./AppliedJobs"
-import JobAlerts from "./Alerts"
-import ChangePassword from "./ChangePassword"
-import ShortlistedJobs from "./ShortListedJobs"
-import Dashboard from "./Dashboard"
 
 const navigation = [
     { name: "Dashboard", href: "#", icon: Home, current: true },

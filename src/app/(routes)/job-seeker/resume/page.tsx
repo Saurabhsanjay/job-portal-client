@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 
 import { useState } from "react";
@@ -15,7 +16,8 @@ export default function Resume() {
     const [uploadedFile, setUploadedFile] = useState(null); // Stores the uploaded file
     const [errorMessage, setErrorMessage] = useState(""); // Stores validation error
 
-    const handleFileUpload = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleFileUpload = (event: any) => {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -66,6 +68,7 @@ export default function Resume() {
                             <div className="flex-1">
                                 <h3 className="text-sm font-medium">Current Resume</h3>
                                 <p className="text-sm text-gray-500">
+                                    {/* @ts-ignore */}
                                     {uploadedFile ? uploadedFile.name : "jerome-resume.pdf"}
                                 </p>
                             </div>

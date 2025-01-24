@@ -75,6 +75,7 @@ export default function Education() {
         setIsFormOpen(true)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onDragEnd = (result: any) => {
         if (!result.destination) return
 

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Bell, Trash2, MapPin, Building2, DollarSign, Eye } from "lucide-react"
+import { Bell, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 // Mock data for job alerts
