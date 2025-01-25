@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,9 +12,53 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import logo from "../../../../../public/dummy-logo-5b.png";
+import { useRegister } from "@/hooks/useAuth";
+
+const registerSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  dateOfBirth: z.string().refine((dob) => {
+    const date = new Date(dob);
+    const ageDifMs = Date.now() - date.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970) >= 18;
+  }, "You must be at least 18 years old"),
+  terms: z
+    .boolean()
+    .refine(
+      (val) => val === true,
+      "You must agree to the terms and conditions"
+    ),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const registerMutation = useRegister();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      dateOfBirth: "",
+      terms: false,
+    },
+  });
+
+  const onSubmit = (data: RegisterFormValues) => {
+    const { terms, ...userData } = data;
+    registerMutation.mutate(userData);
+  };
 
   return (
     <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden">
@@ -29,89 +76,175 @@ export default function RegisterForm() {
       <Card className="relative mx-0 md:mx-4 w-full md:max-w-[450px] shadow-none md:shadow-md border-0 md:border md:border-gray-200 bg-white">
         <CardHeader>
           <div className="flex items-center justify-center">
-            <Image src={logo} alt="Recruit G Logo" className="w-40" />
+            <Image
+              src={logo || "/placeholder.svg"}
+              alt="Recruit G Logo"
+              className="w-40"
+            />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="fullname">Full Name</Label>
-            <Input
-              id="fullname"
-              placeholder="Enter your full name"
-              required
-              className="bg-white focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              required
-              className="bg-white focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="mobile">Mobile Number</Label>
-            <Input
-              id="mobile"
-              type="tel"
-              placeholder="Enter your mobile number"
-              required
-              className="bg-white focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                required
-                className="bg-white focus:ring-2 focus:ring-blue-500/20"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOffIcon className="h-4 w-4" />
-                ) : (
-                  <EyeIcon className="h-4 w-4" />
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="firstName">First Name</Label>
+              <Controller
+                name="firstName"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="firstName"
+                    placeholder="Enter your first name"
+                    className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  />
                 )}
-                <span className="sr-only">
-                  {showPassword ? "Hide password" : "Show password"}
-                </span>
-              </Button>
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm">
+                  {errors.firstName.message}
+                </p>
+              )}
             </div>
-          </div>
-          <div className="flex items-center space-x-4 py-2">
-            <Checkbox id="terms" required />
-            <label
-              htmlFor="terms"
-              className="text-sm leading-5 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            <div className="space-y-1">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Controller
+                name="lastName"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="lastName"
+                    placeholder="Enter your last name"
+                    className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  />
+                )}
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  />
+                )}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Controller
+                name="dateOfBirth"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="dateOfBirth"
+                    type="date"
+                    className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  />
+                )}
+              />
+              {errors.dateOfBirth && (
+                <p className="text-red-500 text-sm">
+                  {errors.dateOfBirth.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
+                </Button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center space-x-4 py-2">
+              <Controller
+                name="terms"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+              <label
+                htmlFor="terms"
+                className="text-sm leading-5 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                I agree to the{" "}
+                <a href="/terms" className="text-blue-600 hover:text-blue-700">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/privacy"
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
+            {errors.terms && (
+              <p className="text-red-500 text-sm">{errors.terms.message}</p>
+            )}
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              type="submit"
+              disabled={registerMutation.isPending}
             >
-              I agree to the{" "}
-              <a href="/terms" className="text-blue-600 hover:text-blue-700">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="/privacy" className="text-blue-600 hover:text-blue-700">
-                Privacy Policy
-              </a>
-            </label>
-          </div>
-          <Button
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            type="submit"
-          >
-            Create Account
-          </Button>
+              {registerMutation.isPending
+                ? "Creating Account..."
+                : "Create Account"}
+            </Button>
+          </form>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -148,6 +281,16 @@ export default function RegisterForm() {
           </a>
         </p>
       </Card>
+      {registerMutation.isError && (
+        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+          Error: {registerMutation.error.message}
+        </div>
+      )}
+      {registerMutation.isSuccess && (
+        <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md">
+          Account created successfully! You can now log in.
+        </div>
+      )}
     </div>
   );
 }
