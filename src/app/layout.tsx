@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Footer from "./(containers)/footer/Footer";
-import Navbar from "./(containers)/navbar/Navbar";
+// import Navbar from "./(containers)/navbar/Navbar";
 import { getServerSession } from "next-auth/next";
 import { SessionProvider } from "@/app/(providers)/SessionProvider";
 import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
@@ -29,7 +29,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <SessionProvider session={session}>
-          <Navbar />
+          {/* <Navbar /> */}
           <ReactQueryProvider>{children}</ReactQueryProvider>
           <Footer />
         </SessionProvider>
