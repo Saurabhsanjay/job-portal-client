@@ -9,7 +9,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CircleAlert } from "lucide-react";
-
+import { Metadata } from "next";
+export const metadata: Metadata = {
+    title: "Delete Account",
+    description: "Delete your account permanently",
+}
 export default function DeleteAccount() {
     return (
         <AlertDialog open>

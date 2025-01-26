@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Bell, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
+
 // Mock data for job alerts
 const jobAlerts = [
     {

@@ -4,8 +4,8 @@ import "./globals.css";
 import Footer from "./(containers)/footer/Footer";
 import Navbar from "./(containers)/navbar/Navbar";
 import { getServerSession } from "next-auth/next";
-import { SessionProvider } from "@/components/SessionProvider";
-import ReactQueryProvider from "@/components/ReactQueryProvider";
+import { SessionProvider } from "@/app/(providers)/SessionProvider";
+import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],

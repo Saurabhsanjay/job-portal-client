@@ -8,8 +8,25 @@ interface ReactQueryProviderProps {
 }
 
 const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
-  // Initialize the QueryClient on the client side
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient(
+{
+    defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 5000, 
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchInterval: 5000,
+      refetchIntervalInBackground: false,
+    },
+    mutations: {
+      retry: 2,
+    },
+    },
+}
+
+  ));
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

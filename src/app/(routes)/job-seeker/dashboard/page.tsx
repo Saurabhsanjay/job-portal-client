@@ -19,6 +19,11 @@ import { Badge } from "@/components/ui/badge"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import { useState } from "react"
 
+// export const metadata:Metadata = {
+//     title: "Job Seeker Dashboard",
+//     description: "Your personalized job seeker dashboard",
+// }
+
 const profileViewsData = [
     { day: "Mon", views: 45 },
     { day: "Tue", views: 52 },

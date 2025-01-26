@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Eye, Copy, MapPin, Building2 } from "lucide-react"
 import { format } from "date-fns"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Applied Jobs",
+  description: "View all jobs you have applied to",
+};
 
 // Mock data generator
 const generateMockData = (start: number, end: number) => {
