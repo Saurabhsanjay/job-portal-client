@@ -56,6 +56,7 @@ export default function RegisterForm() {
   });
 
   const onSubmit = (data: RegisterFormValues) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { terms, ...userData } = data;
     registerMutation.mutate(userData);
   };
