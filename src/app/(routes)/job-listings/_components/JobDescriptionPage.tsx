@@ -55,7 +55,7 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
                         {/* Logo and Title */}
                         <div className="flex items-start gap-4 flex-1">
                             <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
-                                <Image
+                                <Image width={48} height={48}
                                     src={job.company.logo || "/placeholder.svg"}
                                     alt={job.company.name}
                                     className="h-8 w-8 md:h-10 md:w-10 object-contain"
