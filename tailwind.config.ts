@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
 export default {
-    darkMode: ["class"],
-    content: [
+  darkMode: ["class"],
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -49,6 +49,16 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			sidebar: {
+  				DEFAULT: 'hsl(var(--sidebar-background))',
+  				foreground: 'hsl(var(--sidebar-foreground))',
+  				primary: 'hsl(var(--sidebar-primary))',
+  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+  				accent: 'hsl(var(--sidebar-accent))',
+  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+  				border: 'hsl(var(--sidebar-border))',
+  				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
   		borderRadius: {
@@ -57,6 +67,34 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		keyframes: {
+  			'fade-in': {
+  				'0%': {
+  					opacity: "0"
+  				},
+  				'100%': {
+  					opacity: "1"
+  				}
+  			},
+  			'slide-in': {
+  				'0%': {
+  					transform: 'translateY(20px)',
+  					opacity: "0"
+  				},
+  				'100%': {
+  					transform: 'translateY(0)',
+  					opacity: "1"
+  				}
+  			},
+  			'zoom-in': {
+  				'0%': {
+  					transform: 'scale(0.9)',
+  					opacity: "0"
+  				},
+  				'100%': {
+  					transform: 'scale(1)',
+  					opacity: "1"
+  				}
+  			},
   			'accordion-down': {
   				from: {
   					height: '0'
@@ -76,9 +114,13 @@ export default {
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'fade-in': 'fade-in 0.5s ease-out',
+  			'slide-in': 'slide-in 0.5s ease-out',
+  			'zoom-in': 'zoom-in 0.5s ease-out'
   		}
   	}
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

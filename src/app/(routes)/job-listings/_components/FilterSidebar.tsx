@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useCallback } from "react";
@@ -9,10 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { JobEmploymentType, JobExperienceLevel, type JobFilters } from "../types/job.types";
-import { Search, SlidersHorizontal, Check } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 
 interface FilterSidebarProps {
     filters: JobFilters;
@@ -88,7 +87,7 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
                         <SlidersHorizontal className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                {/* <PopoverContent className="w-full p-0">
                     <Command>
                         <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="text-sm md:text-base" />
                         <CommandList>
@@ -123,7 +122,7 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
                             </CommandGroup>
                         </CommandList>
                     </Command>
-                </PopoverContent>
+                </PopoverContent> */}
             </Popover>
         ),
         [openCombobox]

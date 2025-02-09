@@ -42,10 +42,10 @@ export default function PostAJob() {
                         ))}
                     </div>
 
-                    <div className="flex gap-4 pt-4">
+                    <div className="flex gap-4 pt-4 ">
                         <Button
                             size="lg"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-md"
+                            className="bg-blue-600  hover:bg-blue-700 text-white px-8 rounded-md"
                         >
                             Post a Job
                         </Button>

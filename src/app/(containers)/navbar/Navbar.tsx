@@ -48,6 +48,8 @@ const Navbar = () => {
     }
   };
 
+
+
   return (
     <nav
       className={`w-full ${

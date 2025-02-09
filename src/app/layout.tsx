@@ -6,6 +6,7 @@ import Footer from "./(containers)/footer/Footer";
 import { getServerSession } from "next-auth/next";
 import { SessionProvider } from "@/app/(providers)/SessionProvider";
 import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
+import { ThemeProvider } from "./(providers)/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,13 +27,21 @@ export default async function RootLayout({
   const session = await getServerSession();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
         <SessionProvider session={session}>
           {/* <Navbar /> */}
           <ReactQueryProvider>{children}</ReactQueryProvider>
           <Footer />
         </SessionProvider>
+        </ThemeProvider>
+
       </body>
     </html>
   );
