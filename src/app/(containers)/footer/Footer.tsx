@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Briefcase, Send, Facebook, Twitter, Instagram, Linkedin, Phone, Mail, MapPin } from 'lucide-react'
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export default function Footer() {
-   
-        return null
+   const pathname=usePathname();
+
+   if(pathname==='/' || pathname==='/jobseeker')
+        
     return (
         <footer className="bg-gradient-to-b from-white to-gray-50">
             <div className="container mx-auto px-6 sm:px-8 lg:px-16 py-20">
