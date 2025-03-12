@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, Search, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function HowItWorks() {
     return (
@@ -60,11 +61,14 @@ export default function HowItWorks() {
 
                 {/* Optional CTA */}
                 <div className="text-center mt-16">
-                    <Button size="lg"
+                <Link href="/auth/register" className="flex-shrink-0">
+                <Button size="lg"
  className="bg-blue-600 animate-bounce text-white text-lg font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-all hover:scale-105">
                         Start Hiring Now 
                         <Search className="w-4 h-4 ml-2" />
                     </Button>
+                    </Link>
+                    
                 </div>
             </div>
         </div>

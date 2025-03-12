@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BriefcaseBusiness } from "lucide-react";
+import Link from "next/link";
 
 export default function EmployerHero() {
     return (
@@ -30,12 +31,14 @@ export default function EmployerHero() {
                     </p>
 
                     <div className="mt-8 sm:mt-12 animate-bounce">
+                    <Link href="/auth/register" className="flex-shrink-0">
                         <Button
                             size="lg"
                             className="bg-blue-600 px-6 sm:px-8 text-sm sm:text-lg rounded-xl font-semibold text-white hover:bg-blue-700 transition-all hover:scale-105"
                         >
                             <BriefcaseBusiness size={18} className="mr-2" /> Post a Job
                         </Button>
+                    </Link>
                     </div>
 
                     <div className="mt-12 sm:mt-20 grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-4">

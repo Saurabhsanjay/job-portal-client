@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Check } from 'lucide-react'
 import Image from "next/image"
 import toptalent from "../../../../public/top-talent.png"
+import Link from "next/link"
 export default function PostAJob() {
     return (
         <div className="container mx-auto px-12 py-12 md:py-24">
@@ -43,12 +44,14 @@ export default function PostAJob() {
                     </div>
 
                     <div className="flex gap-4 pt-4 ">
+                <Link href="/auth/register" className="flex-shrink-0">
                         <Button
                             size="lg"
                             className="bg-blue-600  hover:bg-blue-700 text-white px-8 rounded-md"
                         >
                             Post a Job
                         </Button>
+                </Link>
                         <Button
                             size="lg"
                             variant="outline"

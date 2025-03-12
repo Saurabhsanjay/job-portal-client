@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -30,11 +31,9 @@ export default function AboutPage() {
       {/* Mission Statement */}
       <section className="py-16 px-4 md:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-semibold mb-6">Our Mission</h2>
+          <h2 className="text-3xl font-semibold mb-6">About Recruit-G Global Solutions</h2>
           <p className="text-lg mb-8">
-            At JobConnect, we are on a mission to revolutionize the way people
-            find and secure their dream jobs. We believe that everyone deserves
-            a fulfilling career, and we are here to make that happen.
+          An advanced platform called Recruit-G was created to make hiring easier for both companies and candidates. Since its launch in early 2016, it has grown to become one of the Gulf’s most popular job sites, drawing thousands of visitors each day from nations such the UAE, Saudi Arabia, Bahrain, Kuwait, Oman, and Qatar.
           </p>
           <div className="flex justify-center space-x-4">
             <Badge variant="secondary" className="text-lg py-2 px-4">
@@ -169,12 +168,15 @@ export default function AboutPage() {
           Join JobConnect today and take the first step towards your dream
           career.
         </p>
+        <Link href="/auth/register" className="flex-shrink-0">
         <Button
           size="lg"
           className="w-full md:w-auto px-4 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-md md:rounded-l-none md:rounded-md shadow-lg hover:shadow-xl"
         >
           Sign Up Now
         </Button>
+        </Link>
+        
       </section>
     </div>
   );
