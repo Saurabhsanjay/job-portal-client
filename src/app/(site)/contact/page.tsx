@@ -23,8 +23,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 // import { toast } from "@/components/ui/use-toast"
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -175,21 +176,21 @@ export default function ContactPage() {
                   <MapPin className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Address</h3>
-                    <p>123 Job Portal Street, Career City, 12345</p>
+                    <p>FIRST FLOOR, WZ-73, B1 Rd, Nangli Jalib, Janakpuri, New Delhi, Delhi, 110058</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <Phone className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Phone</h3>
-                    <p>+1 (555) 123-4567</p>
+                    <p>+91 9910815843</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <Mail className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p>contact@jobportal.com</p>
+                    <p>info@recruit-g.com</p>
                   </div>
                 </div>
               </CardContent>
@@ -201,8 +202,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                <p>Saturday: 10:00 AM - 2:00 PM</p>
-                <p>Sunday: Closed</p>
+                <p>Saturday - Sunday: Closed</p>
               </CardContent>
             </Card>
 
@@ -211,59 +211,24 @@ export default function ContactPage() {
                 <CardTitle className="text-xl md:text-2xl">Follow Us</CardTitle>
               </CardHeader>
               <CardContent className="flex space-x-4">
-                <Button variant="outline" size="icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-facebook"
-                  >
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                  <span className="sr-only">Facebook</span>
-                </Button>
-                <Button variant="outline" size="icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-twitter"
-                  >
-                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                  </svg>
-                  <span className="sr-only">Twitter</span>
-                </Button>
-                <Button variant="outline" size="icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-linkedin"
-                  >
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                    <rect width="4" height="12" x="2" y="9" />
-                    <circle cx="4" cy="4" r="2" />
-                  </svg>
-                  <span className="sr-only">LinkedIn</span>
-                </Button>
+              <div className="flex gap-4">
+                            {[
+                                { icon: Facebook, href: 'https://www.facebook.com/people/Recruit-G', color: 'hover:bg-[#1877F2]' },
+                                { icon: Twitter, href: 'https://x.com/bhumikarecruitg', color: 'hover:bg-[#1DA1F2]' },
+                                { icon: Instagram, href: 'https://www.instagram.com/recruit_g_global_solution', color: 'hover:bg-[#E4405F]' },
+                                { icon: Linkedin, href: 'https://www.linkedin.com/company/recruit-g-global-solutions', color: 'hover:bg-[#0A66C2]' },
+                                { icon: Youtube, href: 'https://www.youtube.com/@Recruit-G', color: 'hover:bg-[#E4405F]' },
+
+                            ].map((social, index) => (
+                                <Link
+                                    key={index}
+                                    href={social.href}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 ${social.color} hover:text-white transition-all hover:shadow-lg group`}
+                                >
+                                    <social.icon className="h-5 w-5 transform group-hover:scale-110 transition-transform" />
+                                </Link>
+                            ))}
+                        </div>
               </CardContent>
             </Card>
           </div>

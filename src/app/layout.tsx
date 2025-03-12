@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth/next";
 import { SessionProvider } from "@/app/(providers)/SessionProvider";
 import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
 import { ThemeProvider } from "./(providers)/ThemeProvider";
+import Navbar from "./(containers)/navbar/Navbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +37,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
         <SessionProvider session={session}>
-          {/* <Navbar /> */}
+          <Navbar />
           <ReactQueryProvider>{children}</ReactQueryProvider>
           <Footer />
         </SessionProvider>

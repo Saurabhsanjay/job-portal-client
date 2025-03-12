@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { Backpack, BriefcaseBusiness, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import logo from "../../../../../public/dummy-logo-5b.png";
@@ -69,12 +69,25 @@ export default function LoginForm() {
 
       <Card className="relative mx-4 w-full max-w-[400px] shadow-none md:shadow-md border-none border-gray-200 bg-white">
         <CardHeader>
-          <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center">
             <Image
-              src={logo || "/placeholder.svg"}
-              alt="Recruit G Logo"
-              className="w-40"
+               src="/logo.jpeg"
+               alt="Recruit-G"
+               width={120}
+               height={60}
+               className="h-8"
             />
+          </div>
+          <div className="flex items-center space-x-2 py-2 justify-around">
+          <Button className="bg-green-600 text-white hover:bg-blue-700">
+              <BriefcaseBusiness size={18} className="mr-2" /> Candidate
+           </Button>
+           <Button className="bg-blue-600 text-white hover:bg-green-700">
+              <Backpack size={18} className="mr-2" /> Recruiter
+           </Button>
+           {/* <Button className="bg-blue-600 text-white hover:bg-green-700">
+              <School size={18} className="mr-2" /> Institute
+           </Button> */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
