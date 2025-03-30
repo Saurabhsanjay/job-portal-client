@@ -14,11 +14,11 @@ const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
     defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 5000, 
+      staleTime: 10 * 60 * 1000, 
       refetchOnMount: true,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
-      refetchInterval: 5000,
+      // refetchInterval: 5000,
       refetchIntervalInBackground: false,
     },
     mutations: {
