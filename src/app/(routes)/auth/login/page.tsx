@@ -1,61 +1,120 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Backpack, BriefcaseBusiness, EyeIcon, EyeOffIcon } from "lucide-react";
+import {
+  Backpack,
+  BriefcaseBusiness,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
-import logo from "../../../../../public/dummy-logo-5b.png";
+import { useToast } from "@/hooks/use-toast";
+
+// Define the user types
+export type UserType = "candidate" | "recruiter";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters long" }),
-  terms: z
-    .boolean()
-    .refine((val) => val === true, { message: "You must agree to the terms" }),
+  rememberMe: z.boolean().default(false).optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userType, setUserType] = useState<UserType>("candidate");
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const error = searchParams.get("error");
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    console.log(data, "DATA");
-    const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    });
+  // Show error toast if there's an error in the URL
+  useEffect(() => {
+    if (error) {
+      setLoginError("Authentication failed. Please try again.");
+      toast({
+        title: "Error",
+        description: "Authentication failed. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
-    if (result?.error) {
-      console.error(result.error);
-    } else {
-      router.push("/");
+  const onSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    setLoginError(null);
+
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        isRecruiter: userType === "recruiter" ? "true" : "false",
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setLoginError(result.error);
+        toast({
+          title: "Login Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else if (result?.ok) {
+        toast({
+          title: "Success",
+          description: "You have been logged in successfully!",
+        });
+        router.push(callbackUrl);
+        router.refresh(); // Refresh to update auth state
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.message || "An unexpected error occurred. Please try again.";
+      setLoginError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden ">
+    <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden">
       {/* Professional gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50" />
 
@@ -69,28 +128,47 @@ export default function LoginForm() {
 
       <Card className="relative mx-4 w-full max-w-[400px] shadow-none md:shadow-md border-none border-gray-200 bg-white">
         <CardHeader>
-        <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center">
             <Image
-               src="/logo.jpeg"
-               alt="Recruit-G"
-               width={120}
-               height={60}
-               className="h-8"
+              src="/logo.jpeg"
+              alt="Recruit-G"
+              width={120}
+              height={60}
+              className="h-8"
             />
           </div>
           <div className="flex items-center space-x-2 py-2 justify-around">
-          <Button className="bg-green-600 text-white hover:bg-blue-700">
+            <Button
+              className={`${
+                userType === "candidate"
+                  ? "bg-green-600"
+                  : "bg-gray-200 text-gray-700"
+              } text-white hover:bg-blue-700`}
+              onClick={() => setUserType("candidate")}
+              type="button"
+            >
               <BriefcaseBusiness size={18} className="mr-2" /> Candidate
-           </Button>
-           <Button className="bg-blue-600 text-white hover:bg-green-700">
+            </Button>
+            <Button
+              className={`${
+                userType === "recruiter"
+                  ? "bg-blue-600"
+                  : "bg-gray-200 text-gray-700"
+              } text-white hover:bg-green-700`}
+              onClick={() => setUserType("recruiter")}
+              type="button"
+            >
               <Backpack size={18} className="mr-2" /> Recruiter
-           </Button>
-           {/* <Button className="bg-blue-600 text-white hover:bg-green-700">
-              <School size={18} className="mr-2" /> Institute
-           </Button> */}
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {loginError && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+              {loginError}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
@@ -100,6 +178,7 @@ export default function LoginForm() {
                 placeholder="Enter your email"
                 {...register("email")}
                 className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                disabled={isLoading}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -115,6 +194,7 @@ export default function LoginForm() {
                   placeholder="Enter your password"
                   {...register("password")}
                   className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -122,6 +202,7 @@ export default function LoginForm() {
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOffIcon className="h-4 w-4" />
@@ -132,53 +213,55 @@ export default function LoginForm() {
                     {showPassword ? "Hide password" : "Show password"}
                   </span>
                 </Button>
-                <a
-                  href="/auth/forgot-password"
-                  className="absolute right-0 top-full text-sm text-blue-600 hover:text-blue-700 mt-1 underline"
-                >
-                  Forgot password?
-                </a>
               </div>
               {errors.password && (
                 <p className="text-red-500 text-sm">
                   {errors.password.message}
                 </p>
               )}
-            </div>
-
-            <div className="flex items-center space-x-4 pt-6">
-              <Checkbox
-                id="terms"
-                {...register("terms", {
-                  setValueAs: (v) => !!v, // Convert to boolean
-                })}
-              />
-              <label
-                htmlFor="terms"
-                className="text-sm leading-5 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                I agree to the{" "}
-                <a href="/terms" className="text-blue-600 hover:text-blue-700">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
+              <div className="flex justify-between items-center mt-2">
+                <div className="flex items-center space-x-2">
+                  <Controller
+                    name="rememberMe"
+                    control={control}
+                    render={({ field }) => (
+                      <Checkbox
+                        id="rememberMe"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isLoading}
+                      />
+                    )}
+                  />
+                  <label
+                    htmlFor="rememberMe"
+                    className="text-sm leading-5 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Remember me
+                  </label>
+                </div>
                 <a
-                  href="/privacy"
-                  className="text-blue-600 hover:text-blue-700"
+                  href="/auth/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-700 underline"
                 >
-                  Privacy Policy
+                  Forgot password?
                 </a>
-              </label>
+              </div>
             </div>
-            {errors.terms && (
-              <p className="text-red-500 text-sm">{errors.terms.message}</p>
-            )}
 
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
               type="submit"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 
@@ -197,7 +280,8 @@ export default function LoginForm() {
             variant="outline"
             className="w-full"
             type="button"
-            onClick={() => signIn("google")}
+            onClick={() => signIn("google", { callbackUrl })}
+            disabled={isLoading}
           >
             <svg
               className="mr-2 h-4 w-4"

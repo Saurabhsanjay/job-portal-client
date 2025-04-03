@@ -1,9 +1,22 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@tanstack/react-query"
-import { apiGet, apiPost, apiPut, apiPatch, apiDelete, type ApiResponse, type ContentType } from "@/lib/api-utils"
-import type { AxiosRequestConfig } from "axios"
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiPatch,
+  apiDelete,
+  type ApiResponse,
+  type ContentType,
+} from "@/lib/api-utils";
+import type { AxiosRequestConfig } from "axios";
 
 // Type for query keys
-export type QueryKeyT = [string, Record<string, any>?]
+export type QueryKeyT = [string, Record<string, any>?];
 
 // Hook for GET requests
 export function useApiGet<T>(
@@ -23,23 +36,29 @@ export function useApiGet<T>(
       }
       return data.data as T
     },
+    // Disable automatic refetching
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    staleTime: Number.POSITIVE_INFINITY, // Consider data fresh forever
     ...options,
   })
 }
 
 // Hook for POST requests
 export function useApiPost<T, D = any>() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation<
     ApiResponse<T>,
     Error,
     {
-      endpoint: string
-      payload?: D
-      contentType?: ContentType
-      config?: AxiosRequestConfig
-      invalidateQueries?: QueryKeyT[]
+      endpoint: string;
+      payload?: D;
+      contentType?: ContentType;
+      config?: AxiosRequestConfig;
+      invalidateQueries?: QueryKeyT[];
     }
   >({
     mutationFn: ({ endpoint, payload, contentType = "json", config }) =>
@@ -48,26 +67,26 @@ export function useApiPost<T, D = any>() {
       // Invalidate relevant queries after successful mutation
       if (variables.invalidateQueries) {
         variables.invalidateQueries.forEach((queryKey) => {
-          queryClient.invalidateQueries({ queryKey })
-        })
+          queryClient.invalidateQueries({ queryKey });
+        });
       }
     },
-  })
+  });
 }
 
 // Hook for PUT requests
 export function useApiPut<T, D = any>() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation<
     ApiResponse<T>,
     Error,
     {
-      endpoint: string
-      payload?: D
-      contentType?: ContentType
-      config?: AxiosRequestConfig
-      invalidateQueries?: QueryKeyT[]
+      endpoint: string;
+      payload?: D;
+      contentType?: ContentType;
+      config?: AxiosRequestConfig;
+      invalidateQueries?: QueryKeyT[];
     }
   >({
     mutationFn: ({ endpoint, payload, contentType = "json", config }) =>
@@ -76,26 +95,26 @@ export function useApiPut<T, D = any>() {
       // Invalidate relevant queries after successful mutation
       if (variables.invalidateQueries) {
         variables.invalidateQueries.forEach((queryKey) => {
-          queryClient.invalidateQueries({ queryKey })
-        })
+          queryClient.invalidateQueries({ queryKey });
+        });
       }
     },
-  })
+  });
 }
 
 // Hook for PATCH requests
 export function useApiPatch<T, D = any>() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation<
     ApiResponse<T>,
     Error,
     {
-      endpoint: string
-      payload?: D
-      contentType?: ContentType
-      config?: AxiosRequestConfig
-      invalidateQueries?: QueryKeyT[]
+      endpoint: string;
+      payload?: D;
+      contentType?: ContentType;
+      config?: AxiosRequestConfig;
+      invalidateQueries?: QueryKeyT[];
     }
   >({
     mutationFn: ({ endpoint, payload, contentType = "json", config }) =>
@@ -104,24 +123,24 @@ export function useApiPatch<T, D = any>() {
       // Invalidate relevant queries after successful mutation
       if (variables.invalidateQueries) {
         variables.invalidateQueries.forEach((queryKey) => {
-          queryClient.invalidateQueries({ queryKey })
-        })
+          queryClient.invalidateQueries({ queryKey });
+        });
       }
     },
-  })
+  });
 }
 
 // Hook for DELETE requests
 export function useApiDelete<T>() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation<
     ApiResponse<T>,
     Error,
     {
-      endpoint: string
-      config?: AxiosRequestConfig
-      invalidateQueries?: QueryKeyT[]
+      endpoint: string;
+      config?: AxiosRequestConfig;
+      invalidateQueries?: QueryKeyT[];
     }
   >({
     mutationFn: ({ endpoint, config }) => apiDelete<T>(endpoint, config),
@@ -129,10 +148,9 @@ export function useApiDelete<T>() {
       // Invalidate relevant queries after successful mutation
       if (variables.invalidateQueries) {
         variables.invalidateQueries.forEach((queryKey) => {
-          queryClient.invalidateQueries({ queryKey })
-        })
+          queryClient.invalidateQueries({ queryKey });
+        });
       }
     },
-  })
+  });
 }
-
