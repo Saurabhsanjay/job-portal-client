@@ -18,12 +18,6 @@ const candidateSchema = z.object({
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  dateOfBirth: z.string().refine((dob) => {
-    const date = new Date(dob);
-    const ageDifMs = Date.now() - date.getTime();
-    const ageDate = new Date(ageDifMs);
-    return Math.abs(ageDate.getUTCFullYear() - 1970) >= 18;
-  }, "You must be at least 18 years old"),
   terms: z
     .boolean()
     .refine(
@@ -52,7 +46,6 @@ export default function CandidateForm() {
       lastName: "",
       email: "",
       password: "",
-      dateOfBirth: "",
       terms: false,
     },
   });
@@ -77,6 +70,7 @@ export default function CandidateForm() {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* <div className="grid grid-col-2 grid-gap-4"></div> */}
         <div className="space-y-1">
           <Label htmlFor="firstName">First Name</Label>
           <Controller
@@ -130,24 +124,6 @@ export default function CandidateForm() {
           />
           {errors.email && (
             <p className="text-red-500 text-sm">{errors.email.message}</p>
-          )}
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="dateOfBirth">Date of Birth</Label>
-          <Controller
-            name="dateOfBirth"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                id="dateOfBirth"
-                type="date"
-                className="bg-white focus:ring-2 focus:ring-blue-500/20"
-              />
-            )}
-          />
-          {errors.dateOfBirth && (
-            <p className="text-red-500 text-sm">{errors.dateOfBirth.message}</p>
           )}
         </div>
         <div className="space-y-1">
