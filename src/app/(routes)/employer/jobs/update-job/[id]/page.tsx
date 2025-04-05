@@ -354,11 +354,12 @@ export default function UpdateJobForm() {
       {
         endpoint: `jobs/update-job/${jobId}`,
         payload: payload,
-        invalidateQueries: [["jobs"], ["job", { id: jobId }]],
+        invalidateQueries: [],
       },
       {
         onSuccess: (response) => {
           queryClient.invalidateQueries({queryKey: ["jobs"]})
+          router.push("/employer/jobs")
           if (response.data) {
             toast({
               title: "Success",
