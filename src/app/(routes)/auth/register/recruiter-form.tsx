@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRegisterRecruiter } from "@/services/userService";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 const industries = [
@@ -129,7 +130,7 @@ type RecruiterFormValues = z.infer<typeof recruiterSchema>;
 export default function RecruiterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const registerMutation = useRegisterRecruiter();
 
   const {
@@ -162,14 +163,15 @@ export default function RecruiterForm() {
   // Handle successful registration
   useEffect(() => {
     if (registerMutation.isSuccess) {
-      toast({
-        title: "Success",
-        description: "Company account created successfully!",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Company account created successfully!",
+      // });
+      toast.success("Company account created successfully!");
       reset();
         router.push("/auth/login");
     }
-  }, [registerMutation.isSuccess, router, reset, toast]);
+  }, [registerMutation.isSuccess, router, reset]);
 
   const onSubmit = (data: RecruiterFormValues) => {
     const { terms, ...recruiterData } = data;

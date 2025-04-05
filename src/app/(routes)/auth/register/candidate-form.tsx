@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRegisterCandidate } from "@/services/userService";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 const candidateSchema = z.object({
@@ -37,7 +38,7 @@ type CandidateFormValues = z.infer<typeof candidateSchema>;
 export default function CandidateForm() {
   const [showPassword, setShowPassword] = useState(false);
   const registerMutation = useRegisterCandidate();
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const router = useRouter();
 
   const {
@@ -59,10 +60,11 @@ export default function CandidateForm() {
 
   useEffect(() => {
     if (registerMutation.isSuccess) {
-      toast({
-        title: "Success",
-        description: "Company account created successfully!",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Company account created successfully!",
+      // });
+      toast.success("Company account created successfully!");
       reset();
       router.push("/auth/login");
     }

@@ -1,3 +1,4 @@
+'use client';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -9,8 +10,13 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CircleAlert } from "lucide-react";
+import { useAuth } from "@/app/(providers)/AuthContext";
 
 export default function DeleteAccount() {
+    const { logout } = useAuth();
+    const handleLogout = () => {
+        logout();
+    };
     return (
         <AlertDialog open>
             <AlertDialogContent>
@@ -29,8 +35,8 @@ export default function DeleteAccount() {
                     </AlertDialogHeader>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className="bg-red-500">Confirm</AlertDialogAction>
+                    <AlertDialogCancel onClick={() => window.history.back()}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout} className="bg-red-500">Confirm</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
