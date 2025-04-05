@@ -689,9 +689,13 @@ export default function Profile() {
                         <SelectValue placeholder="Select Employment Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Full-time">Full Time</SelectItem>
-                        <SelectItem value="Part-time">Part Time</SelectItem>
-                        <SelectItem value="contract">Contract</SelectItem>
+                        <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                        <SelectItem value="PART_TIME">Part Time</SelectItem>
+                        <SelectItem value="CONTRACT">Contract</SelectItem>
+                        <SelectItem value="FREELANCE">Free Lance</SelectItem>
+                        <SelectItem value="PERMANENT">Permanent</SelectItem>
+                        <SelectItem value="FRESHER">Fresher</SelectItem>
+                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

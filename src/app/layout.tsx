@@ -32,7 +32,7 @@ export default async function RootLayout({
   console.log("session", session);
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased overflow-hidden`}>
       <Toaster position="top-center" reverseOrder={false} />
         <ThemeProvider
           attribute="class"
