@@ -25,6 +25,7 @@ const candidateSchema = z.object({
       (val) => val === true,
       "You must agree to the terms and conditions"
     ),
+    role:z.string().default("JOBSEEKER"),
 });
 
 type CandidateFormValues = z.infer<typeof candidateSchema>;
@@ -48,6 +49,7 @@ export default function CandidateForm() {
       email: "",
       password: "",
       terms: false,
+      role:"JOBSEEKER",
     },
   });
 

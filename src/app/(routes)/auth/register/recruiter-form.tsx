@@ -25,6 +25,7 @@ const recruiterSchema = z.object({
       (val) => val === true,
       "You must agree to the terms and conditions"
     ),
+  role:z.string().default("EMPLOYER"),
 });
 
 type RecruiterFormValues = z.infer<typeof recruiterSchema>;
@@ -47,6 +48,7 @@ export default function RecruiterForm() {
       email: "",
       password: "",
       terms: false,
+      role:"EMPLOYER",
     },
   });
 
@@ -65,7 +67,14 @@ export default function RecruiterForm() {
 
   const onSubmit = (data: RecruiterFormValues) => {
     const { terms, ...recruiterData } = data;
-    registerMutation.mutate(recruiterData);
+    const employerData = {
+      ...recruiterData,
+      employerDetails: {
+        companyName: recruiterData.name,
+        email: recruiterData.email,
+      },
+    };
+    registerMutation.mutate(employerData);
   };
 
   return (

@@ -42,7 +42,7 @@ type RecruiterData = {
 };
 
 export const registerRecruiter = async (recruiterData: RecruiterData) => {
-  const response = await fetch(`${API_BASE_URL}/api/employer/create-employer`, {
+  const response = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
