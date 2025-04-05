@@ -53,7 +53,7 @@ export default function SavedJobs() {
   const [locationFilter, setLocationFilter] = useState("all")
   const [titleFilter, setTitleFilter] = useState("all")
 
-  const { data: jobsData, isLoading, error } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
+  const { data: jobsData, isLoading, error,refetch } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
 
   // Store jobs in state
   const [jobs, setJobs] = useState<Job[]>([])
@@ -123,6 +123,10 @@ export default function SavedJobs() {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  useEffect(() => {
+    refetch()
+  }, [refetch])
 
   // Show loading state
   if (isLoading) {

@@ -14,7 +14,7 @@ const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
     defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 10 * 60 * 1000, 
+      staleTime: Infinity, 
       refetchOnMount: true,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
