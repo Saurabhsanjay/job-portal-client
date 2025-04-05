@@ -23,21 +23,27 @@ export function useApiGet<T>(
   endpoint: string,
   params?: Record<string, any>,
   queryKey?: QueryKeyT,
-  options?: UseQueryOptions<ApiResponse<T>, Error, T>
+  options?: UseQueryOptions<ApiResponse<T>, Error, T>,
 ) {
-  const actualQueryKey = queryKey || [endpoint, params];
+  const actualQueryKey = queryKey || [endpoint, params]
 
   return useQuery<ApiResponse<T>, Error, T>({
     queryKey: actualQueryKey,
     queryFn: () => apiGet<T>(endpoint, params),
     select: (data) => {
       if (data.error) {
-        throw new Error(data.error.message);
+        throw new Error(data.error.message)
       }
-      return data.data as T;
+      return data.data as T
     },
+    // Disable automatic refetching
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    staleTime: Number.POSITIVE_INFINITY, // Consider data fresh forever
     ...options,
-  });
+  })
 }
 
 // Hook for POST requests

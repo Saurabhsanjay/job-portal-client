@@ -6,7 +6,7 @@ import { useForm, type SubmitHandler, Controller } from "react-hook-form"
 import * as z from "zod"
 import { format } from "date-fns"
 import { CalendarIcon, Plus, X, ArrowLeftCircle, Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { useApiPost } from "@/hooks/use-api-query"
+import { useApiGet, useApiPut } from "@/hooks/use-api-query"
 
 const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "VOLUNTEER"] as const
 
@@ -107,57 +107,65 @@ type JobResponse = {
   }
 }
 
+// Update the JobPayload type to match the new structure
 type JobPayload = {
-  title: string
-  description: string
-  category: string
-  location: {
-    city?: string
-    state?: string
-    country: string
-    address?: string
-  }
-  employmentType: string
-  industry?: string
-  skills: string[]
-  experience: {
-    level: string
-    years: {
-      min: number
-      max: number
+  updateData: {
+    title: string
+    description: string
+    company: {
+      name: string
+      website: string
     }
-  }
-  education: string[]
-  languages: string[]
-  salary: {
-    currency: string
-    min?: number
-    max?: number
-  }
-  numberOfOpenings: number
-  postedAt: number
-  validTill: string
-  remote: boolean
-  benefits: string[]
-  applicationLink: string
-  status: string
-  priority: string
-  tags: string[]
-  createdBy: {
-    userId: string
+    category: string
+    location: {
+      city?: string
+      state?: string
+      country: string
+      address?: string
+    }
+    employmentType: string
+    industry?: string
+    skills: string[]
+    experience: {
+      level: string
+      years: {
+        min: number
+        max: number
+      }
+    }
+    education: string[]
+    languages: string[]
+    salary: {
+      currency: string
+      min?: number
+      max?: number
+    }
+    numberOfOpenings: number
+    validTill: string
+    remote: boolean
+    benefits: string[]
+    applicationLink: string
+    status: string
+    priority: string
+    tags: string[]
   }
 }
 
-export default function JobPostingForm() {
+export default function UpdateJobForm() {
   const [newSkill, setNewSkill] = React.useState("")
   const [newBenefit, setNewBenefit] = React.useState("")
   const [newLanguage, setNewLanguage] = React.useState("")
   const [newEducation, setNewEducation] = React.useState("")
   const [newTag, setNewTag] = React.useState("")
 
+  const params = useParams()
   const router = useRouter()
+  // Extract job ID from URL path
+  const jobId = params?.id as string
+
   const { toast } = useToast()
 
+  // Modify the form initialization to ensure we have a complete form reset when data is loaded
   const {
     register,
     handleSubmit,
@@ -184,8 +192,82 @@ export default function JobPostingForm() {
     },
   })
 
-  // Use the API post hook for creating jobs
-  const jobMutation = useApiPost<JobResponse, JobPayload>()
+  // Fetch job data for update
+  const {
+    data: jobData,
+    isLoading,
+    error,
+  } = useApiGet<any>(`jobs/get-job/${jobId}`, {}, ["job", { id: jobId }])
+
+  // Handle loading and error states
+  const [formError, setFormError] = React.useState<string | null>(null)
+
+  // Add a complete form reset when job data is loaded
+  React.useEffect(() => {
+    if (jobData?.data) {
+      try {
+        console.log("Job data received:", jobData.data)
+
+        // Delay the form reset slightly to ensure it's not overridden
+        setTimeout(() => {
+          // Create a complete form values object
+          const formValues: JobFormValues = {
+            title: jobData.data.title || "",
+            description: jobData.data.description || "",
+            category: jobData.data.category || "",
+            location: {
+              country: jobData.data.location?.country || "",
+              state: jobData.data.location?.state || "",
+              city: jobData.data.location?.city || "",
+            },
+            employmentType: (jobData.data.employmentType as any) || "FULL_TIME",
+            industry: jobData.data.industry || "",
+            experience: {
+              level: (jobData.data.experience?.level as any) || "JUNIOR",
+              years: {
+                min: jobData.data.experience?.years?.min || 0,
+                max: jobData.data.experience?.years?.max || 0,
+              },
+            },
+            salary: {
+              min: jobData.data.salary?.min || undefined,
+              max: jobData.data.salary?.max || undefined,
+              currency: (jobData.data.salary?.currency as any) || "USD",
+            },
+            numberOfOpenings: jobData.data.numberOfOpenings || 1,
+            validTill: jobData.data.validTill ? new Date(jobData.data.validTill) : new Date(),
+            remote: jobData.data.remote || false,
+            applicationLink: jobData.data.applicationLink || "",
+            priority: (jobData.data.priority as any) || "NORMAL",
+            skills: jobData.data.skills || [],
+            education: jobData.data.education || [],
+            languages: jobData.data.languages || [],
+            benefits: jobData.data.benefits || [],
+            tags: jobData.data.tags || [],
+          }
+
+          // Reset the entire form with the new values
+          reset(formValues)
+
+          console.log("Form reset with values:", formValues)
+        }, 100) // Small delay to avoid race conditions
+      } catch (err) {
+        console.error("Error populating form:", err)
+        setFormError("Failed to load job data correctly. Please try again.")
+      }
+    }
+  }, [jobData, reset])
+
+  // Add a useEffect to log form values when they change
+  React.useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      console.log(`Field ${name} changed to:`, value[name as keyof typeof value])
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  // Use the API put hook for updating jobs
+  const jobUpdateMutation = useApiPut<JobResponse, JobPayload>()
 
   const addItem = (type: "skills" | "benefits" | "languages" | "education" | "tags", item: string) => {
     if (!item.trim()) return
@@ -222,61 +304,63 @@ export default function JobPostingForm() {
   }
 
   const onSubmit: SubmitHandler<JobFormValues> = (data) => {
-    const payload: JobPayload = {
-      title: data.title,
-      description: data.description,
-      category: data.category,
-      location: {
-        city: data.location.city || "",
-        state: data.location.state || "",
-        country: data.location.country,
-      },
-      employmentType: data.employmentType,
-      industry: data.industry,
-      skills: data.skills,
-      experience: {
-        level: data.experience.level,
-        years: {
-          min: data.experience.years.min,
-          max: data.experience.years.max,
+    // Structure the payload according to the updateJobSchema
+    const payload = {
+      updateData: {
+        title: data.title,
+        description: data.description,
+        company: {
+          name: "Tech Corp",
+          website: "https://techcorp.com",
         },
-      },
-      education: data.education,
-      languages: data.languages,
-      salary: {
-        currency: data.salary.currency,
-        min: data.salary.min,
-        max: data.salary.max,
-      },
-      numberOfOpenings: data.numberOfOpenings,
-      postedAt: Date.now(),
-      validTill: data.validTill.toISOString().split("T")[0],
-      remote: data.remote,
-      benefits: data.benefits,
-      applicationLink: data.applicationLink,
-      status: "ACTIVE",
-      priority: data.priority,
-      tags: data.tags,
-      createdBy: {
-        userId: "65ff4a2b8c9d4e001c3a7b89",
+        category: data.category,
+        location: {
+          city: data.location.city || "",
+          state: data.location.state || "",
+          country: data.location.country,
+        },
+        employmentType: data.employmentType,
+        industry: data.industry,
+        skills: data.skills,
+        experience: {
+          level: data.experience.level,
+          years: {
+            min: data.experience.years.min,
+            max: data.experience.years.max,
+          },
+        },
+        education: data.education,
+        languages: data.languages,
+        salary: {
+          currency: data.salary.currency,
+          min: data.salary.min,
+          max: data.salary.max,
+        },
+        numberOfOpenings: data.numberOfOpenings,
+        validTill: data.validTill.toISOString(),
+        remote: data.remote,
+        benefits: data.benefits,
+        applicationLink: data.applicationLink,
+        status: jobData?.data?.status || "ACTIVE",
+        priority: data.priority,
+        tags: data.tags,
       },
     }
 
-    // Create new job
-    jobMutation.mutate(
+    // Update existing job
+    jobUpdateMutation.mutate(
       {
-        endpoint: "jobs/create-job",
+        endpoint: `jobs/update-job/${jobId}`,
         payload: payload,
-        invalidateQueries: [["jobs"]],
+        invalidateQueries: [["jobs"], ["job", { id: jobId }]],
       },
       {
         onSuccess: (response) => {
           if (response.data) {
             toast({
               title: "Success",
-              description: "Job posting created successfully",
+              description: "Job posting updated successfully",
             })
-            reset()
             // Navigate back to jobs list
             router.push("/employer/jobs")
           } else if (response.error) {
@@ -290,11 +374,34 @@ export default function JobPostingForm() {
         onError: (error) => {
           toast({
             title: "Error",
-            description: error.message || "Failed to create job posting",
+            description: error.message || "Failed to update job posting",
             variant: "destructive",
           })
         },
       },
+    )
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading job data...</p>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error || formError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <p className="text-red-500 mb-2">Failed to load job data</p>
+        <p className="text-muted-foreground">{error?.message || formError}</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.push("/employer/jobs")}>
+          Return to Jobs
+        </Button>
+      </div>
     )
   }
 
@@ -307,8 +414,8 @@ export default function JobPostingForm() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Create Job</h1>
-          <p className="text-muted-foreground mt-1">Enter the details of the job you want to post</p>
+          <h1 className="text-2xl font-bold">Update Job</h1>
+          <p className="text-muted-foreground mt-1">Update the details of the job posting</p>
         </div>
       </div>
       {/* Basic Information */}
@@ -330,7 +437,7 @@ export default function JobPostingForm() {
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -383,7 +490,7 @@ export default function JobPostingForm() {
                 name="location.country"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="country">
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
@@ -405,7 +512,7 @@ export default function JobPostingForm() {
                 name="location.state"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="state">
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
@@ -426,7 +533,7 @@ export default function JobPostingForm() {
                 name="location.city"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="city">
                       <SelectValue placeholder="Select city" />
                     </SelectTrigger>
@@ -459,7 +566,7 @@ export default function JobPostingForm() {
                 name="employmentType"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="employmentType">
                       <SelectValue placeholder="Select employment type" />
                     </SelectTrigger>
@@ -481,7 +588,7 @@ export default function JobPostingForm() {
                 name="experience.level"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="experienceLevel">
                       <SelectValue placeholder="Select experience level" />
                     </SelectTrigger>
@@ -504,7 +611,7 @@ export default function JobPostingForm() {
                 name="industry"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="industry">
                       <SelectValue placeholder="Select industry" />
                     </SelectTrigger>
@@ -715,7 +822,7 @@ export default function JobPostingForm() {
                 name="salary.currency"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <SelectTrigger id="currency">
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
@@ -838,7 +945,7 @@ export default function JobPostingForm() {
               name="priority"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                   <SelectTrigger id="priority">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
@@ -907,14 +1014,14 @@ export default function JobPostingForm() {
             Cancel
           </Button>
         </Link>
-        <Button type="submit" disabled={jobMutation.isPending}>
-          {jobMutation.isPending ? (
+        <Button type="submit" disabled={jobUpdateMutation.isPending}>
+          {jobUpdateMutation.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
-            "Create Job Posting"
+            "Update Job Posting"
           )}
         </Button>
       </div>
