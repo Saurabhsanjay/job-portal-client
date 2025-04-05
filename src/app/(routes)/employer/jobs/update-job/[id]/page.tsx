@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useApiGet, useApiPut } from "@/hooks/use-api-query"
+import { useQueryClient } from "@tanstack/react-query"
 
 const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "VOLUNTEER"] as const
 
@@ -302,6 +303,7 @@ export default function UpdateJobForm() {
       currentItems.filter((_, i) => i !== index),
     )
   }
+  const queryClient = useQueryClient()
 
   const onSubmit: SubmitHandler<JobFormValues> = (data) => {
     // Structure the payload according to the updateJobSchema
@@ -356,6 +358,7 @@ export default function UpdateJobForm() {
       },
       {
         onSuccess: (response) => {
+          queryClient.invalidateQueries({queryKey: ["jobs"]})
           if (response.data) {
             toast({
               title: "Success",
