@@ -19,7 +19,10 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/app/(providers)/AuthContext";
+// import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 
 // Define the user types
 export type UserType = "candidate" | "recruiter";
@@ -42,9 +45,10 @@ export default function LoginForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const error = searchParams.get("error");
+  const { login } = useAuth();
 
   const {
     register,
@@ -61,56 +65,66 @@ export default function LoginForm() {
   });
 
   // Show error toast if there's an error in the URL
-  useEffect(() => {
-    if (error) {
-      setLoginError("Authentication failed. Please try again.");
-      toast({
-        title: "Error",
-        description: "Authentication failed. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
+  // useEffect(() => {
+  //   if (error) {
+  //     setLoginError("Authentication failed. Please try again.");
+  //     toast({
+  //       title: "Error",
+  //       description: "Authentication failed. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // }, [error, toast]);
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError(null);
 
-    try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        isRecruiter: userType === "recruiter" ? "true" : "false",
-        redirect: false,
-      });
+    // try {
+    //   const result = await signIn("credentials", {
+    //     email: data.email,
+    //     password: data.password,
+    //     isRecruiter: userType === "recruiter" ? "true" : "false",
+    //     redirect: false,
+    //   });
 
-      if (result?.error) {
-        setLoginError(result.error);
-        toast({
-          title: "Login Failed",
-          description: result.error,
-          variant: "destructive",
-        });
-      } else if (result?.ok) {
-        toast({
-          title: "Success",
-          description: "You have been logged in successfully!",
-        });
-        router.push(callbackUrl);
-        router.refresh(); // Refresh to update auth state
-      }
-    } catch (error: any) {
-      const errorMessage =
-        error.message || "An unexpected error occurred. Please try again.";
-      setLoginError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    //   if (result?.error) {
+    //     setLoginError(result.error);
+    //     toast({
+    //       title: "Login Failed",
+    //       description: result.error,
+    //       variant: "destructive",
+    //     });
+    //   } else if (result?.ok) {
+    //     toast({
+    //       title: "Success",
+    //       description: "You have been logged in successfully!",
+    //     });
+    //     // router.push(callbackUrl);
+    //     router.refresh(); // Refresh to update auth state
+    //   }
+    // } catch (error: any) {
+    //   const errorMessage =
+    //     error.message || "An unexpected error occurred. Please try again.";
+    //   setLoginError(errorMessage);
+    //   toast({
+    //     title: "Error",
+    //     description: errorMessage,
+    //     variant: "destructive",
+    //   });
+    // } finally {
+    //   setIsLoading(false);
+    // }
+    await login(data?.email, data?.password);
+    // console.log("response------->", response)
+    // if(response?.status==="SUCCESS"){
+    //   console.log("came inside if")
+    //   toast.success("Login Successful")
+    // }else if(response?.status==="error"){
+    //   console.log("came inside else")
+    //   toast.error(response?.message||"Something Went Wrong")
+    // }
+    setIsLoading(false);
   };
 
   return (
