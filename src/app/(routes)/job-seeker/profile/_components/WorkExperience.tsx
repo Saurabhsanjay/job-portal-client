@@ -12,7 +12,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface WorkExperience {
-    id: number
+    _id: number
     companyName: string
     jobTitle: string
     startDate: string
@@ -20,36 +20,10 @@ interface WorkExperience {
     keyAchievements: string
 }
 
-export default function WorkExperience() {
-    const [experiences, setExperiences] = useState<WorkExperience[]>([
-        {
-            id: 1,
-            companyName: "Meta",
-            jobTitle: "Software Engineer",
-            startDate: "2020-01-01",
-            endDate: "2022-01-01",
-            keyAchievements:
-                "Designed and developed multiple features for the Facebook news feed, including a new ranking algorithm that improved user engagement by 10%.",
-        },
-        {
-            id: 2,
-            companyName: "Google",
-            jobTitle: "Software Engineer",
-            startDate: "2018-01-01",
-            endDate: "2020-01-01",
-            keyAchievements:
-                "Worked on the Google Maps team, focusing on improving the accuracy of location-based services. Contributed to a 20% increase in location accuracy.",
-        },
-        {
-            id: 3,
-            companyName: "Amazon",
-            jobTitle: "Software Engineer",
-            startDate: "2015-01-01",
-            endDate: "2018-01-01",
-            keyAchievements:
-                "Developed multiple features for the Amazon Alexa virtual assistant, including a new skill that integrated with the Amazon Echo smart speaker.",
-        },
-    ])
+export default function WorkExperience({experiences,setExperiences}:{
+    experiences: WorkExperience[];
+    setExperiences: React.Dispatch<React.SetStateAction<WorkExperience[]>>;
+}) {
     const [editingExperience, setEditingExperience] = useState<WorkExperience | null>(null)
     const [isFormOpen, setIsFormOpen] = useState(false)
 
@@ -57,7 +31,7 @@ export default function WorkExperience() {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         const newExperience = {
-            id: editingExperience?.id || Date.now(),
+            _id: editingExperience?._id || Date.now(),
             companyName: formData.get("companyName") as string,
             jobTitle: formData.get("jobTitle") as string,
             startDate: formData.get("startDate") as string,
@@ -66,7 +40,7 @@ export default function WorkExperience() {
         }
 
         if (editingExperience) {
-            setExperiences(experiences.map((exp) => (exp.id === editingExperience.id ? newExperience : exp)))
+            setExperiences(experiences.map((exp) => (exp._id === editingExperience._id ? newExperience : exp)))
         } else {
             setExperiences([...experiences, newExperience])
         }
@@ -76,7 +50,7 @@ export default function WorkExperience() {
     }
 
     const handleDelete = (id: number) => {
-        setExperiences(experiences.filter((exp) => exp.id !== id))
+        setExperiences(experiences.filter((exp) => exp._id !== id))
     }
 
     const handleEdit = (experience: WorkExperience) => {
@@ -96,7 +70,7 @@ export default function WorkExperience() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.getFullYear()
+        return date.toLocaleDateString()
     }
 
     const ExperienceForm = () => (
@@ -114,12 +88,18 @@ export default function WorkExperience() {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="startDate">Start Date</Label>
-                    <Input type="date" id="startDate" name="startDate" defaultValue={editingExperience?.startDate} required />
+                    <Input type="date" id="startDate" name="startDate" 
+                    // defaultValue={editingExperience?.startDate} 
+                    defaultValue={editingExperience?.startDate ? new Date(editingExperience.startDate).toISOString().split("T")[0] : ""} 
+                    required />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="endDate">End Date</Label>
-                    <Input type="date" id="endDate" name="endDate" defaultValue={editingExperience?.endDate} required />
+                    <Input type="date" id="endDate" name="endDate" 
+                    // defaultValue={editingExperience?.endDate}
+                    defaultValue={editingExperience?.endDate ? new Date(editingExperience.endDate).toISOString().split("T")[0] : ""} 
+                     required />
                 </div>
             </div>
 
@@ -174,8 +154,8 @@ export default function WorkExperience() {
                         <Droppable droppableId="experiences">
                             {(provided) => (
                                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-8">
-                                    {experiences.map((experience, index) => (
-                                        <Draggable key={experience.id} draggableId={experience.id.toString()} index={index}>
+                                    {experiences?.length>0? experiences.map((experience, index) => (
+                                        <Draggable key={index} draggableId={experience?._id?.toString()} index={index}>
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps} className="relative flex gap-6 group">
                                                     {/* Drag handle */}
@@ -212,7 +192,7 @@ export default function WorkExperience() {
                                                                         <Pencil className="h-4 w-4" />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleDelete(experience.id)}
+                                                                        onClick={() => handleDelete(experience._id)}
                                                                         className="text-red-500 hover:text-red-700"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
@@ -225,7 +205,11 @@ export default function WorkExperience() {
                                                 </div>
                                             )}
                                         </Draggable>
-                                    ))}
+                                    )):(
+                                        <p className="text-center text-gray-500">
+                                          No Experience to show
+                                        </p>
+                                      )}
                                     {provided.placeholder}
                                 </div>
                             )}

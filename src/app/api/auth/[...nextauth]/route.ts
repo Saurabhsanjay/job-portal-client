@@ -1,13 +1,40 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Define the structure of the API response
+// Define the structure of the API response based on your actual response
 interface LoginResponse {
   status: string;
   statusCode: number;
   message: string;
   formattedMessage: string;
-  data: string; // JWT token
+  data: {
+    token: string;
+    user: {
+      _id: string;
+      role: string;
+      personalDetails: {
+        firstName: string;
+        lastName: string;
+        email: string;
+      };
+      jobSeekerDetails?: {
+        professionalDetails: {
+          skills: string[];
+        };
+        jobPreferences: {
+          preferredJobTitles: string[];
+          preferredLocations: string[];
+          preferredIndustries: string[];
+          jobAlerts: boolean;
+        };
+        // Other jobSeeker properties
+      };
+      employerDetails?: {
+        jobPostings: any[];
+      };
+      // Other user properties
+    };
+  };
 }
 
 const handler = NextAuth({
@@ -17,7 +44,6 @@ const handler = NextAuth({
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        isRecruiter: { label: "Is Recruiter", type: "boolean" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -31,10 +57,7 @@ const handler = NextAuth({
             password: credentials.password,
           };
 
-          // Add isRecruiter field only if it's true
-          if (credentials.isRecruiter === "true") {
-            Object.assign(payload, { isRecruiter: true });
-          }
+          console.log("Attempting login with:", credentials.email);
 
           // Make the API call
           const res = await fetch("http://localhost:8080/api/users/login", {
@@ -43,20 +66,25 @@ const handler = NextAuth({
             headers: { "Content-Type": "application/json" },
           });
 
+          console.log("API Response status:", res.status);
           const response: LoginResponse = await res.json();
+          console.log("Full API response:", response);
 
           // Check if the response is successful
           if (res.ok && response.status === "SUCCESS") {
-            // Return an object that will be encoded in the JWT
+            // Return user data in the format NextAuth expects
             return {
-              id: "user-id", // This will be updated in the JWT callback
-              email: credentials.email,
-              token: response.data, // Store the JWT token
-              isRecruiter: credentials.isRecruiter === "true",
+              id: response.data.user._id,
+              email: response.data.user.personalDetails.email,
+              name: `${response.data.user.personalDetails.firstName} ${response.data.user.personalDetails.lastName}`,
+              role: response.data.user.role,
+              token: response.data.token,
+              // Include other user data you might need
+              firstName: response.data.user.personalDetails.firstName,
+              lastName: response.data.user.personalDetails.lastName,
             };
           }
 
-          // If the response was not successful, throw an error with the message from the API
           throw new Error(response.message || "Authentication failed");
         } catch (error: any) {
           console.error("Auth error:", error);
@@ -74,27 +102,44 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
+        console.log("JWT Callback - User:", user);
+        console.log("JWT Callback - Token before modification:", token);
+        
         return {
           ...token,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
           accessToken: user.token,
-          isRecruiter: user.isRecruiter,
+          firstName: user.firstName,
+          lastName: user.lastName,
         };
       }
-
-      // Return previous token if the access token has not expired yet
+      
+      // On subsequent calls, return the token
       return token;
     },
     async session({ session, token }) {
-      // Send properties to the client
+      console.log("Session Callback - Token:", token);
+      console.log("Session Callback - Session before modification:", session);
+      
+      // Add user info to the session
       session.user = {
         ...session.user,
-        accessToken: token.accessToken as string,
-        isRecruiter: token.isRecruiter as boolean,
+        id: token.id,
+        email: token.email,
+        name: token.name,
+        role: token.role,
+        accessToken: token.accessToken,
+        firstName: token.firstName,
+        lastName: token.lastName,
       };
-
+      
+      console.log("Final session object:", session);
       return session;
     },
   },

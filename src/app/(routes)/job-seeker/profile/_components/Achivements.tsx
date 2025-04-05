@@ -12,30 +12,18 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface AchievementOrCertification {
-    id: number
+    _id: number
     title: string
     organization: string
-    date: string
+    issuedDate: string
     description: string
 }
 
-export default function AchievementsAndCertifications() {
-    const [items, setItems] = useState<AchievementOrCertification[]>([
-        {
-            id: 1,
-            title: "Certified Java Developer",
-            organization: "Oracle",
-            date: "2021-05-15",
-            description: "Achieved certification in Java programming."
-        },
-        {
-            id: 2,
-            title: "AWS Certified Solutions Architect",
-            organization: "Amazon",
-            date: "2022-08-10",
-            description: "Certification in architecting AWS solutions."
-        }
-    ])
+export default function AchievementsAndCertifications({achievements:items,setAchievements:setItems}:{
+    achievements: AchievementOrCertification[];
+    setAchievements: React.Dispatch<React.SetStateAction<AchievementOrCertification[]>>;
+}) {
+    
     const [editingItem, setEditingItem] = useState<AchievementOrCertification | null>(null)
     const [isFormOpen, setIsFormOpen] = useState(false)
 
@@ -43,15 +31,15 @@ export default function AchievementsAndCertifications() {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         const newItem = {
-            id: editingItem?.id || Date.now(),
+            _id: editingItem?._id || Date.now(),
             title: formData.get("title") as string,
             organization: formData.get("organization") as string,
-            date: formData.get("date") as string,
+            issuedDate: formData.get("issuedDate") as string,
             description: formData.get("description") as string,
         }
 
         if (editingItem) {
-            setItems(items.map((item) => (item.id === editingItem.id ? newItem : item)))
+            setItems(items.map((item) => (item._id === editingItem._id ? newItem : item)))
         } else {
             setItems([...items, newItem])
         }
@@ -61,7 +49,7 @@ export default function AchievementsAndCertifications() {
     }
 
     const handleDelete = (id: number) => {
-        setItems(items.filter((item) => item.id !== id))
+        setItems(items.filter((item) => item._id !== id))
     }
 
     const handleEdit = (item: AchievementOrCertification) => {
@@ -97,8 +85,11 @@ export default function AchievementsAndCertifications() {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input type="date" id="date" name="date" defaultValue={editingItem?.date} required />
+                <Label htmlFor="issuedDate">Date</Label>
+                <Input type="date" id="issuedDate" name="issuedDate"
+                //  defaultValue={editingItem?.issuedDate} 
+                 defaultValue={editingItem?.issuedDate ? new Date(editingItem?.issuedDate).toISOString().split("T")[0] : ""} 
+                 required />
             </div>
 
             <div className="space-y-2">
@@ -152,8 +143,8 @@ export default function AchievementsAndCertifications() {
                         <Droppable droppableId="items">
                             {(provided) => (
                                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-8">
-                                    {items.map((item, index) => (
-                                        <Draggable key={item.id} draggableId={item.id.toString()} index={index}>
+                                    {items?.length>0? items.map((item, index) => (
+                                        <Draggable key={index} draggableId={index} index={index}>
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps} className="relative flex gap-6 group">
                                                     {/* Drag handle */}
@@ -180,7 +171,7 @@ export default function AchievementsAndCertifications() {
                                                             </div>
                                                             <div className="flex items-center gap-4">
                                                                 <span className="px-3 py-1 text-sm bg-gray-100 rounded-full">
-                                                                    {formatDate(item.date)}
+                                                                    {formatDate(item.issuedDate)}
                                                                 </span>
                                                                 <div className="flex gap-2">
                                                                     <button
@@ -190,7 +181,7 @@ export default function AchievementsAndCertifications() {
                                                                         <Pencil className="h-4 w-4" />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleDelete(item.id)}
+                                                                        onClick={() => handleDelete(item._id)}
                                                                         className="text-red-500 hover:text-red-700"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
@@ -203,7 +194,12 @@ export default function AchievementsAndCertifications() {
                                                 </div>
                                             )}
                                         </Draggable>
-                                    ))}
+                                    )):
+                                    (
+                                        <p className="text-center text-gray-500">
+                                          No Achievement to show
+                                        </p>
+                                    )}
                                     {provided.placeholder}
                                 </div>
                             )}

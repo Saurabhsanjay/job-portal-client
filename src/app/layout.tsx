@@ -7,7 +7,10 @@ import { getServerSession } from "next-auth/next";
 import { SessionProvider } from "@/app/(providers)/SessionProvider";
 import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
 import { ThemeProvider } from "./(providers)/ThemeProvider";
+import { AuthProvider } from "./(providers)/AuthContext";
 import Navbar from "./(containers)/navbar/Navbar";
+import ProtectedRoute from "@/hooks/ProtectedRoute";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,21 +29,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession();
-
+  console.log("session", session);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
+      <Toaster position="top-center" reverseOrder={false} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-        <SessionProvider session={session}>
-          <Navbar />
-          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <AuthProvider>
+        {/* <SessionProvider session={session}> */}
+          {/* <Navbar /> */}
+          <ReactQueryProvider>
+            {/* <ProtectedRoute> */}
+            {children}
+            {/* </ProtectedRoute> */}
+          </ReactQueryProvider>
           <Footer />
-        </SessionProvider>
+        {/* </SessionProvider> */}
+        </AuthProvider>
         </ThemeProvider>
 
       </body>
