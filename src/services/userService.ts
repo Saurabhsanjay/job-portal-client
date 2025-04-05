@@ -9,7 +9,6 @@ type CandidateData = {
   firstName: string;
   lastName: string;
   password: string;
-  dateOfBirth: string;
   email: string;
 };
 
@@ -38,20 +37,8 @@ export const useRegisterCandidate = () => {
 // Recruiter registration
 type RecruiterData = {
   name: string;
-  description: string;
   email: string;
   password: string;
-  phone: string;
-  website: string;
-  establishedDate: string;
-  teamSize: string;
-  industry: string;
-  country: string;
-  city: string;
-  state: string;
-  address: string;
-  // about: string;
-  allowInSearch: boolean;
 };
 
 export const registerRecruiter = async (recruiterData: RecruiterData) => {
