@@ -637,7 +637,7 @@ export default function CompanyProfile() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 mt-4">
           <Button type="button" variant="outline" onClick={() => reset()}>
             Reset
           </Button>
