@@ -53,7 +53,12 @@ export default function SavedJobs() {
   const [locationFilter, setLocationFilter] = useState("all")
   const [titleFilter, setTitleFilter] = useState("all")
 
-  const { data: jobsData, isLoading, error } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
+  const { data: jobsData, isLoading, error,refetch: refetchJobs } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
+
+  useEffect(() => {
+    console.log("refetching jobs------------->")
+    refetchJobs()
+  }, [refetchJobs,jobsData])
 
   // Store jobs in state
   const [jobs, setJobs] = useState<Job[]>([])
@@ -86,29 +91,29 @@ export default function SavedJobs() {
 
   // Filter jobs based on search and filters
   const filteredJobs = useMemo(() => {
-    if (!jobs.length) return []
+    if (!jobs?.length) return []
 
-    return jobs.filter((job) => {
+    return jobs?.filter((job) => {
       const locationString = getLocationString(job)
 
       const matchesSearch =
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        locationString.toLowerCase().includes(searchTerm.toLowerCase())
+        job?.title.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+        job?.company?.name.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+        locationString.toLowerCase().includes(searchTerm?.toLowerCase())
 
-      const jobDate = new Date(job.postedAt)
+      const jobDate = new Date(job?.postedAt)
       const matchesDate = dateFilter === undefined || (dateFilter && jobDate >= dateFilter)
 
       const matchesLocation = locationFilter === "all" || locationString === locationFilter
 
-      const matchesTitle = titleFilter === "all" || job.title === titleFilter
+      const matchesTitle = titleFilter === "all" || job?.title === titleFilter
 
       return matchesSearch && matchesDate && matchesLocation && matchesTitle
     })
   }, [jobs, searchTerm, dateFilter, locationFilter, titleFilter])
 
   const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
+    switch (status?.toUpperCase()) {
       case "ACTIVE":
         return "bg-green-100 text-green-800"
       case "IN REVIEW":
@@ -154,11 +159,11 @@ export default function SavedJobs() {
   return (
     <Card className="p-6 shadow-sm border-none">
       <div className="space-y-6">
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">All Jobs</h2>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setIsFiltersOpen(!isFiltersOpen)}>
+              <Button className="hidden" variant="outline" onClick={() => setIsFiltersOpen(!isFiltersOpen)}>
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filters
               </Button>
@@ -171,91 +176,53 @@ export default function SavedJobs() {
             </div>
           </div>
 
-          <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+          <Collapsible open={true} onOpenChange={setIsFiltersOpen}>
             <div className="flex flex-col space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search job title, company, or location..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4"
-                />
+              <div className="flex flex-col space-y-4">
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search job title, company, or location..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4"
+                    />
+                  </div>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn("justify-start text-left font-normal", !dateFilter && "text-muted-foreground")}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={dateFilter} onSelect={setDateFilter} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <CollapsibleContent className="space-y-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm("")
+                        setDateFilter(undefined)
+                        setLocationFilter("all")
+                        setTitleFilter("all")
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                    <Button className="hidden" onClick={() => setIsFiltersOpen(false)}>Apply Filters</Button>
+                  </div>
+                </CollapsibleContent>
               </div>
-
-              <CollapsibleContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Job Title</label>
-                    <Select value={titleFilter} onValueChange={setTitleFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select job title" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All titles</SelectItem>
-                        {titles.map((title) => (
-                          <SelectItem key={title} value={title}>
-                            {title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Location</label>
-                    <Select value={locationFilter} onValueChange={setLocationFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All locations</SelectItem>
-                        {locations.map((location) => (
-                          <SelectItem key={location} value={location}>
-                            {location}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Date Posted</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !dateFilter && "text-muted-foreground",
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={dateFilter} onSelect={setDateFilter} initialFocus />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchTerm("")
-                      setDateFilter(undefined)
-                      setLocationFilter("all")
-                      setTitleFilter("all")
-                    }}
-                  >
-                    Reset Filters
-                  </Button>
-                  <Button onClick={() => setIsFiltersOpen(false)}>Apply Filters</Button>
-                </div>
-              </CollapsibleContent>
             </div>
           </Collapsible>
         </div>

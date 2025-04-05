@@ -337,7 +337,7 @@ export default function UpdateJobForm() {
           max: data.salary.max,
         },
         numberOfOpenings: data.numberOfOpenings,
-        validTill: data.validTill.toISOString(),
+        validTill: data.validTill.toISOString().split("T")[0],
         remote: data.remote,
         benefits: data.benefits,
         applicationLink: data.applicationLink,
