@@ -154,14 +154,14 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={job?.company?.logoUrl} alt={job.company?.name} />
-              <AvatarFallback className="text-lg">{job.company?.name[0]}</AvatarFallback>
+              <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
+              <AvatarFallback className="text-lg">{job?.company?.name?.[0]}</AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-2xl font-bold">{job.title}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4" />
-                <span>{job.company?.name}</span>
+                <span>{job?.company?.name}</span>
               </div>
             </div>
           </div>
@@ -190,11 +190,11 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{getLocationString()}</span>
               </div>
-              {job.company.website && (
+              {job?.company?.website && (
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-muted-foreground" />
                   <a
-                    href={job.company.website}
+                    href={job?.company?.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
@@ -205,19 +205,19 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
               )}
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Valid till {format(new Date(job.validTill), "PPP")}</span>
+                <span>Valid till {format(new Date(job?.validTill), "PPP")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {job.numberOfOpenings} {job.numberOfOpenings === 1 ? "Opening" : "Openings"}
+                  {job.numberOfOpenings} {job?.numberOfOpenings === 1 ? "Opening" : "Openings"}
                 </span>
               </div>
             </div>
             <Separator />
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground whitespace-pre-line">{job.description}</p>
+              <p className="text-muted-foreground whitespace-pre-line">{job?.description}</p>
             </div>
           </CardContent>
         </Card>
@@ -234,7 +234,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
                 <div>
                   <h4 className="font-medium">Experience</h4>
                   <p className="text-muted-foreground">
-                    {job.experience.level.replace("_", " ")} · {job.experience.years.min}-{job.experience.years.max}{" "}
+                    {job?.experience?.level?.replace("_", " ")} · {job?.experience?.years?.min}-{job?.experience?.years?.max}{" "}
                     years
                   </p>
                 </div>
@@ -257,7 +257,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
                 <div>
                   <h4 className="font-medium">Languages</h4>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {job.languages.map((lang) => (
+                    {job?.languages?.map((lang) => (
                       <Badge key={lang} variant="secondary">
                         {lang}
                       </Badge>
@@ -270,7 +270,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
             <div>
               <h4 className="font-medium mb-2">Required Skills</h4>
               <div className="flex flex-wrap gap-2">
-                {job.skills.map((skill) => (
+                {job?.skills?.map((skill) => (
                   <Badge key={skill} variant="secondary">
                     {skill}
                   </Badge>
@@ -292,7 +292,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
                 <div>
                   <h4 className="font-medium">Salary Range</h4>
                   <p className="text-muted-foreground">
-                    {formatSalary(job.salary.min, job.salary.max, job.salary.currency)}
+                    {formatSalary(job?.salary?.min, job?.salary?.max, job?.salary?.currency)}
                   </p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
                 <Clock className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div>
                   <h4 className="font-medium">Employment Type</h4>
-                  <p className="text-muted-foreground">{job.employmentType.replace("_", " ")}</p>
+                  <p className="text-muted-foreground">{job?.employmentType?.replace("_", " ")}</p>
                 </div>
               </div>
             </div>
@@ -308,7 +308,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
             <div>
               <h4 className="font-medium mb-2">Benefits</h4>
               <div className="flex flex-wrap gap-2">
-                {job.benefits.map((benefit) => (
+                {job?.benefits?.map((benefit) => (
                   <Badge key={benefit} variant="secondary">
                     {benefit}
                   </Badge>
@@ -319,7 +319,7 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
             <div>
               <h4 className="font-medium mb-2">Tags</h4>
               <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag) => (
+                {job?.tags?.map((tag) => (
                   <Badge key={tag} variant="outline">
                     <Tags className="mr-1 h-3 w-3" />
                     {tag}
@@ -334,8 +334,8 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Status:</span>
-            <Badge variant="outline" className={getStatusColor(job.status)}>
-              {job.status}
+            <Badge variant="outline" className={getStatusColor(job?.status)}>
+              {job?.status}
             </Badge>
           </div>
         </div>

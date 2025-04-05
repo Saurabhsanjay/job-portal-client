@@ -296,34 +296,34 @@ export default function SavedJobs() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarFallback>{job.company.name[0]}</AvatarFallback>
+                          <AvatarFallback>{job?.company?.name?.[0]}</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">{job.title}</div>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Building2 className="h-3 w-3" />
-                            <span>{job.company.name}</span>
+                            <span>{job?.company?.name}</span>
                             <MapPin className="h-3 w-3 ml-2" />
                             <span>{getLocationString(job)}</span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-500">{format(new Date(job.postedAt), "MMM d, yyyy")}</TableCell>
+                    <TableCell className="text-gray-500">{format(new Date(job?.postedAt), "MMM d, yyyy")}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={getStatusColor(job.status)}>
-                        {job.status}
+                      <Badge variant="secondary" className={getStatusColor(job?.status)}>
+                        {job?.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Link href={`/employer/jobs/update-job/${job._id}`}>
+                          <Link href={`/employer/jobs/update-job/${job?._id}`}>
                             <Pencil className="h-4 w-4" />
                           </Link>
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Link href={`/employer/jobs/${job._id}`}>
+                          <Link href={`/employer/jobs/${job?._id}`}>
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -343,14 +343,14 @@ export default function SavedJobs() {
               <Card key={job._id} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback>{job.company.name[0]}</AvatarFallback>
+                    <AvatarFallback>{job?.company?.name?.[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="font-medium">{job.title}</div>
+                    <div className="font-medium">{job?.title}</div>
                     <div className="text-sm text-gray-500 space-y-1 mt-1">
                       <div className="flex items-center gap-1">
                         <Building2 className="h-3 w-3" />
-                        <span>{job.company.name}</span>
+                        <span>{job?.company?.name}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
@@ -358,20 +358,20 @@ export default function SavedJobs() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <Badge variant="secondary" className={getStatusColor(job.status)}>
-                        {job.status}
+                      <Badge variant="secondary" className={getStatusColor(job?.status)}>
+                        {job?.status}
                       </Badge>
-                      <span className="text-sm text-gray-500">{format(new Date(job.postedAt), "MMM d, yyyy")}</span>
+                      <span className="text-sm text-gray-500">{format(new Date(job?.postedAt), "MMM d, yyyy")}</span>
                     </div>
                     <div className="flex justify-end mt-3 gap-2">
                       <Button variant="ghost" size="sm">
-                        <Link href={`/employer/jobs/edit/${job._id}`}>
+                        <Link href={`/employer/jobs/edit/${job?._id}`}>
                           <Pencil className="h-4 w-4 mr-1" />
                           Edit
                         </Link>
                       </Button>
                       <Button variant="ghost" size="sm">
-                        <Link href={`/employer/jobs/${job._id}`}>
+                        <Link href={`/employer/jobs/${job?._id}`}>
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Link>

@@ -41,12 +41,12 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
         <div className="flex items-start gap-4">
           <div className="shrink-0">
             <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-              {job.company.logoUrl ? (
+              {job?.company?.logoUrl ? (
                 <Image
                   width={48}
                   height={48}
-                  src={job.company.logoUrl || "/placeholder.svg"}
-                  alt={job.company.name}
+                  src={job.company?.logoUrl || "/placeholder.svg"}
+                  alt={job.company?.name}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -56,14 +56,14 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-lg font-semibold text-gray-900 truncate md:text-xl">{job.title}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 truncate md:text-xl">{job?.title}</h3>
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => onSave?.(jobId)}>
                 <Bookmark
-                  className={cn("h-5 w-5 md:h-6 md:w-6", (job.savedCount || 0) < 0 && "fill-current text-blue-500")}
+                  className={cn("h-5 w-5 md:h-6 md:w-6", (job?.savedCount || 0) < 0 && "fill-current text-blue-500")}
                 />
               </Button>
             </div>
-            <p className="text-sm text-gray-500 md:text-base">{job.company.name}</p>
+            <p className="text-sm text-gray-500 md:text-base">{job?.company?.name}</p>
           </div>
         </div>
 
@@ -71,20 +71,20 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 md:text-base">
           <span className="flex items-center gap-1">
             <MapPin className="h-4 w-4 md:h-5 md:w-5" />
-            {job.location.city || ""}, {job.location.country}
+            {job?.location?.city || ""}, {job?.location?.country}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4 md:h-5 md:w-5" />
-            {getTimeAgo(job.postedAt)}
+            {getTimeAgo(job?.postedAt)}
           </span>
           <span className="flex items-center gap-1">
             <DollarSign className="h-4 w-4 md:h-5 md:w-5" />
-            {formatSalary(job.salary.min, job.salary.max, job.salary.currency)}
+            {formatSalary(job?.salary?.min, job?.salary?.max, job?.salary?.currency)}
           </span>
         </div>
 
         {/* Description Preview */}
-        <p className="text-sm text-gray-600 line-clamp-2 md:text-base">{job.description}</p>
+        <p className="text-sm text-gray-600 line-clamp-2 md:text-base">{job?.description}</p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2">
