@@ -401,6 +401,7 @@ export default function Profile() {
   }
 
   const profileMutation = useApiPut<JobSeekerProfileResponse, UserProfile>();
+  
 
   // Helper function to remove _id from objects in an array
   const removeIdFromArray = (array) => {

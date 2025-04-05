@@ -92,15 +92,18 @@ export function useApiPut<T, D = any>() {
     mutationFn: ({ endpoint, payload, contentType = "json", config }) =>
       apiPut<T, D>(endpoint, payload, contentType, config),
     onSuccess: (data, variables) => {
-      // Invalidate relevant queries after successful mutation
-      if (variables.invalidateQueries) {
+      if (
+        variables.invalidateQueries &&
+        variables.invalidateQueries.length > 0
+      ) {
         variables.invalidateQueries.forEach((queryKey) => {
-          queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries(queryKey); // ✅ Correct usage
         });
       }
     },
   });
 }
+
 
 // Hook for PATCH requests
 export function useApiPatch<T, D = any>() {

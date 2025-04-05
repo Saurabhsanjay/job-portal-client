@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Building2, Facebook, Twitter, Linkedin, Instagram, Sparkles, Loader2 } from "lucide-react"
+import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Image from "next/image"
 import Link from "next/link"
 import * as z from "zod"
-import { useToast } from "@/hooks/use-toast"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useApiPut, useApiGet } from "@/hooks/use-api-query"
@@ -63,11 +63,21 @@ const employerProfileSchema = z.object({
 
 type FormValues = z.infer<typeof employerProfileSchema>
 
+// Define the UserProfile type
+interface UserProfile {
+  data: {
+    employerDetails: EmployerProfile
+  }
+}
+
 export default function CompanyProfile() {
   const [logo, setLogo] = React.useState<string | null>(null)
-  const [selectedIndustries, setSelectedIndustries] = React.useState<string[]>([])
-  const { toast } = useToast()
+  const [industry, setIndustry] = React.useState<string>("")
+  const [country, setCountry] = React.useState<string>("")
+  const [state, setState] = React.useState<string>("")
+  const [city, setCity] = React.useState<string>("")
   const { user } = useAuth()
+  const [isFormInitialized, setIsFormInitialized] = React.useState(false)
 
   const {
     register,
@@ -76,6 +86,7 @@ export default function CompanyProfile() {
     setValue,
     formState: { errors },
     reset,
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(employerProfileSchema),
     defaultValues: {
@@ -108,6 +119,16 @@ export default function CompanyProfile() {
     },
   })
 
+  // Store form data in localStorage when it changes
+  React.useEffect(() => {
+    const subscription = watch((value) => {
+      if (isFormInitialized && value) {
+        localStorage.setItem("employerProfileForm", JSON.stringify(value))
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [watch, isFormInitialized])
+
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -125,6 +146,7 @@ export default function CompanyProfile() {
   const {
     data: profileData,
     isLoading,
+    refetch,
     error,
   } = useApiGet<UserProfile>(
     "users/get-profile",
@@ -132,7 +154,54 @@ export default function CompanyProfile() {
     [user?.id, "user-profile"], // Query key for caching
   )
 
+  // Load data from API or localStorage
   React.useEffect(() => {
+    // First try to load from localStorage
+    const savedForm = localStorage.getItem("employerProfileForm")
+    if (savedForm) {
+      try {
+        const parsedForm = JSON.parse(savedForm)
+
+        // Set the form values from localStorage
+        Object.entries(parsedForm).forEach(([key, value]) => {
+          if (key !== "contactInfo" && key !== "socialLinks" && key !== "phoneNumber" && key !== "benefitsAndPerks") {
+            setValue(key as any, value as any)
+          }
+        })
+
+        // Set nested values
+        if (parsedForm.contactInfo) {
+          setValue("contactInfo", parsedForm.contactInfo)
+          setCountry(parsedForm.contactInfo.country || "")
+          setState(parsedForm.contactInfo.state || "")
+          setCity(parsedForm.contactInfo.city || "")
+        }
+
+        if (parsedForm.socialLinks) {
+          setValue("socialLinks", parsedForm.socialLinks)
+        }
+
+        if (parsedForm.phoneNumber) {
+          setValue("phoneNumber", parsedForm.phoneNumber)
+        }
+
+        if (parsedForm.benefitsAndPerks) {
+          setValue("benefitsAndPerks", parsedForm.benefitsAndPerks)
+        }
+
+        if (parsedForm.industry) {
+          setIndustry(parsedForm.industry)
+        }
+
+        if (parsedForm.logoUrl) {
+          setLogo(parsedForm.logoUrl)
+        }
+      } catch (e) {
+        console.error("Error parsing saved form data:", e)
+      }
+    }
+
+    // Then load from API if available
     if (profileData?.data && !isLoading) {
       const { employerDetails } = profileData.data
 
@@ -151,7 +220,11 @@ export default function CompanyProfile() {
         employerDetails.establishedYear ? new Date(employerDetails.establishedYear).toISOString().split("T")[0] : "",
       )
       setValue("companySize", employerDetails.companySize || "")
+
+      // Set industry with both form and local state
       setValue("industry", employerDetails.industry || "")
+      setIndustry(employerDetails.industry || "")
+
       setValue("allowInSearch", employerDetails.allowInSearch || false)
       setValue("companyDescription", employerDetails.companyDescription || "")
 
@@ -168,17 +241,33 @@ export default function CompanyProfile() {
         instagram: employerDetails.socialLinks?.instagram || "",
       })
 
-      // Set contact info
+      // Set contact info with both form and local state
       setValue("contactInfo", {
         country: employerDetails.contactInfo?.country || "",
         state: employerDetails.contactInfo?.state || "",
         city: employerDetails.contactInfo?.city || "",
         completeAddress: employerDetails.contactInfo?.completeAddress || "",
       })
+
+      setCountry(employerDetails.contactInfo?.country || "")
+      setState(employerDetails.contactInfo?.state || "")
+      setCity(employerDetails.contactInfo?.city || "")
+
+      // Save to localStorage
+      localStorage.setItem(
+        "employerProfileForm",
+        JSON.stringify({
+          ...employerDetails,
+          contactInfo: employerDetails.contactInfo || {},
+          socialLinks: employerDetails.socialLinks || {},
+          phoneNumber: employerDetails.phoneNumber || {},
+          benefitsAndPerks: employerDetails.benefitsAndPerks || [{ title: "", description: "" }],
+        }),
+      )
+
+      setIsFormInitialized(true)
     }
   }, [profileData, isLoading, setValue])
-
-  console.log(errors, "EROR")
 
   // Use the API post hook
   const profileMutation = useApiPut<EmployerProfileResponse, EmployerProfile>()
@@ -190,41 +279,55 @@ export default function CompanyProfile() {
       role: "EMPLOYER",
       id: user?.id,
     }
+
+    // Save to localStorage immediately
+    localStorage.setItem("employerProfileForm", JSON.stringify(data))
+
     profileMutation.mutate(
       {
         endpoint: "users/update-profile",
         payload: formattedData,
-        invalidateQueries: [["employer-profile"]],
+        invalidateQueries: [["user-profile"]],
       },
       {
         onSuccess: (response) => {
           if (response.data) {
-            toast({
-              title: "Success",
-              description: "Employer profile created successfully",
-            })
-            reset()
+            toast.success("Profile updated successfully")
+            refetch()
           } else if (response.error) {
-            toast({
-              title: "Error",
-              description: response.error.message,
-              variant: "destructive",
-            })
+            toast.error(response.error.message)
           }
         },
         onError: (error) => {
-          toast({
-            title: "Error",
-            description: error.message || "Failed to create employer profile",
-            variant: "destructive",
-          })
+          toast.error(error.message || "Failed to update profile")
         },
       },
     )
   }
 
+  // Handle select changes to update both form and local state
+  const handleIndustryChange = (value: string) => {
+    setValue("industry", value)
+    setIndustry(value)
+  }
+
+  const handleCountryChange = (value: string) => {
+    setValue("contactInfo.country", value)
+    setCountry(value)
+  }
+
+  const handleStateChange = (value: string) => {
+    setValue("contactInfo.state", value)
+    setState(value)
+  }
+
+  const handleCityChange = (value: string) => {
+    setValue("contactInfo.city", value)
+    setCity(value)
+  }
+
   return (
-    <div className="space-y-4 bg-gray-50 md:p-0  rounded-xl">
+    <div className="space-y-4 bg-gray-50 md:p-0 rounded-xl">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Company Profile</h1>
@@ -343,14 +446,18 @@ export default function CompanyProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="industry">Industy</Label>
+              <Label htmlFor="industry">Industry</Label>
               <Controller
                 name="industry"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={handleIndustryChange}
+                    value={industry || field.value || ""}
+                    defaultValue={industry || field.value || ""}
+                  >
                     <SelectTrigger id="industry">
-                      <SelectValue placeholder="Select industry" />
+                      <SelectValue>{industry || "Select industry"}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Technology">Technology</SelectItem>
@@ -364,7 +471,7 @@ export default function CompanyProfile() {
                   </Select>
                 )}
               />
-              {errors.country && <p className="text-sm text-red-500">{errors.country.message}</p>}
+              {errors.industry && <p className="text-sm text-red-500">{errors.industry.message}</p>}
             </div>
 
             <div className="flex items-center space-x-2 pt-6">
@@ -487,9 +594,13 @@ export default function CompanyProfile() {
                   name="contactInfo.country"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={handleCountryChange}
+                      value={country || field.value || ""}
+                      defaultValue={country || field.value || ""}
+                    >
                       <SelectTrigger id="contactInfo.country">
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue>{country || "Select country"}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="United States">United States</SelectItem>
@@ -515,9 +626,13 @@ export default function CompanyProfile() {
                   name="contactInfo.state"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={handleStateChange}
+                      value={state || field.value || ""}
+                      defaultValue={state || field.value || ""}
+                    >
                       <SelectTrigger id="contactInfo.state">
-                        <SelectValue placeholder="Select state" />
+                        <SelectValue>{state || "Select state"}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="California">California</SelectItem>
@@ -544,9 +659,13 @@ export default function CompanyProfile() {
                   name="contactInfo.city"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={handleCityChange}
+                      value={city || field.value || ""}
+                      defaultValue={city || field.value || ""}
+                    >
                       <SelectTrigger id="contactInfo.city">
-                        <SelectValue placeholder="Select city" />
+                        <SelectValue>{city || "Select city"}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="New York">New York</SelectItem>
