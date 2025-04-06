@@ -33,6 +33,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { usePathname } from "next/navigation"
 import { Notifications } from "@/app/(containers)/notifications/Notifications"
+import { useRouter } from "next/navigation"
 
 
 const navigation = [
@@ -46,7 +47,7 @@ const navigation = [
 ]
 const secondaryNavigation = [
     { name: "Change Password", href: "/employer/change-password", icon: Lock },
-    { name: "Logout", href: "/employer/logout", icon: LogOut },
+    // { name: "Logout", href: "/employer/logout", icon: LogOut },
     { name: "Delete Profile", href: "/employer/delete-account", icon: Trash2 },
 ]
 
@@ -160,6 +161,7 @@ const notifications = [
 ]
 
 export default function EmployerDashboardLayout({ children }: { children: React.ReactNode }) {
+    const router=useRouter()
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [count, setCount] = useState(99);
     const pathname = usePathname()
@@ -231,7 +233,9 @@ export default function EmployerDashboardLayout({ children }: { children: React.
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>Profile</DropdownMenuItem>
                                 <DropdownMenuItem>Settings</DropdownMenuItem>
-                                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push("/employer/logout")}>
+                                    Log out
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
