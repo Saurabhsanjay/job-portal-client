@@ -2,7 +2,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import {
-  Eye,
   MapPin,
   Building2,
   Search,
@@ -22,9 +20,11 @@ import {
   PlusCircle,
   Pencil,
   Loader2,
+  MoreVertical,
 } from "lucide-react"
 import Link from "next/link"
 import { useApiGet } from "@/hooks/use-api-query"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 // Job type definition based on your API response
 interface Job {
@@ -53,7 +53,7 @@ export default function SavedJobs() {
   const [locationFilter, setLocationFilter] = useState("all")
   const [titleFilter, setTitleFilter] = useState("all")
 
-  const { data: jobsData, isLoading, error,refetch } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
+  const { data: jobsData, isLoading, error, refetch } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
 
   // Store jobs in state
   const [jobs, setJobs] = useState<Job[]>([])
@@ -158,7 +158,7 @@ export default function SavedJobs() {
   return (
     <Card className="p-6 shadow-sm border-none">
       <div className="space-y-6">
-      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">All Jobs</h2>
             <div className="flex gap-3">
@@ -218,7 +218,9 @@ export default function SavedJobs() {
                     >
                       Reset Filters
                     </Button>
-                    <Button className="hidden" onClick={() => setIsFiltersOpen(false)}>Apply Filters</Button>
+                    <Button className="hidden" onClick={() => setIsFiltersOpen(false)}>
+                      Apply Filters
+                    </Button>
                   </div>
                 </CollapsibleContent>
               </div>
@@ -288,11 +290,30 @@ export default function SavedJobs() {
                             <Pencil className="h-4 w-4" />
                           </Link>
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Link href={`/employer/jobs/${job?._id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Link href={`/employer/jobs/${job?._id}`} className="flex w-full">
+                                View job details
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Link href={`/employer/jobs/candidates/${job?._id}`} className="flex w-full">
+                                View applied candidates
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Link href={`/employer/jobs/shortlisted-candidates/${job?._id}`} className="flex w-full">
+                                View shortlisted candidates
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -336,12 +357,31 @@ export default function SavedJobs() {
                           Edit
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Link href={`/employer/jobs/${job?._id}`}>
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Link>
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4 mr-1" />
+                            Options
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Link href={`/employer/jobs/${job?._id}`} className="flex w-full">
+                              View job details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link href={`/employer/jobs/candidates/${job?._id}`} className="flex w-full">
+                              View applied candidates
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link href={`/employer/jobs/shortlisted-candidates/${job?._id}`} className="flex w-full">
+                              View shortlisted candidates
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>

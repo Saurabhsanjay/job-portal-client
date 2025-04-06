@@ -40,7 +40,7 @@ const navigation = [
     { name: "Profile", href: "/employer/profile", icon: Building2, current: false },
     { name: "Talent Scout", href: "/employer/talent-sourcing", icon: Search, current: false },
     { name: "Jobs", href: "/employer/jobs", icon: Briefcase, current: false },
-    { name: "Shortlisted Candidates", href: "/employer/shortlisted-candidates", icon: Star, current: false },
+    // { name: "Shortlisted Candidates", href: "/employer/shortlisted-candidates", icon: Star, current: false },
     { name: "Messages", href: "/employer/messages", icon: Mail, current: false },
     { name: "Automations", href: "/employer/automations", icon: FileText, current: false },
 ]

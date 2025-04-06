@@ -225,14 +225,14 @@ export default function AppliedCandidates() {
   });
   const [appliedFilters, setAppliedFilters] = React.useState(filters);
 
-  const { data: AppliedCandidatesData, isLoading, error,refetch } = useApiGet<JobApplicationsResponse>(`applied-candidates/job/${jobId}`, {}, ["jobs"])
-  console.log("AppliedCandidatesData", AppliedCandidatesData)
+  const { data: ShortlistedCandidatesData, isLoading, error,refetch } = useApiGet<JobApplicationsResponse>(`applied-candidates/shortlisted-candidates-data/${jobId}`, {}, ["jobs"])
+  console.log("ShortlistedCandidatesData", ShortlistedCandidatesData)
 
   React.useEffect(() => {
-    if (AppliedCandidatesData?.data?.applications) {
-      setCandidates(AppliedCandidatesData?.data?.applications)
+    if (ShortlistedCandidatesData?.data) {
+      setCandidates(ShortlistedCandidatesData?.data)
     }
-  }, [AppliedCandidatesData])
+  }, [ShortlistedCandidatesData])
 
   const observer = React.useRef<IntersectionObserver>(null);
   const lastCandidateElementRef = React.useRef<HTMLDivElement>(null);
