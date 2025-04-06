@@ -20,11 +20,11 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import toast from "react-hot-toast"
 import { useApiGet, useApiPut } from "@/hooks/use-api-query"
 import { useQueryClient } from "@tanstack/react-query"
 
-const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "VOLUNTEER"] as const
+const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT",  "INTERNSHIP", "VOLUNTEER"] as const
 
 const experienceLevels = ["JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"] as const
 
@@ -164,7 +164,6 @@ export default function UpdateJobForm() {
   // Extract job ID from URL path
   const jobId = params?.id as string
 
-  const { toast } = useToast()
 
   // Modify the form initialization to ensure we have a complete form reset when data is loaded
   const {
@@ -361,26 +360,18 @@ export default function UpdateJobForm() {
           queryClient.invalidateQueries({queryKey: ["jobs"]})
           router.push("/employer/jobs")
           if (response.data) {
-            toast({
-              title: "Success",
-              description: "Job posting updated successfully",
-            })
+            toast.success("Job updated successfully")
+            
             // Navigate back to jobs list
             router.push("/employer/jobs")
           } else if (response.error) {
-            toast({
-              title: "Error",
-              description: response.error.message,
-              variant: "destructive",
-            })
+            toast.error("Failed to update job")
+           
           }
         },
         onError: (error) => {
-          toast({
-            title: "Error",
-            description: error.message || "Failed to update job posting",
-            variant: "destructive",
-          })
+          toast.error(error.message || "Failed to update job posting")
+         
         },
       },
     )
