@@ -50,13 +50,22 @@ export interface AutomationsResponse {
   export interface EmployeeAutomation {
     _id: string;
     employeeId: string;
-    automationId: string;
+    automationId: AutomationDetails; // now populated object
     message: string;
-    status: "ACTIVE" | "INACTIVE"; // assuming these are the only two possible values
+    status: "ACTIVE" | "INACTIVE";
     createdAt: string;
     updatedAt: string;
     __v: number;
   }
+  
+  export interface AutomationDetails {
+    _id: string;
+    title: string;
+    description: string;
+    includedWith: string;
+    status: "ACTIVE" | "INACTIVE";
+  }
+  
   
 
 const activeAutomations = [
@@ -144,11 +153,9 @@ const automationTemplates = [
 
 export default function AutomationsPage() {
     const { user } = useAuth()
-    console.log("User: ", user)
     const [selectedAutomationTemplates, setSelectedAutomationTemplates] = useState([])
     const [automations,setAutomations]=useState([])
     const [status, setStatus] = useState("ALL")
-    console.log("status: ", status)
 
     const { data: automationsTemplatesData, isLoading, error } = useApiGet<AutomationsResponse>("automations/automations-list", {}, ["automations-list"])
 
@@ -171,7 +178,6 @@ export default function AutomationsPage() {
     useEffect(() => {
         refetch()
     }, [status, refetch])
-    console.log("Automations List Data: ", automationsListData)
 
     useEffect(() => {
         if (automationsListData?.data) {
@@ -224,7 +230,7 @@ export default function AutomationsPage() {
                         <TableBody>
                             {automations?.map((automation,index) => (
                                 <TableRow key={index}>
-                                    <TableCell className="font-medium">{automation.name||"Automation Name"}</TableCell>
+                                    <TableCell className="font-medium">{automation?.automationId?.title||"Automation Name"}</TableCell>
                                     {/* <TableCell>{automation.trigger}</TableCell> */}
                                     <TableCell>
                                         <Badge variant={automation.status === "ACTIVE" ? "success" : "secondary"}>

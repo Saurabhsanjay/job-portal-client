@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, FileText, Search, CalendarIcon } from "lucide-react";
+import { Eye, FileText, Search, CalendarIcon, Loader, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -225,7 +225,7 @@ export default function AppliedCandidates() {
   });
   const [appliedFilters, setAppliedFilters] = React.useState(filters);
 
-  const { data: ShortlistedCandidatesData, isLoading, error,refetch } = useApiGet<JobApplicationsResponse>(`applied-candidates/shortlisted-candidates-data/${jobId}`, {}, ["jobs"])
+  const { data: ShortlistedCandidatesData, isLoading } = useApiGet<JobApplicationsResponse>(`applied-candidates/shortlisted-candidates-data/${jobId}`, {}, ["jobs"])
   console.log("ShortlistedCandidatesData", ShortlistedCandidatesData)
 
   React.useEffect(() => {
@@ -273,26 +273,26 @@ export default function AppliedCandidates() {
     return candidates.filter((candidate) => {
         console.log("candidate",candidate)
       const matchesSearch = appliedFilters.search
-        ? candidate?.candidateId?.personalDetails?.firstName
+        ? candidate?.candidateId?.firstName
             .toLowerCase()
             .includes(appliedFilters.search.toLowerCase()) ||
-          candidate?.jobSeekerDetails?.professionalExperience[0]?.jobTitle
+            candidate?.candidateId?.professionalDetails?.currentJobTitle
             .toLowerCase()
             .includes(appliedFilters.search.toLowerCase()) ||
-          candidate.candidateId?.personalDetails?.address?.city
+            candidate?.jobId?.location?.city
             .toLowerCase()
             .includes(appliedFilters.search.toLowerCase())
         : true;
 
       const matchesJobTitle =
         appliedFilters.jobTitle === "All titles" ||
-        candidate?.jobSeekerDetails?.professionalExperience[0]?.jobTitle === appliedFilters.jobTitle;
+        candidate?.candidateId?.professionalDetails?.currentJobTitle === appliedFilters.jobTitle;
       const matchesLocation =
         appliedFilters.location === "All locations" ||
-        candidate?.candidateId?.personalDetails?.address?.city === appliedFilters.location;
+        candidate?.jobId?.location?.city === appliedFilters.location;
       const matchesDate =
         !appliedFilters.date ||
-        format(candidate.shortlistedDate, "PP") ===
+        format(candidate?.shortlistedDate, "PP") ===
           format(appliedFilters.date, "PP");
 
       return matchesSearch && matchesJobTitle && matchesLocation && matchesDate;
@@ -323,95 +323,6 @@ export default function AppliedCandidates() {
             Applied Candidates for Software Engineer
           </h2>
         </div>
-
-        {/* Filters Section */}
-        {/* <div className="space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search candidate name, company, or location..."
-                            value={filters.search}
-                            onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-                            className="pl-8"
-                        />
-                    </div>
-
-                    <div className="flex flex-col space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label>Job Title</Label>
-                                <Select
-                                    value={filters.jobTitle}
-                                    onValueChange={(value) => setFilters((prev) => ({ ...prev, jobTitle: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select job title" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {jobTitles.map((title) => (
-                                            <SelectItem key={title} value={title}>
-                                                {title}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Location</Label>
-                                <Select
-                                    value={filters.location}
-                                    onValueChange={(value) => setFilters((prev) => ({ ...prev, location: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select location" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {locations.map((location) => (
-                                            <SelectItem key={location} value={location}>
-                                                {location}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Date Posted</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className={`w-full justify-start text-left font-normal ${!filters.date && "text-muted-foreground"}`}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {filters.date ? format(filters.date, "PPP") : "Pick a date"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                            // @ts-ignore
-                                            selected={filters.date}
-                                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                            // @ts-ignore
-                                            onSelect={(date) => setFilters((prev) => ({ ...prev, date }))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={handleReset}>
-                                Reset Filters
-                            </Button>
-                            <Button onClick={applyFilters}>Apply Filters</Button>
-                        </div>
-                    </div>
-                </div> */}
 
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -484,56 +395,70 @@ export default function AppliedCandidates() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCandidates.map((candidate,index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
-                          alt={candidate?.name||candidate?.candidateId?.personalDetails?.firstName}
-                        />
-                        <AvatarFallback>{candidate?.name?.[0]||candidate?.candidateId?.personalDetails?.firstName?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{candidate?.name||candidate?.candidateId?.personalDetails?.firstName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {candidate?.candidateId?.personalDetails?.email||"No email"}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{candidate?.jobTitle||candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                  <TableCell>{candidate?.candidateId?.personalDetails?.address?.city||"-"}</TableCell>
-                  <TableCell>
-                    {format(candidate?.appliedDate, "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    {format(candidate?.shortlistedDate, "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      asChild
-                    >
-                      <a
-                        href={candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url||""}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+              {filteredCandidates?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center font-medium text-md">
+                    No Candidates To Show
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredCandidates?.map((candidate,index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
+                            alt={candidate?.candidateId?.firstName||"Avatar"}
+                          />
+                          <AvatarFallback>{candidate?.candidateId?.firstName?.[0]||"P"}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{candidate?.candidateId?.firstName||"No name"}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {candidate?.candidateId?.email||"No email"}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{candidate?.candidateId?.professionalDetails?.currentJobTitle||"No Title"}</TableCell>
+                    <TableCell>{candidate?.jobId?.location?.city||"-"}</TableCell>
+                    <TableCell>
+                      {format(candidate?.appliedDate, "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      {format(candidate?.shortlistedDate, "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        asChild
+                      >
+                        <a
+                          href={candidate?.candidateId?.professionalDetails?.resume?.url||""}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -544,33 +469,33 @@ export default function AppliedCandidates() {
             <Card key={index} className="p-4">
               <div className="flex items-start gap-4">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={candidate.avatar} alt={candidate.name} />
-                  <AvatarFallback>{candidate?.name?.[0]}</AvatarFallback>
+                  <AvatarImage src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture} alt={candidate?.candidateId?.firstName||"Avatar"} />
+                  <AvatarFallback>{candidate?.candidateId?.firstName?.[0]||"P"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-medium">{candidate.name}</div>
+                  <div className="font-medium">{candidate?.candidateId?.firstName||"No name"}</div>
                   <div className="text-sm text-muted-foreground">
-                    {candidate.company}
+                  {candidate?.candidateId?.email||"No email"}
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    {candidate.jobTitle}
+                  {candidate?.candidateId?.professionalDetails?.currentJobTitle||"No Title"}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {candidate.location}
+                  {candidate?.jobId?.location?.city||"-"}
                   </div>
                   <div className="mt-2 flex items-center text-sm text-gray-500">
                     <Calendar className="mr-2 h-4 w-4" />
-                    Applied: {format(candidate.appliedDate, "MMM d, yyyy")}
+                    Applied: {format(candidate?.appliedDate, "MMM d, yyyy")}
                   </div>
                   <div className="mt-1 flex items-center text-sm text-gray-500">
                     <Calendar className="mr-2 h-4 w-4" />
                     Shortlisted:{" "}
-                    {format(candidate.shortlistedDate, "MMM d, yyyy")}
+                    {format(candidate?.shortlistedDate, "MMM d, yyyy")}
                   </div>
                   <div className="mt-3 flex justify-between items-center">
                     <Button variant="ghost" size="sm" asChild>
                       <a
-                        href={candidate.resumeUrl}
+                        href={candidate?.candidateId?.professionalDetails?.resume?.url||""}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
