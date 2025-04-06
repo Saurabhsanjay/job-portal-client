@@ -257,6 +257,39 @@ export default function AutomationSetupPage() {
       templates[0].icon = MessageSquare;
       templates[1].icon = UserCheck;
       templates[2].icon = Mail;
+      templates[0].variables = [
+        {
+          key: "{{candidate_name}}",
+          label: "Candidate Name",
+          example: "John Doe",
+        },
+        { key: "{{job_title}}", label: "Job Title", example: "Senior Developer" },
+        { key: "{{company_name}}", label: "Company Name", example: "Acme Inc" },
+      ];
+      templates[1].variables = [
+        {
+          key: "{{candidate_name}}",
+          label: "Candidate Name",
+          example: "John Doe",
+        },
+        { key: "{{job_title}}", label: "Job Title", example: "Senior Developer" },
+        {
+          key: "{{interview_date}}",
+          label: "Interview Date",
+          example: "Monday, Jan 1, 2024",
+        },
+      ];
+      templates[2].variables = [
+        {
+          key: "{{candidate_name}}",
+          label: "Candidate Name",
+          example: "John Doe",
+        },
+        { key: "{{job_title}}", label: "Job Title", example: "Senior Developer" },
+      ];
+      templates[0].defaultTemplate = "Dear {{candidate_name}},\n\nThank you for applying to the {{job_title}} position at {{company_name}}.";
+      templates[1].defaultTemplate = "Dear {{candidate_name}},\n\nCongratulations! You've been shortlisted for the {{job_title}} position.";
+      templates[2].defaultTemplate = "Dear {{candidate_name}},\n\nThank you for your interest in the {{job_title}} position.";
       setSelectedAutomationTemplates(templates);
     }
   }, [automationsTemplatesData]);
