@@ -20,10 +20,10 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
 import { useApiPost } from "@/hooks/use-api-query"
+import toast from "react-hot-toast"
 
-const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "VOLUNTEER"] as const
+const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT",  "INTERNSHIP", "VOLUNTEER"] as const
 
 const experienceLevels = ["JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"] as const
 
@@ -156,7 +156,6 @@ export default function JobPostingForm() {
   const [newTag, setNewTag] = React.useState("")
 
   const router = useRouter()
-  const { toast } = useToast()
 
   const {
     register,
@@ -272,27 +271,19 @@ export default function JobPostingForm() {
       {
         onSuccess: (response) => {
           if (response.data) {
-            toast({
-              title: "Success",
-              description: "Job posting created successfully",
-            })
+            
+            toast.success("Job posting created successfully")
             reset()
             // Navigate back to jobs list
             router.push("/employer/jobs")
           } else if (response.error) {
-            toast({
-              title: "Error",
-              description: response.error.message,
-              variant: "destructive",
-            })
+            
+            toast.error("Failed to create job posting")
           }
         },
         onError: (error) => {
-          toast({
-            title: "Error",
-            description: error.message || "Failed to create job posting",
-            variant: "destructive",
-          })
+          toast.error(error.message || "Failed to create job posting")
+         
         },
       },
     )
