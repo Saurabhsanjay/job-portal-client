@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, MapPin, Briefcase, Save, FileText, Eye } from "lucide-react"
+import { Search, MapPin, Briefcase, FileText, Eye, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator"
 import { useApiGet } from "@/hooks/use-api-query"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar } from "@/components/ui/calendar"
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
 
@@ -157,22 +156,17 @@ export interface ActivityDetails {
   accountCreationDate?: string
 }
 
-const mapExperienceLevel = (experienceLevel: string) => {
-    switch (experienceLevel) {
-      case 'Entry Level':
-        return { $lte: 2 };
-      case 'Mid Level':
-        return { $gt: 2, $lte: 5 };
-      case 'Senior Level':
-        return { $gt: 5, $lte: 10 };
-      case 'Director':
-        return { $gt: 10, $lte: 15 };
-      case 'Executive':
-        return { $gt: 15 };
-      default:
-        return {};
-    }
-  }
+const getExperienceLevelLabel = (years: number | null | undefined): string => {
+  if (years === null || years === undefined || isNaN(Number(years))) return "-"
+
+  if (years <= 2) return "Entry Level"
+  if (years > 2 && years <= 5) return "Mid Level"
+  if (years > 5 && years <= 10) return "Senior Level"
+  if (years > 10 && years <= 15) return "Director"
+  if (years > 15) return "Executive"
+
+  return "-"
+}
 
 export default function TalentSourcing() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -227,19 +221,21 @@ export default function TalentSourcing() {
     if (searchParams.workType) queryParams.append("workType", searchParams.workType)
     if (searchParams.availability) queryParams.append("Availability", searchParams.availability)
     if (searchParams.salaryRange) queryParams.append("salaryRange", searchParams.salaryRange)
-  
+
     const queryStr = queryParams.toString()
     setQueryString(queryStr)
   }
-  
 
   const {
     data: TalentScoutDetails,
     isLoading,
     error,
     refetch,
-  } = useApiGet<TalentScoutResponse>(`talent-scout/advance-talent-scout-details?${queryString}`, {}, ["talent-scouts", queryString])
-  
+  } = useApiGet<TalentScoutResponse>(`talent-scout/advance-talent-scout-details?${queryString}`, {}, [
+    "talent-scouts",
+    queryString,
+  ])
+
   console.log("TalentScoutDetails----------------->", TalentScoutDetails)
 
   React.useEffect(() => {
@@ -427,84 +423,154 @@ export default function TalentSourcing() {
                   <TableHead className="w-[150px]">Location</TableHead>
                   <TableHead className="w-[150px]">Experience Level</TableHead>
                   <TableHead className="w-[150px]">Employment Type</TableHead>
-                  {/* <TableHead className="w-[150px]">Shortlisted Date</TableHead> */}
+                  <TableHead className="w-[150px]">Industry</TableHead>
+                  <TableHead className="w-[150px]">Availability</TableHead>
+                  <TableHead className="w-[150px]">Skills</TableHead>
                   <TableHead className="w-[100px]">Resume</TableHead>
                   <TableHead className="w-[100px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {candidates?.map((candidate, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage
-                            src={candidate?.personalDetails?.profilePicture}
-                            alt={candidate.personalDetails?.firstName}
-                          />
-                          <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{candidate?.personalDetails?.firstName}</div>
-                          <div className="text-sm text-muted-foreground">{candidate?.personalDetails?.email}</div>
-                        </div>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center text-sm text-muted-foreground">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="h-6 w-6 animate-spin" />
                       </div>
                     </TableCell>
-                    <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                    <TableCell>{candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}</TableCell>
-                    <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.totalExperience || "-"}</TableCell>
-                    <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.employmentType || "-"}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <a
-                          href={candidate?.jobSeekerDetails?.professionalDetails?.resume}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                  </TableRow>
+                ) : candidates?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center text-sm text-muted-foreground">
+                      No Candidates To Show
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  candidates?.map((candidate, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={candidate?.personalDetails?.profilePicture}
+                              alt={candidate.personalDetails?.firstName}
+                            />
+                            <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{candidate?.personalDetails?.firstName}</div>
+                            <div className="text-sm text-muted-foreground">{candidate?.personalDetails?.email}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
+                      <TableCell>
+                        {candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {getExperienceLevelLabel(candidate?.jobSeekerDetails?.professionalDetails?.totalExperience) ||
+                          "-"}
+                      </TableCell>
+                      <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.employmentType || "-"}</TableCell>
+                      <TableCell>{candidate?.employerDetails?.companyIndustry || "-"}</TableCell>
+                      <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.noticePeriod || "-"}</TableCell>
+                      <TableCell>
+                        {candidate?.jobSeekerDetails?.professionalDetails?.skills
+                          ?.slice(0, 3)
+                          .map((skill) => skill)
+                          .join(", ") || "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                          <a
+                            href={candidate?.jobSeekerDetails?.professionalDetails?.resume}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
 
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
-            {candidates?.map((candidate, index) => (
-              <Card key={index} className="p-4">
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={candidate?.personalDetails?.profilePicture}
-                      alt={candidate.personalDetails?.firstName}
-                    />
-                    <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="font-medium">{candidate?.personalDetails?.firstName}</div>
-                    <div className="text-sm text-muted-foreground">{candidate?.personalDetails?.email}</div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}
+            {isLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : candidates?.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground">No Candidates To Show</div>
+            ) : (
+              candidates?.map((candidate, index) => (
+                <Card key={index} className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage
+                          src={candidate?.personalDetails?.profilePicture}
+                          alt={candidate.personalDetails?.firstName}
+                        />
+                        <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium text-base">
+                          {candidate?.personalDetails?.firstName} {candidate?.personalDetails?.lastName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{candidate?.personalDetails?.email}</div>
+                        <div className="text-sm font-medium mt-1">
+                          {candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle || "-"}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">{candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}</div>
-                    {/* <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Applied: {"-"}
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="font-medium text-muted-foreground">Location:</span>
+                        <div>{candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Experience:</span>
+                        <div>
+                          {getExperienceLevelLabel(candidate?.jobSeekerDetails?.professionalDetails?.totalExperience) ||
+                            "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Employment:</span>
+                        <div>{candidate?.jobSeekerDetails?.professionalDetails?.employmentType || "-"}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Industry:</span>
+                        <div>{candidate?.employerDetails?.companyIndustry || "-"}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Availability:</span>
+                        <div>{candidate?.jobSeekerDetails?.professionalDetails?.noticePeriod || "-"}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Skills:</span>
+                        <div className="truncate">
+                          {candidate?.jobSeekerDetails?.professionalDetails?.skills
+                            ?.slice(0, 3)
+                            .map((skill) => skill)
+                            .join(", ") || "-"}
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-1 flex items-center text-sm text-gray-500">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Shortlisted: {"-"}
-                    </div> */}
-                    <div className="mt-3 flex justify-between items-center">
-                      <Button variant="ghost" size="sm" asChild>
+
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <Button variant="outline" size="sm" asChild>
                         <a
                           href={candidate?.jobSeekerDetails?.professionalDetails?.resume}
                           target="_blank"
@@ -514,15 +580,15 @@ export default function TalentSourcing() {
                           Resume
                         </a>
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="secondary" size="sm">
                         <Eye className="mr-2 h-4 w-4" />
-                        View
+                        View Profile
                       </Button>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -544,3 +610,4 @@ export default function TalentSourcing() {
   )
 }
 
+// export default TalentSourcing
