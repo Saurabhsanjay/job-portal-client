@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, MapPin, Briefcase, FileText, Eye, Loader2 } from "lucide-react"
+import { Search, MapPin, Briefcase, FileText, Eye, Loader2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { useApiGet } from "@/hooks/use-api-query"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
 
@@ -156,6 +157,30 @@ export interface ActivityDetails {
   accountCreationDate?: string
 }
 
+interface JobResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: Job[];
+}
+
+interface Job {
+  _id: string;
+  title: string;
+  location: Location;
+  employmentType: string;
+  industry: string;
+  filteredCandidatesCount: number;
+}
+
+interface Location {
+  city: string;
+  state: string;
+  country: string;
+}
+
+
 const getExperienceLevelLabel = (years: number | null | undefined): string => {
   if (years === null || years === undefined || isNaN(Number(years))) return "-"
 
@@ -170,23 +195,25 @@ const getExperienceLevelLabel = (years: number | null | undefined): string => {
 
 export default function TalentSourcing() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {user}=useAuth()
+  console.log("user------>",user)
   const [activeJobs, setActiveJobs] = React.useState([
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      location: "Remote",
-      type: "Full-time",
-      matches: 45,
-      newMatches: 12,
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      location: "New York, NY",
-      type: "Full-time",
-      matches: 28,
-      newMatches: 5,
-    },
+    // {
+    //   id: 1,
+    //   title: "Senior Frontend Developer",
+    //   location: "Remote",
+    //   type: "Full-time",
+    //   matches: 45,
+    //   newMatches: 12,
+    // },
+    // {
+    //   id: 2,
+    //   title: "Product Manager",
+    //   location: "New York, NY",
+    //   type: "Full-time",
+    //   matches: 28,
+    //   newMatches: 5,
+    // },
   ])
 
   const [candidates, setCandidates] = React.useState([])
@@ -244,6 +271,34 @@ export default function TalentSourcing() {
     }
   }, [TalentScoutDetails])
 
+  const {
+    data: TalentScoutJobs,
+    isJobsLoading,
+    // error,
+    // refetch,
+  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/65ff4a2b8c9d4e001c3a7b89`, {}, [
+    "talent-scouts-jobs"
+  ])
+
+  console.log("talent scout jobs------------->", TalentScoutJobs)
+
+  React.useEffect(() => {
+    if (TalentScoutJobs) {
+      const activeJobs=TalentScoutJobs?.data?.map((job) => ({
+        id: job._id,
+          title: job.title,
+          location: [job.location.city, job.location.state, job.location.country]
+            .filter((item) => item !== null && item !== "")
+            .join(", "),
+          employmentType: job.employmentType,
+          type: job.industry,
+          matches: job.filteredCandidatesCount,
+          newMatches: job.newFilteredCandidatesCount || 0,
+      }))
+      setActiveJobs(activeJobs)
+    }
+  }, [TalentScoutJobs])
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-8">
@@ -280,11 +335,7 @@ export default function TalentSourcing() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="font-semibold">{job.matches} matches</div>
-                      {job.newMatches > 0 && (
-                        <Badge variant="secondary" className="mt-1">
-                          {job.newMatches} new
-                        </Badge>
-                      )}
+                      
                     </div>
                     <Button>View Matches</Button>
                   </div>
