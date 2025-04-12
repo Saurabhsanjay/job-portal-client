@@ -13,6 +13,7 @@ import { useApiGet } from "@/hooks/use-api-query"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/app/(providers)/AuthContext"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
 
@@ -158,28 +159,74 @@ export interface ActivityDetails {
 }
 
 interface JobResponse {
-  status: string;
-  statusCode: number;
-  message: string;
-  formattedMessage: string;
-  data: Job[];
+  status: string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: Job[]
 }
 
 interface Job {
-  _id: string;
-  title: string;
-  location: Location;
-  employmentType: string;
-  industry: string;
-  filteredCandidatesCount: number;
+  _id: string
+  title: string
+  location: Location
+  employmentType: string
+  industry: string
+  filteredCandidatesCount: number
 }
 
 interface Location {
-  city: string;
-  state: string;
-  country: string;
+  city: string
+  state: string
+  country: string
 }
 
+interface MatchTalentScoutResponse {
+  status: string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: TalentScoutMatch[]
+}
+
+interface TalentScoutMatch {
+  _id: string
+  jobId: string
+  matchCount: number
+  isDeleted: boolean
+  createdAt: string
+  updatedAt: string
+  __v: number
+  candidateId: CandidateMatch[]
+}
+
+interface CandidateMatch {
+  _id: string
+  personalDetails: PersonalDetailMatch
+  jobSeekerDetails: JobSeekerDetailsMatch
+}
+
+interface PersonalDetailMatch {
+  firstName: string
+  lastName: string
+  profilePicture: string
+  email: string
+}
+
+interface JobSeekerDetailsMatch {
+  professionalDetails: ProfessionalDetailsMatch
+}
+
+interface ProfessionalDetailsMatch {
+  currentJobTitle: string
+  currentEmployer: string
+  totalExperience: number
+  skills: string[]
+  keyAchievements: string
+  currentCTC: number
+  expectedCTC: number
+  employmentType: string
+}
 
 const getExperienceLevelLabel = (years: number | null | undefined): string => {
   if (years === null || years === undefined || isNaN(Number(years))) return "-"
@@ -195,8 +242,8 @@ const getExperienceLevelLabel = (years: number | null | undefined): string => {
 
 export default function TalentSourcing() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const {user}=useAuth()
-  console.log("user------>",user)
+  const { user } = useAuth()
+  console.log("user------>", user)
   const [activeJobs, setActiveJobs] = React.useState([
     // {
     //   id: 1,
@@ -229,6 +276,8 @@ export default function TalentSourcing() {
   })
 
   const [queryString, setQueryString] = React.useState("")
+  const [jobId, setJobId] = React.useState(null)
+  const [isMatchModalOpen, setIsMatchModalOpen] = React.useState(false)
 
   // Handle input changes
   const handleInputChange = (field: string, value: string) => {
@@ -276,28 +325,49 @@ export default function TalentSourcing() {
     isJobsLoading,
     // error,
     // refetch,
-  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/65ff4a2b8c9d4e001c3a7b89`, {}, [
-    "talent-scouts-jobs"
-  ])
+  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/65ff4a2b8c9d4e001c3a7b89`, {}, ["talent-scouts-jobs"])
 
   console.log("talent scout jobs------------->", TalentScoutJobs)
 
   React.useEffect(() => {
     if (TalentScoutJobs) {
-      const activeJobs=TalentScoutJobs?.data?.map((job) => ({
+      const activeJobs = TalentScoutJobs?.data?.map((job) => ({
         id: job._id,
-          title: job.title,
-          location: [job.location.city, job.location.state, job.location.country]
-            .filter((item) => item !== null && item !== "")
-            .join(", "),
-          employmentType: job.employmentType,
-          type: job.industry,
-          matches: job.filteredCandidatesCount,
-          newMatches: job.newFilteredCandidatesCount || 0,
+        title: job.title,
+        location: [job.location.city, job.location.state, job.location.country]
+          .filter((item) => item !== null && item !== "")
+          .join(", "),
+        employmentType: job.employmentType,
+        type: job.industry,
+        matches: job.filteredCandidatesCount,
+        newMatches: job.newFilteredCandidatesCount || 0,
       }))
       setActiveJobs(activeJobs)
     }
   }, [TalentScoutJobs])
+
+  const {
+    data: MatchCandidates,
+    isMatchCandidatesLoading,
+    // error,
+    refetch: refetchMatchCandidates,
+  } = useApiGet<MatchTalentScoutResponse>(
+    jobId ? `talent-scout/talent-scout-details?jobId=${jobId}` : null, 
+    {}, 
+    ["match-candidates", jobId]
+  )
+
+  React.useEffect(() => {
+    refetchMatchCandidates()
+    setIsMatchModalOpen(true)
+  }, [jobId, refetchMatchCandidates])
+
+  const handleViewMatches = (jobId: string) => {
+    setJobId(jobId)
+    // refetchMatchCandidates().then(() => {
+    //   setIsMatchModalOpen(true)
+    // })
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -335,9 +405,8 @@ export default function TalentSourcing() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="font-semibold">{job.matches} matches</div>
-                      
                     </div>
-                    <Button>View Matches</Button>
+                    <Button onClick={() => handleViewMatches(job.id)}>View Matches</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -657,6 +726,78 @@ export default function TalentSourcing() {
           </Card>
         </TabsContent>
       </Tabs>
+      <Dialog open={isMatchModalOpen} onOpenChange={setIsMatchModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Candidate Matches</DialogTitle>
+            <DialogDescription>Candidates that match the requirements for this job position</DialogDescription>
+          </DialogHeader>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Current Job Title</TableHead>
+                  <TableHead>Experience</TableHead>
+                  <TableHead>Skills</TableHead>
+                  <TableHead>Expected CTC</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isMatchCandidatesLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ) : MatchCandidates?.data?.[0]?.candidateId?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
+                      No matching candidates found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  MatchCandidates?.data?.[0]?.candidateId?.map((candidate) => (
+                    <TableRow key={candidate._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={candidate.personalDetails.profilePicture}
+                              alt={candidate.personalDetails.firstName}
+                            />
+                            <AvatarFallback>
+                              <User className="h-4 w-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>
+                            {candidate.personalDetails.firstName} {candidate.personalDetails.lastName}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{candidate.personalDetails.email}</TableCell>
+                      <TableCell>{candidate.jobSeekerDetails.professionalDetails.currentJobTitle}</TableCell>
+                      <TableCell>{candidate.jobSeekerDetails.professionalDetails.totalExperience} years</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {candidate.jobSeekerDetails.professionalDetails.skills.slice(0, 3).map((skill, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>${candidate.jobSeekerDetails.professionalDetails.expectedCTC}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

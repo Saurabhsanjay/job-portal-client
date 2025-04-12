@@ -213,7 +213,7 @@ export default function Messages() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   const {user}=useAuth()
-  console.log("user",user)
+  // console.log("user",user)
 
   const currentUser = user?.id as string;
   console.log("currentUser", currentUser);
@@ -271,21 +271,11 @@ export default function Messages() {
 
       if (data.event === "message") {
         console.log("📩 Message received from socket:", data);
-        // setMessages((prev) => [...prev, `${data.senderId}: ${data.content}`]);
 
-        // const newMessageObj: Message = {
-        //   id: Date.now(),
-        //   content: data.content,
-        //   timestamp: "Just now",
-        //   sender: {
-        //     id: 0,
-        //     name: "You",
-        //     avatar: "/placeholder.svg",
-        //     isYou: data.senderId === currentUser,
-        //   },
-        // }
-
+        console.log("data", data);
+        console.log("currentUser", currentUser);
         const isSender = data?.senderId?._id === currentUser;
+        console.log("isSender", isSender);
     // const otherUser = isSender ? msg?.receiverId : msg?.senderId;
 
         const newMessageObj: Message = {
@@ -324,7 +314,7 @@ export default function Messages() {
     return () => {
       ws.close();
     };
-  }, []);
+  }, [currentUser]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
