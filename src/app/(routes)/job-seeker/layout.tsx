@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 // import Dashboard from "./Dashboard"
 import { Badge } from "@/components/ui/badge"
-import { usePathname } from "next/navigation"
+import { usePathname,useRouter } from "next/navigation"
 
 
 const navigation = [
@@ -55,6 +55,7 @@ export default function JobSeekerDashboardLayout({ children }: { children: React
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [count, setCount] = useState(99);
     const pathname = usePathname()
+    const router = useRouter()
     const handleClick = () => {
         setCount(0);
     };
@@ -114,9 +115,9 @@ export default function JobSeekerDashboardLayout({ children }: { children: React
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>Profile</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push("/job-seeker/profile")}>Profile</DropdownMenuItem>
                                 <DropdownMenuItem>Settings</DropdownMenuItem>
-                                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push("/job-seeker/logout")}>Log out</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

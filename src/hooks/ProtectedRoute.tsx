@@ -3,23 +3,34 @@
 import { useContext, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthContext } from "@/app/(providers)/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const PUBLIC_ROUTES = ["/auth/login", "/auth/register"];
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useContext(AuthContext)!;
+  const { user,loading } = useContext(AuthContext)!;
   const router = useRouter();
   const pathname = usePathname(); // Get the current route
 
   useEffect(() => {
-    // If user is NOT logged in and NOT on a public route, redirect to login
-    console.log("User:", user);
-    console.log("Pathname:", pathname);
-    if (!user) {
-        console.log("Redirecting to login...");
-      router.push("/auth/login");
+    if (!loading) {
+      if (!user && !PUBLIC_ROUTES.includes(pathname)) {
+        router.push("/auth/login");
+      }
     }
-  }, [user, pathname, router]);
+  }, [user, loading, pathname, router]);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          {/* <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div> */}
+          <Loader2 className="animate-spin" />
+          <p className="text-center text-lg mt-2">Loading...</p>
+        </div>
+      </div>
+    ); 
+  }
 
   return <>{children}</>;
 }
