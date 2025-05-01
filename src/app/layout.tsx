@@ -41,6 +41,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            
         {/* <SessionProvider session={session}> */}
           {/* <Navbar /> */}
           <ReactQueryProvider>
