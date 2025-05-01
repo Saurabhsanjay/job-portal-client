@@ -192,7 +192,13 @@ export default function EmployerDashboard() {
         `dashboard/applicant-trends/${user?.id}`,
       )
 
-      console.log("applicantTrendsList---->",applicantTrendsList)
+      const {
+        data: jobsExpiringTodayData,
+      } = useApiGet<ApplicantTrendsResponse>(
+        `dashboard/job-expiry/${user?.id}`,
+      )
+
+      console.log("jobsExpiringTodayData---->",jobsExpiringTodayData)
 
       const jobPerformance = [
         { title: "Total Views", value: jobPerformanceTotalViews?.data||0, increase: 15 },
@@ -217,10 +223,10 @@ export default function EmployerDashboard() {
                 {[
                     { title: "Total Job Postings", value: jobPostingData?.data||0, subtext: "3 new this week", icon: Briefcase, color: "blue" },
                     { title: "Active Applications", value: activeApplicantsData?.data||0, subtext: "24 new today", icon: FileText, color: "green" },
-                    { title: "Interviews Scheduled", value: 12, subtext: "For next 7 days", icon: Calendar, color: "purple" },
+                    { title: "Total Bookmarks", value: 12, subtext: "For next 7 days", icon: Calendar, color: "purple" },
                     {
-                        title: "Time to Hire (Avg)",
-                        value: "18 days",
+                        title: "Jobs Expiring Today",
+                        value: `${jobsExpiringTodayData?.data||0} days`,
                         subtext: "2 days faster than last month",
                         icon: Clock,
                         color: "red",
@@ -236,7 +242,7 @@ export default function EmployerDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{item.value}</div>
-                            <p className="text-xs text-muted-foreground">{item.subtext}</p>
+                            {/* <p className="text-xs text-muted-foreground">{item.subtext}</p> */}
                         </CardContent>
                     </Card>
                 ))}

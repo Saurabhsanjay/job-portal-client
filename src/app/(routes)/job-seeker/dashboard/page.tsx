@@ -214,30 +214,46 @@ interface BookmarkRequest {
   isBookmarked: boolean;
 }
 
+export interface ShortlistedJobsCountResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: number;
+}
+
 export default function Dashboard() {
-  const {user}=useAuth()
-  console.log("user------>",user)
+  const { user } = useAuth();
+  console.log("user------>", user);
   const [bookmarkedJobs, setBookmarkedJobs] = useState(new Set());
   const [appliedJobs, setAppliedJobs] = useState<JobApplication[]>([]);
   const bookmarkJobMutation = useApiPost<BookmarkResponse, BookmarkRequest>();
 
   const {
-      data: appliedJobsData,
-      isLoading: isLoadingAppliedJobs,
-      error: appliedJobsError,
-    } = useApiGet<JobApplicationResponse>(
-      `applied-candidates/candidate/${user?.id}`,
-      ["applied-jobs"] // Query key for caching
-    );
+    data: appliedJobsData,
+    isLoading: isLoadingAppliedJobs,
+    error: appliedJobsError,
+  } = useApiGet<JobApplicationResponse>(
+    `applied-candidates/candidate/${user?.id}`,
+    ["applied-jobs"] // Query key for caching
+  );
 
-    console.log("appliedJobsData-------->",appliedJobsData)
+  console.log("appliedJobsData-------->", appliedJobsData);
 
-    useEffect(()=>{
-      if(appliedJobsData){
-        setAppliedJobs(appliedJobsData?.data?.applications)
-      }
-    },[appliedJobsData])
-    console.log("applied jobs",appliedJobs)
+  useEffect(() => {
+    if (appliedJobsData) {
+      setAppliedJobs(appliedJobsData?.data?.applications);
+    }
+  }, [appliedJobsData]);
+  console.log("applied jobs", appliedJobs);
+
+  const { data: shortlistedJobsData } = useApiGet<ShortlistedJobsCountResponse>(
+    `job-seeker-dashboard/shortlisted-jobscount/${user?.id}`
+  );
+
+  const { data: appliedJobsCountData } = useApiGet<ShortlistedJobsCountResponse>(
+    `job-seeker-dashboard/applied-jobscount/${user?.id}`
+  );
 
   const toggleBookmark = (jobId: unknown) => {
     setBookmarkedJobs((prev) => {
@@ -266,11 +282,11 @@ export default function Dashboard() {
           if (response.data) {
             toast.success("Job bookmarked successfully");
           } else if (response.error) {
-            toast.error(response?.error?.message||"Something Went Wrong");
+            toast.error(response?.error?.message || "Something Went Wrong");
           }
         },
         onError: (error) => {
-            toast.error(error?.message||"Something Went Wrong");
+          toast.error(error?.message || "Something Went Wrong");
         },
       }
     );
@@ -281,7 +297,7 @@ export default function Dashboard() {
         {[
           {
             title: "Applied Jobs",
-            value: 22,
+            value: appliedJobsCountData?.data || 0,
             subtext: "5 new this week",
             icon: Briefcase,
             color: "blue",
@@ -302,7 +318,7 @@ export default function Dashboard() {
           },
           {
             title: "Shortlisted",
-            value: 32,
+            value: shortlistedJobsData?.data || 0,
             subtext: "8 new opportunities",
             icon: Bookmark,
             color: "green",
@@ -525,16 +541,18 @@ export default function Dashboard() {
       <Card className="bg-white shadow-sm hover:shadow-md transition-shadow rounded-xl">
         <CardHeader>
           <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold text-gray-800">
-            Applied Jobs
-          </CardTitle>
-          <Button 
-            variant="outline" 
-            className="text-gray-600"
-            onClick={() => window.location.href = '/job-seeker/applied-jobs'}
-          >
+            <CardTitle className="text-xl font-semibold text-gray-800">
+              Applied Jobs
+            </CardTitle>
+            <Button
+              variant="outline"
+              className="text-gray-600"
+              onClick={() =>
+                (window.location.href = "/job-seeker/applied-jobs")
+              }
+            >
               View All
-          </Button>
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -546,20 +564,25 @@ export default function Dashboard() {
             <p className="text-center text-gray-600">No Applied Jobs To Show</p>
           ) : (
             <div className="space-y-4">
-              {appliedJobs?.slice(0,3).map((job) => (
+              {appliedJobs?.slice(0, 3).map((job) => (
                 <div
                   key={job._id}
                   className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={job?.logo||""} alt={job?.company||""} />
-                    <AvatarFallback>{job?.company?.[0]||"P"}</AvatarFallback>
+                    <AvatarImage
+                      src={job?.logo || ""}
+                      alt={job?.company || ""}
+                    />
+                    <AvatarFallback>{job?.company?.[0] || "P"}</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 flex-1">
                     <h4 className="text-base font-semibold text-gray-900">
-                      {job?.position||"No position"}
+                      {job?.position || "No position"}
                     </h4>
-                    <p className="text-sm text-gray-600">{job?.company||"No Company"}</p>
+                    <p className="text-sm text-gray-600">
+                      {job?.company || "No Company"}
+                    </p>
                   </div>
                   <Badge
                     variant={

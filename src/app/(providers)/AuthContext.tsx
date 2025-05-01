@@ -34,9 +34,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    console.log("Logging in with email:", email);
-    console.log("Logging in with password:", password);
-    console.log("loading", loading);
     try {
       const response = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
@@ -56,7 +53,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         setUser(loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
-        router.push("/");
+        console.log("Logged in user:", loggedInUser);
+        if(loggedInUser?.role==="JOBSEEKER"){
+          router.push("/job-seeker/dashboard");
+        }else{
+          router.push("/employer/dashboard");
+        }
+        // router.push("/");
         toast.success("Login successful");
       } else {
         // toast.error(data.message||"Login failed");

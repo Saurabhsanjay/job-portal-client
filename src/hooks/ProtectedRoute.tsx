@@ -9,16 +9,44 @@ const PUBLIC_ROUTES = ["/auth/login", "/auth/register"];
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user,loading } = useContext(AuthContext)!;
+  console.log("user----->", user);
   const router = useRouter();
   const pathname = usePathname(); // Get the current route
 
+  // useEffect(() => {
+  //   if (!loading) {
+  //     if (!user && !PUBLIC_ROUTES.includes(pathname)) {
+  //       router.push("/auth/login");
+  //     }
+  //   }
+  // }, [user, loading, pathname, router]);
+
   useEffect(() => {
-    if (!loading) {
-      if (!user && !PUBLIC_ROUTES.includes(pathname)) {
-        router.push("/auth/login");
+    if (loading) return;
+
+    // Redirect unauthenticated users
+    if (!user && !PUBLIC_ROUTES.includes(pathname)) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (user) {
+      const role = user.role;
+
+      // Block JOBSEEKER from EMPLOYER-specific routes
+      if (role === "JOBSEEKER" && pathname.includes("/employer")) {
+        router.push("/job-seeker/dashboard");
+        return;
+      }
+
+      // Block EMPLOYER from JOBSEEKER-specific routes
+      if (role === "EMPLOYER" && pathname.includes("/job-seeker")) {
+        router.push("/employer/dashboard");
+        return;
       }
     }
   }, [user, loading, pathname, router]);
+
 
   if (loading) {
     return (

@@ -17,7 +17,7 @@ import {
   EyeOffIcon,
   Loader2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import Image from "next/image";
 // import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/app/(providers)/AuthContext";
@@ -128,47 +128,37 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Professional gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50" />
+    <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-[size:24px_24px] opacity-70" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+      <div className="absolute top-20 right-20 w-64 h-64 bg-blue-200/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 left-20 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl" />
 
-      {/* Subtle grid pattern */}
-      <div className="absolute hidden md:block inset-0 bg-[linear-gradient(to_right,#8881_1px,transparent_1px),linear-gradient(to_bottom,#8881_1px,transparent_1px)] bg-[size:32px_32px]" />
-
-      {/* Clean, professional decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 hidden md:block" />
-      <div className="absolute top-0 right-0 w-1/3 h-32 bg-blue-50/40 blur-3xl hidden md:block" />
-      <div className="absolute bottom-0 left-0 w-1/3 h-32 bg-slate-50/40 blur-3xl hidden md:block" />
-
-      <Card className="relative mx-4 w-full max-w-[400px] shadow-none md:shadow-md border-none border-gray-200 bg-white">
-        <CardHeader>
-          <div className="flex items-center justify-center">
-            <Image
-              src="/logo.jpeg"
-              alt="Recruit-G"
-              width={120}
-              height={60}
-              className="h-8"
-            />
+      <Card className="relative w-full max-w-[420px] shadow-lg border border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300 animate-fadeIn">
+        <CardHeader className="space-y-4 pb-2">
+          <div className="flex items-center justify-center py-2">
+            <Image src="/logo.jpeg" alt="Recruit-G" width={140} height={70} className="h-10 object-contain" />
           </div>
-          <div className="flex items-center space-x-2 py-2 justify-around">
+
+          <div className="flex items-center justify-center gap-3 p-1 bg-gray-50 rounded-lg">
             <Button
-              className={`${
+              className={`flex-1 transition-all duration-200 ${
                 userType === "candidate"
-                  ? "bg-green-600"
-                  : "bg-gray-200 text-gray-700"
-              } text-white hover:bg-blue-700`}
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              }`}
               onClick={() => setUserType("candidate")}
               type="button"
             >
               <BriefcaseBusiness size={18} className="mr-2" /> Candidate
             </Button>
             <Button
-              className={`${
+              className={`flex-1 transition-all duration-200 ${
                 userType === "recruiter"
-                  ? "bg-blue-600"
-                  : "bg-gray-200 text-gray-700"
-              } text-white hover:bg-green-700`}
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              }`}
               onClick={() => setUserType("recruiter")}
               type="button"
             >
@@ -176,101 +166,95 @@ export default function LoginForm() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+
+        <CardContent className="space-y-5 pt-4">
           {loginError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm animate-pulse">
               {loginError}
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                {...register("email")}
-                className="bg-white focus:ring-2 focus:ring-blue-500/20"
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  {...register("email")}
+                  className="bg-gray-50 border-gray-200 focus:border-blue-300 focus:ring-2 focus:ring-blue-500/20 pl-3 h-11 transition-all duration-200"
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   {...register("password")}
-                  className="bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="bg-gray-50 border-gray-200 focus:border-blue-300 focus:ring-2 focus:ring-blue-500/20 pl-3 h-11 transition-all duration-200"
                   disabled={isLoading}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
-                  {showPassword ? (
-                    <EyeOffIcon className="h-4 w-4" />
-                  ) : (
-                    <EyeIcon className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">
-                    {showPassword ? "Hide password" : "Show password"}
-                  </span>
+                  {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                  <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
                 </Button>
               </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm">
-                  {errors.password.message}
-                </p>
-              )}
-              <div className="flex justify-between items-center mt-2">
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="rememberMe"
-                    control={control}
-                    render={({ field }) => (
-                      <Checkbox
-                        id="rememberMe"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isLoading}
-                      />
-                    )}
-                  />
-                  <label
-                    htmlFor="rememberMe"
-                    className="text-sm leading-5 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Remember me
-                  </label>
-                </div>
-                <a
-                  href="/auth/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-700 underline"
-                >
-                  Forgot password?
-                </a>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Controller
+                  name="rememberMe"
+                  control={control}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="rememberMe"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                      className="text-blue-600 border-gray-300 rounded focus:ring-blue-500/20"
+                    />
+                  )}
+                />
+                <label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer select-none">
+                  Remember me
+                </label>
               </div>
+              <a
+                href="/auth/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                Forgot password?
+              </a>
             </div>
 
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 mt-6"
               type="submit"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -279,26 +263,24 @@ export default function LoginForm() {
             </Button>
           </form>
 
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">
-                Or continue with
-              </span>
+              <span className="bg-white px-4 text-gray-500 font-medium">Or continue with</span>
             </div>
           </div>
 
           <Button
             variant="outline"
-            className="w-full"
+            className="w-full h-11 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
             type="button"
             onClick={() => signIn("google", { callbackUrl })}
             disabled={isLoading}
           >
             <svg
-              className="mr-2 h-4 w-4"
+              className="mr-2 h-5 w-5 text-red-500"
               aria-hidden="true"
               focusable="false"
               data-prefix="fab"
@@ -315,15 +297,18 @@ export default function LoginForm() {
             Continue with Google
           </Button>
         </CardContent>
-        <p className="text-center text-sm text-muted-foreground p-4">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/auth/register"
-            className="text-blue-600 hover:text-blue-700 "
-          >
-            Register
-          </a>
-        </p>
+
+        <CardFooter className="flex justify-center pt-2 pb-6">
+          <p className="text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <a
+              href="/auth/register"
+              className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors"
+            >
+              Register
+            </a>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
