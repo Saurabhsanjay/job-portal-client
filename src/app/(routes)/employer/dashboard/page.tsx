@@ -198,7 +198,13 @@ export default function EmployerDashboard() {
         `dashboard/job-expiry/${user?.id}`,
       )
 
-      console.log("jobsExpiringTodayData---->",jobsExpiringTodayData)
+      const {
+        data: bookmarkData,
+      } = useApiGet<ApplicantTrendsResponse>(
+        `dashboard/bookmarkcount/${user?.id}`,
+      )
+
+      console.log("bookmarkData---->",bookmarkData)
 
       const jobPerformance = [
         { title: "Total Views", value: jobPerformanceTotalViews?.data||0, increase: 15 },
@@ -223,7 +229,7 @@ export default function EmployerDashboard() {
                 {[
                     { title: "Total Job Postings", value: jobPostingData?.data||0, subtext: "3 new this week", icon: Briefcase, color: "blue" },
                     { title: "Active Applications", value: activeApplicantsData?.data||0, subtext: "24 new today", icon: FileText, color: "green" },
-                    { title: "Total Bookmarks", value: 12, subtext: "For next 7 days", icon: Calendar, color: "purple" },
+                    { title: "Total Bookmarks", value: bookmarkData?.data||0, subtext: "For next 7 days", icon: Calendar, color: "purple" },
                     {
                         title: "Jobs Expiring Today",
                         value: `${jobsExpiringTodayData?.data||0} days`,
@@ -353,7 +359,7 @@ export default function EmployerDashboard() {
             </Card>
 
             {/* Top Candidates and Upcoming Interviews */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-1">
                 {/* Top Candidates */}
                 <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
@@ -394,7 +400,7 @@ export default function EmployerDashboard() {
                 </Card>
 
                 {/* Upcoming Interviews */}
-                <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+                {/* <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
                         <CardTitle className="text-xl font-semibold">Upcoming Interviews</CardTitle>
                     </CardHeader>
@@ -422,7 +428,7 @@ export default function EmployerDashboard() {
                             ))}
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
             </div>
         </div>
     )
