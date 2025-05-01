@@ -293,10 +293,10 @@ export default function EmployerDashboard() {
                                             <p className="text-sm font-medium">{stat.title}</p>
                                             <p className="text-2xl font-bold">{stat.value}</p>
                                         </div>
-                                        <div className="flex items-center space-x-2">
+                                        {/* <div className="flex items-center space-x-2">
                                             <TrendingUp className="h-4 w-4 text-green-500" />
                                             <span className="text-green-500">{stat.increase}%</span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <Progress value={stat.increase} className="h-1 mt-2" />
                                 </div>
