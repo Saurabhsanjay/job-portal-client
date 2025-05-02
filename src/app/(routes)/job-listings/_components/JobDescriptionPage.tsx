@@ -79,7 +79,7 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-20">
+    <div className="bg-gray-50 py-4 md:py-8 px-4 md:px-20 overflow-auto max-h-screen">
       <div className="container mx-auto">
         {/* Back button */}
         <Button
