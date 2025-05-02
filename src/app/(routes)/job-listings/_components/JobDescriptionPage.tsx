@@ -21,6 +21,8 @@ import {
 import { format } from "date-fns"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { ApplicationModal } from "./ApplicationModal"
 
 interface JobDescriptionProps {
   job: {
@@ -49,12 +51,11 @@ interface JobDescriptionProps {
 
 export function JobDescriptionPage({ job }: JobDescriptionProps) {
   const router = useRouter()
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
 
   const handleApply = () => {
-    // In a real app, this would navigate to an application form or open a modal
-    console.log("Apply for job:", job.title)
-    // For now, just show an alert
-    alert(`Applied for ${job.title}!`)
+    // Open the application modal instead of showing an alert
+    setIsApplicationModalOpen(true)
   }
 
   const handleSave = () => {
@@ -282,6 +283,13 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
           </Card>
         </div>
       </div>
+
+      {/* Application Modal */}
+      <ApplicationModal
+        isOpen={isApplicationModalOpen}
+        onClose={() => setIsApplicationModalOpen(false)}
+        job={job}
+      />
     </div>
   )
 }
