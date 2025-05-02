@@ -6,14 +6,16 @@ import { JobCard } from "./JobCard"
 import type { IJob, JobFilters } from "../types/job.types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
+import { useApiGet } from "@/hooks/use-api-query"
+import { Loader2 } from "lucide-react"
 
-interface JobBoardProps {
-  initialJobs: IJob[]
-}
+// interface JobBoardProps {
+//   initialJobs: IJob[]
+// }
 
-export function JobBoard({ initialJobs }: JobBoardProps) {
+export function JobBoard() {
   const router = useRouter()
-  const [jobs, setJobs] = useState<IJob[]>(initialJobs)
+  const [jobs, setJobs] = useState<IJob[]>([])
   const [filters, setFilters] = useState<JobFilters>({
     search: "",
     location: {
@@ -23,7 +25,7 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
     },
     radius: 100,
     employmentType: [],
-    datePosted: "30d",
+    datePosted: null,
   })
   const [isMobile, setIsMobile] = useState(false)
   const [sortBy, setSortBy] = useState("relevance")
@@ -35,22 +37,73 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
     return () => window.removeEventListener("resize", checkIfMobile)
   }, [])
 
+  // Build query parameters based on current filters
+  const buildQueryParams = () => {
+    const params = new URLSearchParams()
+
+    if (filters.search) params.set("keywords", filters.search)
+
+    if (filters.location.city) params.set("city", filters.location.city)
+    if (filters.location.state) params.set("state", filters.location.state)
+    if (filters.location.country) params.set("country", filters.location.country)
+
+    if (filters.radius !== 100) params.set("radius", filters.radius.toString())
+
+    if (filters.employmentType && filters.employmentType.length > 0)
+      params.set("jobType", filters.employmentType.join(","))
+
+    if (filters.experienceLevel && filters.experienceLevel.length > 0)
+      params.set("experienceLevel", filters.experienceLevel.join(","))
+
+    if (filters.datePosted) {
+      let datePostedValue = ""
+      switch (filters.datePosted) {
+        case "24h":
+          datePostedValue = "Last 24 hours"
+          break
+        case "7d":
+          datePostedValue = "Last 7 days"
+          break
+        case "14d":
+          datePostedValue = "Last 14 days"
+          break
+        case "30d":
+          datePostedValue = "Last 30 days"
+          break
+      }
+      if (datePostedValue) params.set("datePosted", datePostedValue)
+    }
+
+    if (sortBy !== "relevance") params.set("sortBy", sortBy)
+
+    return params.toString()
+  }
+
+  const queryString = buildQueryParams()
+  console.log("query string----->",queryString)
+  // const { data: jobList, isLoading, error } = useApiGet<IJob[]>("jobs/get-jobs", {}, ["jobs"])
+  const {
+    data: jobList,
+    isLoading,
+    error,
+  } = useApiGet<IJob[]>(`jobs/get-jobs${queryString ? `?${queryString}` : ""}`, {}, ["jobs", queryString])
+
   useEffect(() => {
     // Update jobs when initialJobs changes
-    if (initialJobs.length > 0) {
-      setJobs(initialJobs)
+    if (jobList?.data?.length > 0) {
+      setJobs(jobList?.data)
     }
-  }, [initialJobs])
+  }, [jobList?.data])
 
   const handleFilterChange = (newFilters: JobFilters) => {
     setFilters(newFilters)
     // Here you would typically fetch filtered jobs from the API
     // For now, we'll just filter the existing jobs client-side
-    filterJobs(newFilters)
+    // filterJobs(newFilters)
   }
 
   const filterJobs = (currentFilters: JobFilters) => {
-    let filteredJobs = [...initialJobs]
+    let filteredJobs = [...jobList?.data]
 
     // Filter by search term
     if (currentFilters.search) {
@@ -139,6 +192,26 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
     router.push(`/jobs/${jobId}`)
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading jobs...</p>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <p className="text-red-500 mb-2">Failed to load jobs</p>
+        <p className="text-muted-foreground">{error.message}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-20">
       <div className="container mx-auto">
@@ -186,7 +259,7 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
                 <p className="text-sm text-gray-400">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className="space-y-2 md:space-y-4">
+              <div className="space-y-2 md:space-y-4 max-h-full overflow-y-auto" style={{ maxHeight: "calc(100vh - 100px)" }}>
                 {jobs.map((job) => (
                   <JobCard
                     key={job._id}
