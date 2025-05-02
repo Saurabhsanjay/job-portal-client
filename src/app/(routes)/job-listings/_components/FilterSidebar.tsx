@@ -271,7 +271,7 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
   }
 
   return (
-    <div className="hidden lg:block w-80 space-y-6 p-4 md:p-6 bg-white rounded-lg shadow-sm border-none">
+    <div className="hidden lg:block w-80 space-y-6 p-4 md:p-6 bg-white rounded-lg shadow-sm border-none overflow-y-auto" style={{ maxHeight: "calc(100vh - 40px)" }}>
       <FilterContent />
     </div>
   )
