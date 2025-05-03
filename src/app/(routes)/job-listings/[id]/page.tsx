@@ -41,15 +41,15 @@ export default function JobPage() {
 
   // Transform API job data to match the JobDescriptionPage props format
   const formattedJob = {
-    title: job?.data.title,
+    title: job?.data?.title,
     company: {
-      name: job?.data.company.name,
-      logo: job?.data.company.logoUrl || "/placeholder.svg?height=48&width=48",
+      name: job?.data?.company?.name,
+      logo: job?.data?.company?.logoUrl || "/placeholder.svg?height=48&width=48",
     },
     location: {
-      city: job?.data.location.city || "",
-      state: job?.data.location.state || "",
-      country: job?.data.location.country,
+      city: job?.data?.location.city || "",
+      state: job?.data?.location.state || "",
+      country: job?.data?.location.country,
     },
     salary: formatSalary(job?.data.salary.min, job?.data.salary.max, job?.data.salary.currency),
     type: job?.data.employmentType.replace("_", " "),

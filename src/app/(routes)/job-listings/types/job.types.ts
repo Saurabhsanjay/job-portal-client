@@ -101,7 +101,7 @@ export interface JobFilters {
   employmentType?: JobEmploymentType[];
   experienceLevel?: JobExperienceLevel[];
   datePosted?: string;
-  salary?: {
+  salaryRange?: {
     min?: number;
     max?: number;
     currency?: string;

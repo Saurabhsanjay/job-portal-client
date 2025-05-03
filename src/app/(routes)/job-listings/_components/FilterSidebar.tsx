@@ -46,15 +46,23 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
   const [isOpen, setIsOpen] = useState(false)
   const [openCombobox, setOpenCombobox] = useState<string | null>(null)
 
-  const handleRadiusChange = (value: number[]) => {
-    onFilterChange({ ...filters, radius: value[0] })
-  }
+  const handleRadiusChange = useCallback(
+    (value: number[]) => {
+      onFilterChange({ ...filters, radius: value[0] })
+    },
+    [filters, onFilterChange],
+  )
 
-  const handleEmploymentTypeChange = (type: JobEmploymentType) => {
-    const currentTypes = filters.employmentType || []
-    const updatedTypes = currentTypes.includes(type) ? currentTypes.filter((t) => t !== type) : [...currentTypes, type]
-    onFilterChange({ ...filters, employmentType: updatedTypes })
-  }
+  const handleEmploymentTypeChange = useCallback(
+    (type: JobEmploymentType) => {
+      const currentTypes = filters.employmentType || []
+      const updatedTypes = currentTypes.includes(type)
+        ? currentTypes.filter((t) => t !== type)
+        : [...currentTypes, type]
+      onFilterChange({ ...filters, employmentType: updatedTypes })
+    },
+    [filters, onFilterChange],
+  )
 
   const Combobox = useCallback(
     ({
@@ -95,34 +103,33 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
             <CommandList>
               <CommandEmpty className="text-sm md:text-base">No {label.toLowerCase()} found.</CommandEmpty>
               <CommandGroup>
-  {options.map((option, index) =>
-    option.divider ? (
-      <div key={`divider-${index}`} className="border-t my-2"></div>
-    ) : (
-      <CommandItem
-        key={option.city ? `${option.city}-${option.state}-${option.country}` : `option-${index}`}
-        onSelect={() => {
-          onChange(option);
-          setOpenCombobox(null);
-        }}
-        className="text-sm md:text-base"
-      >
-        <Check
-          className={cn(
-            "mr-2 h-4 w-4",
-            (typeof value === "string" ? value === option : value?.city === option.city)
-              ? "opacity-100"
-              : "opacity-0"
-          )}
-        />
-        {typeof option === "string"
-          ? option
-          : `${option.city}, ${option.state ? option.state + ", " : ""}${option.country}`}
-      </CommandItem>
-    )
-  )}
-</CommandGroup>
-
+                {options.map((option, index) =>
+                  option.divider ? (
+                    <div key={`divider-${index}`} className="border-t my-2"></div>
+                  ) : (
+                    <CommandItem
+                      key={option.city ? `${option.city}-${option.state}-${option.country}` : `option-${index}`}
+                      onSelect={() => {
+                        onChange(option)
+                        setOpenCombobox(null)
+                      }}
+                      className="text-sm md:text-base"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          (typeof value === "string" ? value === option : value?.city === option.city)
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                      {typeof option === "string"
+                        ? option
+                        : `${option.city}, ${option.state ? option.state + ", " : ""}${option.country}`}
+                    </CommandItem>
+                  ),
+                )}
+              </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
@@ -139,6 +146,7 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
+            type="text"
             placeholder="Job title, keywords, or company"
             value={filters.search}
             onChange={(e) => onFilterChange({ ...filters, search: e.target.value })}
@@ -271,9 +279,11 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
   }
 
   return (
-    <div className="hidden lg:block w-80 space-y-6 p-4 md:p-6 bg-white rounded-lg shadow-sm border-none overflow-y-auto" style={{ maxHeight: "calc(100vh - 40px)" }}>
+    <div
+      className="hidden lg:block w-80 space-y-6 p-4 md:p-6 bg-white rounded-lg shadow-sm border-none overflow-y-auto"
+      style={{ maxHeight: "calc(100vh - 40px)" }}
+    >
       <FilterContent />
     </div>
   )
 }
-
