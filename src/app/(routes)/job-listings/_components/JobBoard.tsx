@@ -8,16 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useApiGet } from "@/hooks/use-api-query"
 import { Loader2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 // interface JobBoardProps {
 //   initialJobs: IJob[]
 // }
 
 export function JobBoard() {
+  const searchParams = useSearchParams()
+  const query = searchParams.get("title")
+  console.log("query----->",query)  
   const router = useRouter()
   const [jobs, setJobs] = useState<IJob[]>([])
   const [filters, setFilters] = useState<JobFilters>({
-    search: "",
+    search: query||"",
     location: {
       city: "",
       state: "",
