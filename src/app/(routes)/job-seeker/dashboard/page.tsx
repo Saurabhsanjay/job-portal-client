@@ -31,6 +31,7 @@ import { useApiPost } from "@/hooks/use-api-query";
 import toast from "react-hot-toast";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import {ApplicationModal} from "../../job-listings/_components/ApplicationModal"
 
 interface JobApplicationResponse {
   status: string;
@@ -228,6 +229,8 @@ export default function Dashboard() {
   const [bookmarkedJobs, setBookmarkedJobs] = useState(new Set());
   const [appliedJobs, setAppliedJobs] = useState<JobApplication[]>([]);
   const bookmarkJobMutation = useApiPost<BookmarkResponse, BookmarkRequest>();
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+  const [job,setJob]=useState(null)
 
   const {
     data: appliedJobsData,
@@ -236,6 +239,15 @@ export default function Dashboard() {
   } = useApiGet<JobApplicationResponse>(
     `applied-candidates/candidate/${user?.id}`,
     ["applied-jobs"] // Query key for caching
+  );
+
+  const {
+    data: recommendedJobsData,
+    isLoading: isLoadingRecmmendedJobs,
+    error: recommendedJobsError,
+  } = useApiGet<JobApplicationResponse>(
+    `job-seeker-dashboard/recommended-jobs/${user?.id}`,
+    ["recommended-jobs"] // Query key for caching
   );
 
   console.log("appliedJobsData-------->", appliedJobsData);
@@ -427,37 +439,37 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recommendedJobs.map((job) => (
+            {recommendedJobsData?.data?.map((job,index) => (
               <Card
-                key={job.id}
+                key={index}
                 className="group flex flex-col bg-white border border-gray-200 hover:border-blue-200 hover:shadow-lg transition-all duration-300 rounded-xl"
               >
                 <CardHeader className="flex-row gap-4 items-start p-4">
                   <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                    <AvatarImage src={job.logo} alt={job.company} />
+                    <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
                     <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">
-                      {job.company[0]}
+                      {job?.company?.name?.[0]}
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
                     <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {job.position}
+                      {job?.title}
                     </CardTitle>
                     <p className="text-sm font-medium text-gray-600">
-                      {job.company}
+                      {job?.company?.name}
                     </p>
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="secondary"
                         className="bg-blue-50 text-blue-700 border-blue-100"
                       >
-                        {job.matchPercentage}% Match
+                        {job?.matchPercentage}% Match
                       </Badge>
-                      {job.isNew && (
+                      {/* {job.isNew && (
                         <Badge className="bg-green-50 text-green-700 border-green-100">
                           New
                         </Badge>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </CardHeader>
@@ -465,19 +477,19 @@ export default function Dashboard() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.location}</span>
+                      <span className="truncate">{job?.location?.city}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.salary}</span>
+                      <span className="truncate">{job?.salary?.min} - {job?.salary?.max}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.type}</span>
+                      <span className="truncate">{job?.employmentType === 'FULL_TIME' ? 'Full Time' : job?.employmentType === 'PART_TIME' ? 'Part Time' : job?.employmentType === 'CONTRACT' ? 'Contract' : job?.employmentType === 'FREELANCE' ? 'Freelance' : job?.employmentType}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.experience}</span>
+                      <span className="truncate">{job?.experience?.level?.[0]?.toUpperCase() + job?.experience?.level?.slice(1)?.toLowerCase()}</span>
                     </div>
                   </div>
                   {job.skills && (
@@ -529,6 +541,10 @@ export default function Dashboard() {
                   <Button
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium px-6"
+                    onClick={()=>{
+                      setIsApplicationModalOpen(true)
+                      setJob(job)
+                    }}
                   >
                     Apply Now
                   </Button>
@@ -641,6 +657,13 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card> */}
+
+      {/* Application Modal */}
+      <ApplicationModal
+        isOpen={isApplicationModalOpen}
+        onClose={() => setIsApplicationModalOpen(false)}
+        job={job}
+      />
     </div>
   );
 }

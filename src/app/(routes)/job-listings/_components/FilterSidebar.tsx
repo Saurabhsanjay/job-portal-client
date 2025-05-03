@@ -152,7 +152,7 @@ export function FilterSidebar({ filters, onFilterChange, isMobile }: FilterSideb
         <h3 className="text-base md:text-lg font-semibold">Location</h3>
         <Combobox
           options={locations}
-          value={filters.location}
+          value={filters.location.city}
           onChange={(location) => onFilterChange({ ...filters, location })}
           placeholder="Select location"
           label="Location"

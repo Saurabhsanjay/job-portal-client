@@ -84,7 +84,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
     resolver: zodResolver(applicationFormSchema),
     defaultValues: {
       candidateName: "",
-      candidateJobTitle: job.title|| "",
+      candidateJobTitle: job?.title|| "",
       candidateEmail: "",
       candidatePhone: "",
       city: "",
@@ -101,7 +101,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
   const onSubmit = (data: ApplicationFormValues) => {
     // Format the data to match your required payload structure
     const payload = {
-      jobId: params?.id,
+      jobId: params?.id||job?._id||"",
       candidateId: user?.id,
       candidateName: data.candidateName,
       candidateJobTitle: data.candidateJobTitle,
@@ -134,14 +134,14 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
           {
             onSuccess: (response) => {
               if (response.data) {
-                toast.success("Profile updated successfully")
+                toast.success("Job application submitted successfully")
                 // refetch()
               } else if (response.error) {
                 toast.error(response.error.message)
               }
             },
             onError: (error) => {
-              toast.error(error.message || "Failed to update profile")
+              toast.error(error.message || "Failed to submit application")
             },
           },
         )
@@ -153,7 +153,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Apply for {job.title || "this position"}</DialogTitle>
+          <DialogTitle>Apply for {job?.title || "this position"}</DialogTitle>
           <DialogDescription>Please fill out the form below to submit your application.</DialogDescription>
         </DialogHeader>
 
