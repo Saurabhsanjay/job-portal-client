@@ -12,9 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Bell, Trash2 } from "lucide-react";
+import { Bell, CircleAlert, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useApiPost, useApiGet } from "@/hooks/use-api-query";
+import { useApiPost, useApiGet, useApiPut, useApiDelete } from "@/hooks/use-api-query";
 import {
   Dialog,
   DialogClose,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { AlertDialogFooter } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/app/(providers)/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -101,26 +101,57 @@ export interface JobAlert {
   updatedAt: string; // ISO 8601 date string
 }
 
+export interface JobPutPayload {
+  isActive: boolean;
+}
+
 export default function JobAlerts() {
   const [alerts, setAlerts] = useState(jobAlerts);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newAlertTitle, setNewAlertTitle] = useState("");
+  const [openDeleteAlert,setOpenDeleteAlert]=useState(false)
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const { user } = useAuth();
 
   const createJobAlertMutation = useApiPost<JobAlertResponse, JobPostPayload>();
 
-  const { data: jobAlertData } = useApiGet<JobAlertsResponse>(
+  const updateJobAlertMutation = useApiPut<JobAlertResponse, JobPutPayload>();
+
+  const deleteJobAlertMutation = useApiDelete<JobAlertResponse>();
+
+  const { data: jobAlertData,refetch } = useApiGet<JobAlertsResponse>(
     `job-alerts-for-jobseekers/get-job-alerts/${user?.id}`
   );
 
   console.log("jobAlertData-------->", jobAlertData);
 
-  const toggleAlert = (id: number) => {
-    setAlerts(
-      alerts.map((alert) =>
-        alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
-      )
+  const toggleAlert = (id: string,flag: boolean) => {
+    // setAlerts(
+    //   alerts.map((alert) =>
+    //     alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
+    //   )
+    // );
+    updateJobAlertMutation.mutate(
+      {
+        endpoint: `job-alerts-for-jobseekers/update-job-alerts/${id}`,
+        payload: {isActive: flag}, // Replace with actual payload
+        invalidateQueries: [["update-job-alert"]],
+      },
+      {
+        onSuccess: (response) => {
+          if (response.data) {
+            toast.success("Job alert updated successfully");
+            // refetch()
+          } else if (response.error) {
+            toast.error(response.error.message);
+          }
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update job alert");
+        },
+      }
     );
+    refetch()
   };
 
   // Handle form submission
@@ -166,7 +197,7 @@ export default function JobAlerts() {
         },
       }
     );
-
+    refetch()
     // Reset form and close modal
     setNewAlertTitle("");
     setIsModalOpen(false);
@@ -174,6 +205,30 @@ export default function JobAlerts() {
     // Here you would typically call your API
     // Example: useApiPost("/api/job-alerts", { title: newAlertTitle })
   };
+
+  const handleDelete=()=>{
+    deleteJobAlertMutation.mutate(
+      {
+        endpoint: `job-alerts-for-jobseekers/delete-job-alerts/${selectedAlertId}`,
+        invalidateQueries: [["delete-job-alert"]],
+      },
+      {
+        onSuccess: (response) => {
+          if (response.data) {
+            toast.success("Job alert deleted successfully");
+            // refetch()
+          } else if (response.error) {
+            toast.error(response.error.message);
+          }
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to delete job alert");
+        },
+      }
+    );
+    refetch()
+    setOpenDeleteAlert(false)
+  }
 
   return (
     <div className="space-y-6">
@@ -203,36 +258,48 @@ export default function JobAlerts() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {jobAlertData?.data?.jobAlerts?.map((alert,index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-medium">{alert.title}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {" "}
-                    <Badge variant="secondary">{alert.frequency}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={alert.isActive}
-                      onCheckedChange={() => toggleAlert(alert.id)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {jobAlertData?.data?.jobAlerts?.length ? (
+                jobAlertData?.data?.jobAlerts?.map((alert,index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-medium">{alert.title}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {" "}
+                      <Badge variant="secondary">{alert.frequency}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={alert?.isActive}
+                        onCheckedChange={() => toggleAlert(alert?._id,!alert?.isActive)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700"
+                          onClick={()=>{
+                            setSelectedAlertId(alert?._id)
+                            setOpenDeleteAlert(true)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-gray-500">
+                    No Job Alerts To Show
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
@@ -246,7 +313,7 @@ export default function JobAlerts() {
                   <div className="font-medium">{alert.title}</div>
                   <Switch
                     checked={alert.isActive}
-                    onCheckedChange={() => toggleAlert(alert.id)}
+                    onCheckedChange={() => toggleAlert(alert._id,!alert?.isActive)}
                   />
                 </div>
                 <div className="space-y-1 text-sm text-gray-500">
@@ -259,6 +326,10 @@ export default function JobAlerts() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-red-600 hover:text-red-700"
+                      onClick={()=>{
+                        setSelectedAlertId(alert?._id)
+                        setOpenDeleteAlert(true)
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -303,6 +374,31 @@ export default function JobAlerts() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={openDeleteAlert}>
+            <AlertDialogContent>
+                <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
+                    <div
+                        className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
+                        aria-hidden="true"
+                    >
+                        <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
+                    </div>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete your account? All your data will be removed.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => {
+                      setOpenDeleteAlert(false)
+                    }}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-500">Confirm</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }
