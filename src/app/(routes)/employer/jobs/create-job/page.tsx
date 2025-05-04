@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useApiPost } from "@/hooks/use-api-query"
 import toast from "react-hot-toast"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT",  "INTERNSHIP", "VOLUNTEER"] as const
 
@@ -155,6 +156,8 @@ export default function JobPostingForm() {
   const [newEducation, setNewEducation] = React.useState("")
   const [newTag, setNewTag] = React.useState("")
 
+  const { user } = useAuth()
+
   const router = useRouter()
 
   const {
@@ -257,7 +260,7 @@ export default function JobPostingForm() {
       priority: data.priority,
       tags: data.tags,
       createdBy: {
-        userId: "65ff4a2b8c9d4e001c3a7b89",
+        userId: user?.id || "",
       },
     }
 
