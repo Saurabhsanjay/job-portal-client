@@ -528,9 +528,9 @@ export default function Dashboard() {
                 Personalized matches based on your profile
               </p>
             </div>
-            <Button variant="outline" className="text-gray-600">
+            {/* <Button variant="outline" className="text-gray-600">
               View All
-            </Button>
+            </Button> */}
           </div>
         </CardHeader>
         <CardContent className="p-6">
@@ -549,9 +549,9 @@ export default function Dashboard() {
                 >
                   <CardHeader className="flex-row gap-4 items-start p-4">
                     <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                      <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
+                      <AvatarImage src={job?.createdBy?.userId?.employerDetails?.logoUrl} alt={job?.createdBy?.userId?.employerDetails?.companyName} />
                       <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">
-                        {job?.company?.name?.[0]}
+                        {job?.createdBy?.userId?.employerDetails?.companyName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">

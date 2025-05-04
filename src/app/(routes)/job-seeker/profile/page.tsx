@@ -414,6 +414,7 @@ export default function Profile() {
     console.log("Form submitted with data:", data);
     const payload = {
       id: user?.id,
+      role: "JOBSEEKER",
       personalDetails: {
         firstName: data.firstName,
         lastName: data.lastName,
