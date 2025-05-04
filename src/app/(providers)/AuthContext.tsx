@@ -14,12 +14,14 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  loading: boolean
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,11 +30,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    console.log("Logging in with email:", email);
-    console.log("Logging in with password:", password);
     try {
       const response = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
@@ -52,7 +53,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         setUser(loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
-        router.push("/");
+        console.log("Logged in user:", loggedInUser);
+        if(loggedInUser?.role==="JOBSEEKER"){
+          router.push("/job-seeker/dashboard");
+        }else{
+          router.push("/employer/dashboard");
+        }
+        // router.push("/");
         toast.success("Login successful");
       } else {
         // toast.error(data.message||"Login failed");
@@ -71,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout,loading }}>
       {children}
     </AuthContext.Provider>
   );

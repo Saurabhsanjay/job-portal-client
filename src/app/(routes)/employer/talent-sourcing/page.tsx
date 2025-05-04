@@ -359,7 +359,10 @@ export default function TalentSourcing() {
 
   React.useEffect(() => {
     refetchMatchCandidates()
-    setIsMatchModalOpen(true)
+    console.log("jobId----------->", jobId)
+    if(jobId!==null){
+      setIsMatchModalOpen(true)
+    }
   }, [jobId, refetchMatchCandidates])
 
   const handleViewMatches = (jobId: string) => {
@@ -368,6 +371,8 @@ export default function TalentSourcing() {
     //   setIsMatchModalOpen(true)
     // })
   }
+
+  console.log("MatchCandidates------->",MatchCandidates)
 
   return (
     <div className="container mx-auto py-6">
@@ -752,7 +757,7 @@ export default function TalentSourcing() {
                       <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
-                ) : MatchCandidates?.data?.[0]?.candidateId?.length === 0 ? (
+                ) : (MatchCandidates?.data?.[0]?.candidateId?.length === 0 || MatchCandidates?.data?.length===0 || MatchCandidates===undefined||MatchCandidates===null) ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
                       No matching candidates found

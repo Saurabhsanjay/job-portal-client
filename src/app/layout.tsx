@@ -76,12 +76,13 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            
         {/* <SessionProvider session={session}> */}
           {/* <Navbar /> */}
           <ReactQueryProvider>
-            {/* <ProtectedRoute> */}
+            <ProtectedRoute>
             {children}
-            {/* </ProtectedRoute> */}
+            </ProtectedRoute>
           </ReactQueryProvider>
           <Footer />
         {/* </SessionProvider> */}

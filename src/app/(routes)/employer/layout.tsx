@@ -174,13 +174,13 @@ export default function EmployerDashboardLayout({ children }: { children: React.
             {/* Navbar */}
             <nav className="sticky top-0 z-50 w-full border-b bg-white">
                 <div className="flex h-16 items-center px-4 md:px-6">
-                    <Button variant="ghost" size="icon" className=" mr-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                    {/* <Button variant="ghost" size="icon" className=" mr-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
                         {sidebarOpen ? (
                             <X className="h-5 w-5" />
                         ) : (
                             <Menu className="h-5 w-5" />
                         )}
-                    </Button>
+                    </Button> */}
                     <div className="flex items-center gap-2 font-semibold">
                         <Briefcase className="h-6 w-6 text-blue-600" />
                         <span className="text-xl">Recruit-G</span>
@@ -209,10 +209,10 @@ export default function EmployerDashboardLayout({ children }: { children: React.
                                 onMarkAsRead={(id) => console.log("Mark as read:", id)}
                                 onSeeAll={() => console.log("See all clicked")}
                             />
-                            <Button variant="ghost" size="icon" className="text-gray-500">
+                            {/* <Button variant="ghost" size="icon" className="text-gray-500">
                                 <Heart className="h-5 w-5" />
                                 <span className="sr-only">Favorites</span>
-                            </Button>
+                            </Button> */}
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -232,7 +232,7 @@ export default function EmployerDashboardLayout({ children }: { children: React.
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>Profile</DropdownMenuItem>
-                                <DropdownMenuItem>Settings</DropdownMenuItem>
+                                {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
                                 <DropdownMenuItem onClick={() => router.push("/employer/logout")}>
                                     Log out
                                 </DropdownMenuItem>

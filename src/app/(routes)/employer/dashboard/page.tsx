@@ -7,22 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
 import { Progress } from "@/components/ui/progress" // Assuming you have a Progress component
+import { useApiGet } from "@/hooks/use-api-query"
+import { useAuth } from "@/app/(providers)/AuthContext"
+import { useRouter } from "next/navigation"
 
-const applicantData = [
-    { day: "Mon", applicants: 12 },
-    { day: "Tue", applicants: 18 },
-    { day: "Wed", applicants: 15 },
-    { day: "Thu", applicants: 22 },
-    { day: "Fri", applicants: 20 },
-    { day: "Sat", applicants: 10 },
-    { day: "Sun", applicants: 8 },
-]
-
-const jobPerformance = [
-    { title: "Total Views", value: 3245, increase: 15 },
-    { title: "Total Applications", value: 186, increase: 8 },
-    { title: "Shortlisted", value: 42, increase: 12 },
-]
 
 const activeJobs = [
     {
@@ -98,18 +86,153 @@ const upcomingInterviews = [
     },
 ]
 
+interface JobPostingsResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    formattedMessage: string;
+    data: number;
+}
+
+interface Coordinates {
+    latitude: number;
+    longitude: number;
+  }
+  
+  interface Location {
+    coordinates: Coordinates;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+    streetAddress: string;
+    remoteRestriction: string;
+  }
+  
+  interface JobPosting {
+    _id: string;
+    title: string;
+    industry: string;
+    applicationsCount: number;
+    location: Location;
+    remote: boolean;
+    status: "ACTIVE" | "INACTIVE"; // add more status types if needed
+    daysLeft: number;
+  }
+  
+  interface JobPostingsListResponse {
+    status: "SUCCESS" | "FAILURE"; // or just string if dynamic
+    statusCode: number;
+    message: string;
+    formattedMessage: string;
+    data: JobPosting[];
+}
+
+interface ApplicantTrendsData {
+    Mon: number;
+    Tue: number;
+    Wed: number;
+    Thu: number;
+    Fri: number;
+    Sat: number;
+    Sun: number;
+  }
+  
+  interface ApplicantTrendsResponse {
+    status: "SUCCESS" | "FAILURE"; // or just string if dynamic
+    statusCode: number;
+    message: string;
+    formattedMessage: string;
+    data: ApplicantTrendsData;
+  }
+
 export default function EmployerDashboard() {
+    const router = useRouter()
+    const { user } = useAuth()
+
+    const {
+        data: jobPostingData,
+      } = useApiGet<JobPostingsResponse>(
+        `dashboard/totaljobpostingcount/${user?.id}`,
+      )
+
+      const {
+        data: activeApplicantsData,
+      } = useApiGet<JobPostingsResponse>(
+        `dashboard/totalcount-active-applicants/${user?.id}`,
+      )
+
+      const {
+        data: jobPerformanceTotalApplicants,
+      } = useApiGet<JobPostingsResponse>(
+        `dashboard/job-performance/total-applicants/${user?.id}`,
+      )
+
+      const {
+        data: jobPerformanceShortlisted,
+      } = useApiGet<JobPostingsResponse>(
+        `dashboard/job-performance/shortlisted/${user?.id}`,
+      )
+
+      const {
+        data: jobPerformanceTotalViews,
+      } = useApiGet<JobPostingsResponse>(
+        `dashboard/job-performance/totalviewsCountforJobs/${user?.id}`,
+      )
+
+      const {
+        data: jobPostingList,
+      } = useApiGet<JobPostingsListResponse>(
+        `dashboard/joblist-postings/${user?.id}`,
+      )
+
+      const {
+        data: applicantTrendsList,
+      } = useApiGet<ApplicantTrendsResponse>(
+        `dashboard/applicant-trends/${user?.id}`,
+      )
+
+      const {
+        data: jobsExpiringTodayData,
+      } = useApiGet<ApplicantTrendsResponse>(
+        `dashboard/job-expiry/${user?.id}`,
+      )
+
+      const {
+        data: bookmarkData,
+      } = useApiGet<ApplicantTrendsResponse>(
+        `dashboard/bookmarkcount/${user?.id}`,
+      )
+
+      console.log("bookmarkData---->",bookmarkData)
+
+      const jobPerformance = [
+        { title: "Total Views", value: jobPerformanceTotalViews?.data||0, increase: 15 },
+        { title: "Total Applications", value: jobPerformanceTotalApplicants?.data||0, increase: 8 },
+        { title: "Shortlisted", value: jobPerformanceShortlisted?.data||0, increase: 12 },
+    ]
+
+    const applicantData = [
+        { day: "Mon", applicants: applicantTrendsList?.data?.Mon || 0 },
+        { day: "Tue", applicants: applicantTrendsList?.data?.Tue || 0 },
+        { day: "Wed", applicants: applicantTrendsList?.data?.Wed || 0 },
+        { day: "Thu", applicants: applicantTrendsList?.data?.Thu || 0 },
+        { day: "Fri", applicants: applicantTrendsList?.data?.Fri || 0 },
+        { day: "Sat", applicants: applicantTrendsList?.data?.Sat || 0 },
+        { day: "Sun", applicants: applicantTrendsList?.data?.Sun || 0 },
+    ]
+
     return (
         <div className="space-y-8 bg-gray-50 md:p-2  rounded-xl">
             {/* Top Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { title: "Total Job Postings", value: 15, subtext: "3 new this week", icon: Briefcase, color: "blue" },
-                    { title: "Active Applications", value: 186, subtext: "24 new today", icon: FileText, color: "green" },
-                    { title: "Interviews Scheduled", value: 12, subtext: "For next 7 days", icon: Calendar, color: "purple" },
+                    { title: "Total Job Postings", value: jobPostingData?.data||0, subtext: "3 new this week", icon: Briefcase, color: "blue" },
+                    { title: "Active Applications", value: activeApplicantsData?.data||0, subtext: "24 new today", icon: FileText, color: "green" },
+                    { title: "Total Bookmarks", value: bookmarkData?.data||0, subtext: "For next 7 days", icon: Calendar, color: "purple" },
                     {
-                        title: "Time to Hire (Avg)",
-                        value: "18 days",
+                        title: "Jobs Expiring Today",
+                        value: `${jobsExpiringTodayData?.data||0} days`,
                         subtext: "2 days faster than last month",
                         icon: Clock,
                         color: "red",
@@ -125,7 +248,7 @@ export default function EmployerDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{item.value}</div>
-                            <p className="text-xs text-muted-foreground">{item.subtext}</p>
+                            {/* <p className="text-xs text-muted-foreground">{item.subtext}</p> */}
                         </CardContent>
                     </Card>
                 ))}
@@ -170,10 +293,10 @@ export default function EmployerDashboard() {
                                             <p className="text-sm font-medium">{stat.title}</p>
                                             <p className="text-2xl font-bold">{stat.value}</p>
                                         </div>
-                                        <div className="flex items-center space-x-2">
+                                        {/* <div className="flex items-center space-x-2">
                                             <TrendingUp className="h-4 w-4 text-green-500" />
                                             <span className="text-green-500">{stat.increase}%</span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <Progress value={stat.increase} className="h-1 mt-2" />
                                 </div>
@@ -188,45 +311,55 @@ export default function EmployerDashboard() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-xl font-semibold">Job Postings</CardTitle>
-                        <Button variant="outline">View All Jobs</Button>
+                        <Button onClick={() => router.push("/employer/jobs")} variant="outline">View All Jobs</Button>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {activeJobs.map((job) => (
-                            <div
-                                key={job.id}
-                                className="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                <div className="space-y-1">
-                                    <h3 className="font-medium">{job.title}</h3>
-                                    <div className="text-sm text-gray-500 flex items-center space-x-2">
-                                        <Briefcase className="h-4 w-4" />
-                                        <span>{job.department}</span>
-                                        <span>•</span>
-                                        <MapPin className="h-4 w-4" />
-                                        <span>{job.location}</span>
+                        {jobPostingList?.data?.length ? (
+                            jobPostingList.data.slice(0, 3).map((job, index) => (
+                                <div
+                                    key={index}
+                                    className="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                >
+                                    <div className="space-y-1">
+                                        <h3 className="font-medium">{job.title}</h3>
+                                        <div className="text-sm text-gray-500 flex items-center space-x-2">
+                                            <Briefcase className="h-4 w-4" />
+                                            <span>{job?.industry}</span>
+                                            <span>•</span>
+                                            <MapPin className="h-4 w-4" />
+                                            <span>
+                                                {[job.location.city, job.location.state, job.location.country]
+                                                    .filter((loc) => loc)
+                                                    .join(", ") || ""}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space-x-4 mt-2 sm:mt-0">
+                                        <div className="text-right">
+                                            <div className="text-sm font-medium">{job?.applicationsCount || 0} applicants</div>
+                                            <div className="text-sm text-gray-500">{job.daysLeft || 0} days left</div>
+                                        </div>
+                                        <Badge
+                                            variant={job?.status === "ACTIVE" ? "success" : "secondary"}
+                                        >
+                                            {job?.status}
+                                        </Badge>
                                     </div>
                                 </div>
-                                <div className="flex items-center space-x-4 mt-2 sm:mt-0">
-                                    <div className="text-right">
-                                        <div className="text-sm font-medium">{job.applicants} applicants</div>
-                                        <div className="text-sm text-gray-500">{job.daysLeft} days left</div>
-                                    </div>
-                                    <Badge
-                                        variant={job.status === "Active" ? "success" : "secondary"}
-                                    >
-                                        {job.status}
-                                    </Badge>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="p-4 bg-gray-50 rounded-lg text-center">
+                                No Jobs To Show
                             </div>
-                        ))}
+                        )}
                     </div>
                 </CardContent>
             </Card>
 
             {/* Top Candidates and Upcoming Interviews */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-1">
                 {/* Top Candidates */}
                 <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
@@ -267,7 +400,7 @@ export default function EmployerDashboard() {
                 </Card>
 
                 {/* Upcoming Interviews */}
-                <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+                {/* <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
                         <CardTitle className="text-xl font-semibold">Upcoming Interviews</CardTitle>
                     </CardHeader>
@@ -295,7 +428,7 @@ export default function EmployerDashboard() {
                             ))}
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
             </div>
         </div>
     )
