@@ -367,7 +367,7 @@ export default function Profile() {
         employmentType:
           data?.jobSeekerDetails?.professionalDetails?.employmentType || "",
         noticePeriod:
-          data.jobSeekerDetails?.professionalDetails?.noticePeriod || "",
+          data.jobSeekerDetails?.professionalDetails?.noticePeriod?.toString() || "",
         gender: data?.personalDetails?.gender || "",
       });
       setProfileImage(data?.personalDetails?.profilePicture || null);
@@ -473,7 +473,7 @@ export default function Profile() {
           skills: data.skills || [],
           // resume: data.resume || "",
           achivements: achievements || "",
-          noticePeriod: data.noticePeriod || "",
+          noticePeriod: data.noticePeriod?.toString() || "",
           currentCTC: data.currentCTC || 0,
           expectedCTC: data.expectedCTC || 0,
           employmentType: data.employmentType || "",
@@ -742,10 +742,28 @@ export default function Profile() {
 
               {/* Notice Period */}
               <div className="space-y-1">
-                <Label htmlFor="noticePeriod">Notice Period</Label>
+                <Label htmlFor="noticePeriod">Notice Period(in days)</Label>
                 <Input
+                  min={0}
                   id="noticePeriod"
                   placeholder="EnterNotice Period"
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                      "Tab",
+                      "Home",
+                      "End",
+                    ];
+                    if (
+                      !/^[0-9]$/.test(e.key) &&
+                      !allowedKeys.includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   {...register("noticePeriod")}
                   className={errors.noticePeriod ? "border-red-500" : ""}
                 />
@@ -764,6 +782,23 @@ export default function Profile() {
                   id="phoneNumber"
                   placeholder="Enter Phone Number"
                   {...register("phoneNumber")}
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                      "Tab",
+                      "Home",
+                      "End",
+                    ];
+                    if (
+                      !/^[0-9]$/.test(e.key) &&
+                      !allowedKeys.includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   className={errors?.phoneNumber ? "border-red-500" : ""}
                 />
                 {errors?.phoneNumber && (
