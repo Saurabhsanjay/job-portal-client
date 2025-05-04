@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { usePathname, useRouter } from "next/navigation"
 import { useApiGet } from "@/hooks/use-api-query"
 import type { IJob } from "../job-listings/types/job.types"
+import { useAuth } from "@/app/(providers)/AuthContext";
 
 const navigation = [
   {
@@ -92,6 +93,8 @@ export default function JobSeekerDashboardLayout({
   const [searchTerm, setSearchTerm] = useState("")
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const { user } = useAuth()
+  console.log("User:--------->", user)  
   const handleClick = () => {
     setCount(0)
   }
@@ -238,13 +241,13 @@ export default function JobSeekerDashboardLayout({
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">John Doe</p>
-                    <p className="text-xs leading-none text-muted-foreground">john@example.com</p>
+                    <p className="text-sm font-medium leading-none">{user?.firstName} {user?.lastName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push("/job-seeker/profile")}>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
                 <DropdownMenuItem onClick={() => router.push("/job-seeker/logout")}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

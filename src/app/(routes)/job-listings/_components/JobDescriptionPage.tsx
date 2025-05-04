@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { ApplicationModal } from "./ApplicationModal"
 
@@ -52,6 +53,8 @@ interface JobDescriptionProps {
 export function JobDescriptionPage({ job }: JobDescriptionProps) {
   const router = useRouter()
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
+   const searchParams = useSearchParams();
+   console.log(searchParams, "searchParams------->")
 
   const handleApply = () => {
     // Open the application modal instead of showing an alert
@@ -86,7 +89,15 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
         <Button
           variant="ghost"
           className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          onClick={() => router.push("/job-listings")}
+          onClick={() => {
+            console.log(searchParams.get("applied"), "searchParams.get(applied)")
+            if(searchParams.get("applied")=="true"){
+              router.push("/job-seeker/applied-jobs")
+            }else{
+              router.push("/job-listings")
+            }
+            // router.push("/job-listings")
+          }}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Jobs

@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 interface User {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
   token: string;
   role: string;
 }
@@ -47,6 +49,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const loggedInUser: User = {
           id: data?.data?.user._id,
           email: data.data.user.personalDetails.email,
+          firstName: data.data.user.personalDetails.firstName,
+          lastName: data.data.user.personalDetails.lastName,
           token: data.data.token,
           role: data.data.user.role,
         };
