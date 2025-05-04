@@ -41,12 +41,13 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
         <div className="flex items-start gap-4">
           <div className="shrink-0">
             <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-              {job?.company?.logoUrl ? (
+              {job?.createdByDetails?.logoUrl ? (
                 <Image
                   width={48}
                   height={48}
-                  src={job.company?.logoUrl || "/placeholder.svg"}
-                  alt={job.company?.name}
+                  src={job?.createdByDetails?.logoUrl || "/placeholder.svg"}
+                  alt={job?.createdByDetails?.companyName || "Company Logo"}
+                  priority={true} // Use priority for the first image to load faster
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -55,15 +56,15 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-1">
               <h3 className="text-lg font-semibold text-gray-900 truncate md:text-xl">{job?.title}</h3>
-              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => onSave?.(jobId)}>
+              <Button variant="ghost" size="icon" className="shrink-0 h-2 w-2" onClick={() => onSave?.(jobId)}>
                 <Bookmark
                   className={cn("h-5 w-5 md:h-6 md:w-6", (job?.savedCount || 0) < 0 && "fill-current text-blue-500")}
                 />
               </Button>
             </div>
-            <p className="text-sm text-gray-500 md:text-base">{job?.company?.name}</p>
+            <p className="text-sm text-gray-500 md:text-base">{job?.createdByDetails?.companyName}</p>
           </div>
         </div>
 
