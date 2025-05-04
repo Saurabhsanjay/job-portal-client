@@ -387,7 +387,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-10">
-        <Card className="md:col-span-7 bg-white shadow-sm hover:shadow-md transition-shadow rounded-xl">
+        <Card className="md:col-span-10 bg-white shadow-sm hover:shadow-md transition-shadow rounded-xl">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-gray-800">
               Profile Performance
@@ -420,7 +420,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-3 bg-white shadow-sm hover:shadow-md transition-shadow rounded-xl">
+        {/* <Card className="md:col-span-3 bg-white shadow-sm hover:shadow-md transition-shadow rounded-xl">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-gray-800">
               Recruiter Actions
@@ -449,7 +449,7 @@ export default function Dashboard() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
       <Card className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 rounded-xl">
         <CardHeader className="border-b border-gray-100">
@@ -469,118 +469,126 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recommendedJobsData?.data?.map((job,index) => (
-              <Card
-                key={index}
-                className="group flex flex-col bg-white border border-gray-200 hover:border-blue-200 hover:shadow-lg transition-all duration-300 rounded-xl"
-              >
-                <CardHeader className="flex-row gap-4 items-start p-4">
-                  <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                    <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
-                    <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">
-                      {job?.company?.name?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {job?.title}
-                    </CardTitle>
-                    <p className="text-sm font-medium text-gray-600">
-                      {job?.company?.name}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-blue-50 text-blue-700 border-blue-100"
+            {!recommendedJobsData?.data?.length ? (
+              <div className="col-span-full text-center">
+                <p className="text-center text-gray-600">
+                  No Recommended Jobs To Show
+                </p>
+              </div>
+            ) : (
+              recommendedJobsData?.data?.map((job, index) => (
+                <Card
+                  key={index}
+                  className="group flex flex-col bg-white border border-gray-200 hover:border-blue-200 hover:shadow-lg transition-all duration-300 rounded-xl"
+                >
+                  <CardHeader className="flex-row gap-4 items-start p-4">
+                    <Avatar className="h-12 w-12 ring-2 ring-gray-100">
+                      <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
+                      <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">
+                        {job?.company?.name?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {job?.title}
+                      </CardTitle>
+                      <p className="text-sm font-medium text-gray-600">
+                        {job?.company?.name}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-50 text-blue-700 border-blue-100"
+                        >
+                          {job?.matchPercentage}% Match
+                        </Badge>
+                        {/* {job.isNew && (
+                          <Badge className="bg-green-50 text-green-700 border-green-100">
+                            New
+                          </Badge>
+                        )} */}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 p-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">{job?.location?.city}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">{job?.salary?.min} - {job?.salary?.max}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">{job?.employmentType === 'FULL_TIME' ? 'Full Time' : job?.employmentType === 'PART_TIME' ? 'Part Time' : job?.employmentType === 'CONTRACT' ? 'Contract' : job?.employmentType === 'FREELANCE' ? 'Freelance' : job?.employmentType}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">{job?.experience?.level?.[0]?.toUpperCase() + job?.experience?.level?.slice(1)?.toLowerCase()}</span>
+                      </div>
+                    </div>
+                    {job.skills && (
+                      <div className="flex flex-wrap gap-2">
+                        {job.skills.slice(0, 3).map((skill) => (
+                          <Badge
+                            key={skill}
+                            variant="outline"
+                            className="bg-gray-50 text-gray-600 border-gray-200"
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                        {job.skills.length > 3 && (
+                          <Badge
+                            variant="outline"
+                            className="bg-gray-50 text-gray-600 border-gray-200"
+                          >
+                            +{job.skills.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                  <div className="p-4 bg-gray-50 flex items-center justify-between gap-2 mt-auto border-t border-gray-100 rounded-b-xl">
+                    <div className="flex gap-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-gray-500 hover:text-blue-600"
+                        onClick={() => toggleBookmark(job.id)}
                       >
-                        {job?.matchPercentage}% Match
-                      </Badge>
-                      {/* {job.isNew && (
-                        <Badge className="bg-green-50 text-green-700 border-green-100">
-                          New
-                        </Badge>
-                      )} */}
+                        <BookmarkPlus
+                          className={
+                            bookmarkedJobs.has(job.id)
+                              ? "fill-blue-600 text-blue-600"
+                              : ""
+                          }
+                        />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-gray-500 hover:text-blue-600"
+                      >
+                        <Share2 />
+                      </Button>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 p-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job?.location?.city}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job?.salary?.min} - {job?.salary?.max}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job?.employmentType === 'FULL_TIME' ? 'Full Time' : job?.employmentType === 'PART_TIME' ? 'Part Time' : job?.employmentType === 'CONTRACT' ? 'Contract' : job?.employmentType === 'FREELANCE' ? 'Freelance' : job?.employmentType}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job?.experience?.level?.[0]?.toUpperCase() + job?.experience?.level?.slice(1)?.toLowerCase()}</span>
-                    </div>
-                  </div>
-                  {job.skills && (
-                    <div className="flex flex-wrap gap-2">
-                      {job.skills.slice(0, 3).map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="outline"
-                          className="bg-gray-50 text-gray-600 border-gray-200"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                      {job.skills.length > 3 && (
-                        <Badge
-                          variant="outline"
-                          className="bg-gray-50 text-gray-600 border-gray-200"
-                        >
-                          +{job.skills.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-                <div className="p-4 bg-gray-50 flex items-center justify-between gap-2 mt-auto border-t border-gray-100 rounded-b-xl">
-                  <div className="flex gap-2">
                     <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-gray-500 hover:text-blue-600"
-                      onClick={() => toggleBookmark(job.id)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium px-6"
+                      onClick={()=>{
+                        setIsApplicationModalOpen(true)
+                        setJob(job)
+                      }}
                     >
-                      <BookmarkPlus
-                        className={
-                          bookmarkedJobs.has(job.id)
-                            ? "fill-blue-600 text-blue-600"
-                            : ""
-                        }
-                      />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-gray-500 hover:text-blue-600"
-                    >
-                      <Share2 />
+                      Apply Now
                     </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium px-6"
-                    onClick={()=>{
-                      setIsApplicationModalOpen(true)
-                      setJob(job)
-                    }}
-                  >
-                    Apply Now
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
