@@ -25,11 +25,12 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import axios from "axios";
 
 export default function Profile() {
   // const { toast } = useToast();
-  const {user}=useAuth();
-  console.log("user",user)
+  const { user } = useAuth();
+  console.log("user", user);
 
   const frameworksList = [
     { value: "react", label: "React" },
@@ -369,6 +370,7 @@ export default function Profile() {
           data.jobSeekerDetails?.professionalDetails?.noticePeriod || "",
         gender: data?.personalDetails?.gender || "",
       });
+      setProfileImage(data?.personalDetails?.profilePicture || null);
     }
   }, [profileData, reset]);
 
@@ -380,16 +382,41 @@ export default function Profile() {
   const countryData =
     profileData?.data?.personalDetails?.address?.country || "";
 
-  const handleProfileImageUpload = (
+  const handleProfileImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    // if (file) {
+    //   const reader = new FileReader();
+    //   reader.onloadend = () => {
+    //     setProfileImage(reader.result as string);
+    //   };
+    //   reader.readAsDataURL(file);
+    // }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Axios configuration
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/users/upload-profile-picture?userId=${user?.id}`,
+        formData,
+        config
+      );
+      console.log("File uploaded successfully:", response.data);
+      if(response?.data?.status==="SUCCESS"){
+        toast.success("Profile image uploaded successfully");
+      }
+      setProfileImage(response.data?.data?.personalDetails?.profilePicture || null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -401,7 +428,6 @@ export default function Profile() {
   }
 
   const profileMutation = useApiPut<JobSeekerProfileResponse, UserProfile>();
-  
 
   // Helper function to remove _id from objects in an array
   const removeIdFromArray = (array) => {
@@ -419,7 +445,7 @@ export default function Profile() {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        password:"",
+        password: "",
         phoneNumber: {
           countryCode: data.phoneNumber?.countryCode || "+91",
           number: data.phoneNumber || "",
@@ -489,12 +515,12 @@ export default function Profile() {
             // reset();
             // invalidateQueries([["user-profile"]]);
           } else if (response.error) {
-            toast.error(response?.error?.message||"Something Went Wrong");
+            toast.error(response?.error?.message || "Something Went Wrong");
           }
         },
         onError: (error) => {
-        setIsSubmitting(false);
-        toast.error(error?.message||"Something Went Wrong");
+          setIsSubmitting(false);
+          toast.error(error?.message || "Something Went Wrong");
         },
       }
     );
@@ -572,6 +598,11 @@ export default function Profile() {
                       <Image
                         src={profileImage || "/placeholder.svg"}
                         alt="Profile"
+                        width={24}
+                        height={24}
+                        priority
+                        quality={100}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     </div>
