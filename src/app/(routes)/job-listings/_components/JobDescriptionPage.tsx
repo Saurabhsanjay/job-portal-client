@@ -37,6 +37,7 @@ import {
 } from "./JobBoard";
 import { useAuth } from "@/app/(providers)/AuthContext";
 import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
 
 interface JobDescriptionProps {
   job: {
@@ -79,6 +80,7 @@ export function JobDescriptionPage({ job,jobRefetch }: JobDescriptionProps) {
   >();
 
   const { user } = useAuth();
+  const params = useSearchParams();
 
   const handleApply = () => {
     // Open the application modal instead of showing an alert
@@ -167,7 +169,19 @@ export function JobDescriptionPage({ job,jobRefetch }: JobDescriptionProps) {
         <Button
           variant="ghost"
           className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          onClick={() => router.push("/job-listings")}
+          onClick={() => {
+            if(params.get("applied") === "true") {
+              router.push("/job-seeker/applied-jobs")
+            }else if(params.get("shortlisted") === "true") {
+              router.push("/job-seeker/shortlisted-jobs")
+            }else if(params.get("saved") === "true") {
+              router.push("/job-seeker/saved-jobs")
+            }else{
+              router.push("/job-listings")
+            }
+            // router.push("/job-listings")
+          }
+          }
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Jobs

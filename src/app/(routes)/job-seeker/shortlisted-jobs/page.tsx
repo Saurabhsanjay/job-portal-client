@@ -24,6 +24,7 @@ import { Eye, Copy, MapPin, Building2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface JobApplication {
   _id: string;
@@ -93,6 +94,7 @@ export default function ShortlistedJobs() {
   const lastJobElementRef = useRef<HTMLDivElement>(null);
   const [duration,setDuration] = useState("");
   const { user } = useAuth();
+  const router = useRouter();
 
   const apiEndpoint = duration
   ? `applied-candidates/candidate/${user?.id}?shortlist=true?appliedDateFilter=${duration}`
@@ -211,10 +213,8 @@ export default function ShortlistedJobs() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={job?.logo || "P"} alt={job?.company} />
-                        <AvatarFallback>
-                          {job?.company?.[0] || "P"}
-                        </AvatarFallback>
+                        <AvatarImage src={job?.jobId?.createdBy?.userId?.employerDetails?.logoUrl || "P"} alt={"p"} />
+                        <AvatarFallback>{"P"}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">
@@ -222,9 +222,16 @@ export default function ShortlistedJobs() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Building2 className="h-3 w-3" />
-                          <span>{job?.company || "No Company"}</span>
+                          <span>{job?.jobId?.createdBy?.userId?.employerDetails?.companyName||"No Company"}</span>
                           <MapPin className="h-3 w-3 ml-2" />
-                          <span>{job?.location || "No Location"}</span>
+                          <span>
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.city ||
+                              ""},{" "}
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.state ||
+                              ""},{" "}
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.country ||
+                              "No Location"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -235,14 +242,14 @@ export default function ShortlistedJobs() {
                   <TableCell>
                     <Badge
                       variant="secondary"
-                      className={getStatusColor(job.status)}
+                      className={getStatusColor(job?.status)}
                     >
                       {job?.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {router.push(`/job-listings/${job?.jobId?._id}?shortlisted=true`)}}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
