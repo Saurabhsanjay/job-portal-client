@@ -246,6 +246,24 @@ export interface JobAlertResponse {
   data: JobAlertData;
 }
 
+export interface UserView {
+  range: string;
+  views: number;
+}
+
+export interface UserViewsData {
+  data: UserView[];
+}
+
+export interface UserViewsResponse {
+  status: 'SUCCESS' | 'FAILURE' | string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: UserViewsData;
+}
+
+
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -299,7 +317,16 @@ export default function Dashboard() {
     `messages/getMessages-count?userId=${user?.id}`
   );
 
-  console.log("messagesCountData----------->", messagesCountData?.data);
+  const { data: profilePerformanceData } = useApiGet<UserViewsResponse>(
+    `users/get-user-views?userId=${user?.id}`
+  );
+
+  const profilePerformanceChartData = profilePerformanceData?.data?.data?.map(item => ({
+    day: item?.range,  // assign range value to `day`
+    views: item?.views,
+  }));
+
+  console.log("profilePerformanceData----------->", profilePerformanceData);
 
   const toggleBookmark = (jobId: unknown) => {
     setBookmarkedJobs((prev) => {
@@ -400,15 +427,15 @@ export default function Dashboard() {
           <CardContent>
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={profileViewsData}>
+                <AreaChart data={profilePerformanceChartData}>
                   <defs>
                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="day" stroke="#9CA3AF" />
-                  <YAxis stroke="#9CA3AF" />
+                  <XAxis dataKey="day" stroke="#9CA3AF" fontSize={12} />
+                  <YAxis stroke="#9CA3AF" fontSize={12}/>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                   <Tooltip />
                   <Area
