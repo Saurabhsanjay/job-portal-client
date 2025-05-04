@@ -26,6 +26,7 @@ import { format } from "date-fns";
 // import { useToast } from "@/hooks/use-toast";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import { useRouter } from "next/navigation";
 // import { Metadata } from "next"
 
 // export const metadata: Metadata = {
@@ -105,6 +106,7 @@ export default function AppliedJobs() {
   const lastJobElementRef = useRef<HTMLDivElement>(null);
   const [duration,setDuration] = useState("");
   const { user } = useAuth();
+  const router = useRouter();
 
 
   const apiEndpoint = duration!==""
@@ -259,7 +261,7 @@ export default function AppliedJobs() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2  transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {router.push(`/job-listings/${job?.jobId?._id}?applied=true`)}}>
                         <Eye className="h-4 w-4" />
                       </Button>
                       {/* <Button variant="ghost" size="icon" className="h-8 w-8">
