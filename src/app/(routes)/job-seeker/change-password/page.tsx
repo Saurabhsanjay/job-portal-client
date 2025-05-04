@@ -15,8 +15,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react"
 import { useState } from "react"
 
 export default function ChangePassword() {
-  const { user } = useAuth()
-  console.log("user------->", user)
+  const { user,logout } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showOldPassword, setShowOldPassword] = useState(false)
@@ -89,6 +88,7 @@ export default function ChangePassword() {
             if (response.data) {
                 reset();
                 toast.success("Password changed successfully");
+                logout()
             } else if (response.error) {
               toast.error(response?.error?.message||"Something Went Wrong");
             }
