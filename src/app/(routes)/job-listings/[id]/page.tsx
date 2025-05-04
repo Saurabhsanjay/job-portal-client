@@ -43,8 +43,8 @@ export default function JobPage() {
   const formattedJob = {
     title: job?.data?.title,
     company: {
-      name: job?.data?.company?.name,
-      logo: job?.data?.company?.logoUrl || "/placeholder.svg?height=48&width=48",
+      name: job?.data?.createdBy?.userId?.employerDetails?.companyName||"",
+      logo: job?.data?.createdBy?.userId?.employerDetails?.logoUrl || "/placeholder.svg?height=48&width=48",
     },
     location: {
       city: job?.data?.location.city || "",
