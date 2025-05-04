@@ -23,16 +23,8 @@ import { useAuth } from "@/app/(providers)/AuthContext"
 const applicationFormSchema = z.object({
   candidateName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   candidateJobTitle: z.string().min(2, { message: "Job title is required." }),
-  candidateEmail: z.string().email({ message: "Please enter a valid email address." }),
-  candidatePhone: z.string().min(6, { message: "Please enter a valid phone number." }),
-  city: z.string().min(1, { message: "City is required." }),
-  state: z.string().min(1, { message: "State is required." }),
-  country: z.string().min(1, { message: "Country is required." }),
-  resumeUrl: z.string().url({ message: "Please enter a valid URL for your resume." }),
   coverLetter: z.string().min(10, { message: "Cover letter must be at least 10 characters." }),
-  skills: z.string().min(2, { message: "Please enter at least one skill." }),
   experience: z.coerce.number().min(0, { message: "Experience must be a positive number." }),
-  education: z.string().min(2, { message: "Education information is required." }),
 })
 
 type ApplicationFormValues = z.infer<typeof applicationFormSchema>
@@ -85,16 +77,8 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
     defaultValues: {
       candidateName: "",
       candidateJobTitle: job?.title|| "",
-      candidateEmail: "",
-      candidatePhone: "",
-      city: "",
-      state: "",
-      country: "",
-      resumeUrl: "",
       coverLetter: "",
-      skills: "",
       experience: 0,
-      education: "",
     },
   })
 
@@ -105,18 +89,8 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
       candidateId: user?.id,
       candidateName: data.candidateName,
       candidateJobTitle: data.candidateJobTitle,
-      candidateEmail: data.candidateEmail,
-      candidatePhone: data.candidatePhone,
-      location: {
-        city: data.city,
-        state: data.state,
-        country: data.country,
-      },
-      resumeUrl: data.resumeUrl,
       coverLetter: data.coverLetter,
-      skills: data.skills.split(",").map((skill) => skill.trim()),
       experience: data.experience,
-      education: data.education,
     }
 
     console.log("Application payload:", payload)
@@ -188,7 +162,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="candidateEmail"
@@ -216,9 +190,9 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                     </FormItem>
                   )}
                 />
-              </div>
+              </div> */}
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <h3 className="text-sm font-medium">Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
@@ -263,9 +237,9 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                     )}
                   />
                 </div>
-              </div>
+              </div> */}
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="resumeUrl"
                 render={({ field }) => (
@@ -278,7 +252,37 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
+
+<div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <FormField
+                  control={form.control}
+                  name="experience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Years of Experience</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* <FormField
+                  control={form.control}
+                  name="education"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Education</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Bachelor's in Computer Science" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+              </div>
 
               <FormField
                 control={form.control}
@@ -298,7 +302,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="skills"
                 render={({ field }) => (
@@ -311,37 +315,7 @@ export function ApplicationModal({ isOpen, onClose, job }: ApplicationModalProps
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="experience"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Years of Experience</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="education"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Education</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Bachelor's in Computer Science" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              /> */}
             </div>
 
             <DialogFooter>
