@@ -223,6 +223,30 @@ export interface ShortlistedJobsCountResponse {
   data: number;
 }
 
+export interface JobAlert {
+  _id: string;
+  title: string;
+  userId: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | string; // Adjust if there are only specific values
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface JobAlertData {
+  jobAlerts: JobAlert[];
+  jobAlertsCount: number;
+}
+
+export interface JobAlertResponse {
+  status: 'SUCCESS' | 'FAILURE' | string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: JobAlertData;
+}
+
+
 export default function Dashboard() {
   const { user } = useAuth();
   console.log("user------>", user);
@@ -266,6 +290,12 @@ export default function Dashboard() {
   const { data: appliedJobsCountData } = useApiGet<ShortlistedJobsCountResponse>(
     `job-seeker-dashboard/applied-jobscount/${user?.id}`
   );
+
+  const { data: jobAlertsCountData } = useApiGet<JobAlertResponse>(
+    `job-alerts-for-jobseekers/get-job-alerts/${user?.id}`
+  );
+
+  console.log("jobAlertsCountData----------->", jobAlertsCountData);
 
   const toggleBookmark = (jobId: unknown) => {
     setBookmarkedJobs((prev) => {
@@ -316,7 +346,7 @@ export default function Dashboard() {
           },
           {
             title: "Job Alerts",
-            value: "9,382",
+            value: jobAlertsCountData?.data?.jobAlertsCount || 0,
             subtext: "142 new alerts",
             icon: Bell,
             color: "purple",
@@ -350,7 +380,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-gray-900">
                 {item.value}
               </div>
-              <p className="text-xs mt-1 text-gray-500">{item.subtext}</p>
+              {/* <p className="text-xs mt-1 text-gray-500">{item.subtext}</p> */}
             </CardContent>
           </Card>
         ))}
