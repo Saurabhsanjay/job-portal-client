@@ -295,7 +295,11 @@ export default function Dashboard() {
     `job-alerts-for-jobseekers/get-job-alerts/${user?.id}`
   );
 
-  console.log("jobAlertsCountData----------->", jobAlertsCountData);
+  const { data: messagesCountData } = useApiGet<ShortlistedJobsCountResponse>(
+    `messages/getMessages-count?userId=${user?.id}`
+  );
+
+  console.log("messagesCountData----------->", messagesCountData?.data);
 
   const toggleBookmark = (jobId: unknown) => {
     setBookmarkedJobs((prev) => {
@@ -353,7 +357,7 @@ export default function Dashboard() {
           },
           {
             title: "Messages",
-            value: 74,
+            value: messagesCountData?.data || 0,
             subtext: "12 unread",
             icon: MessageSquare,
             color: "red",
