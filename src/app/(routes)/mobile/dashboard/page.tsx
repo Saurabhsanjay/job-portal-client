@@ -14,7 +14,6 @@ import {
   Bookmark,
   MapPin,
   DollarSign,
-  TrendingUp,
   Share2,
   BookmarkPlus,
   Clock,
@@ -92,6 +91,63 @@ interface BookmarkRequest {
   isBookmarked: boolean
 }
 
+interface ShortlistedJobsCountResponse {
+  status: string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: number
+}
+
+interface JobAlert {
+  _id: string
+  title: string
+  userId: string
+  frequency: "daily" | "weekly" | "monthly" | string
+  createdAt: string
+  updatedAt: string
+  __v: number
+}
+
+interface JobAlertData {
+  jobAlerts: JobAlert[]
+  jobAlertsCount: number
+}
+
+interface JobAlertResponse {
+  status: "SUCCESS" | "FAILURE" | string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: JobAlertData
+}
+
+interface UserView {
+  range: string
+  views: number
+}
+
+interface UserViewsData {
+  data: UserView[]
+}
+
+interface UserViewsResponse {
+  status: "SUCCESS" | "FAILURE" | string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: UserViewsData
+}
+
+// Add a new interface for recommended jobs response
+interface RecommendedJobsResponse {
+  status: string
+  statusCode: number
+  message: string
+  formattedMessage: string
+  data: any[] // Using any[] since the exact structure wasn't clear from the desktop code
+}
+
 // Mock data
 const profileViewsData = [
   { day: "Mon", views: 45 },
@@ -109,60 +165,7 @@ const recruiterActions = [
   { title: "InMail Response Rate", value: 89, increase: 5 },
 ]
 
-const recommendedJobs = [
-  {
-    id: 1,
-    position: "Senior Developer",
-    company: "Tech Corp",
-    logo: "/placeholder.svg",
-    location: "San Francisco, CA",
-    salary: "$120k - $150k",
-    type: "Full-time",
-    experience: "5+ years",
-    matchPercentage: 95,
-    isNew: true,
-    skills: ["React", "Node.js", "TypeScript", "AWS"],
-  },
-  {
-    id: 2,
-    position: "UX Designer",
-    company: "Design Studio",
-    logo: "/placeholder.svg",
-    location: "New York, NY",
-    salary: "$90k - $110k",
-    type: "Full-time",
-    experience: "3+ years",
-    matchPercentage: 88,
-    isNew: true,
-    skills: ["Figma", "UI/UX", "Prototyping", "User Research"],
-  },
-  {
-    id: 3,
-    position: "Product Manager",
-    company: "Innovate Inc",
-    logo: "/placeholder.svg",
-    location: "Remote",
-    salary: "$130k - $160k",
-    type: "Full-time",
-    experience: "4+ years",
-    matchPercentage: 92,
-    isNew: false,
-    skills: ["Product Strategy", "Agile", "Roadmapping", "Analytics"],
-  },
-  {
-    id: 4,
-    position: "DevOps Engineer",
-    company: "Cloud Systems",
-    logo: "/placeholder.svg",
-    location: "Austin, TX",
-    salary: "$115k - $140k",
-    type: "Full-time",
-    experience: "2+ years",
-    matchPercentage: 85,
-    isNew: false,
-    skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
-  },
-]
+// Remove the dummy recommendedJobs array
 
 export default function MobileDashboard() {
   const { user } = useAuth()
@@ -175,6 +178,35 @@ export default function MobileDashboard() {
     `applied-candidates/candidate/${user?.id}`,
     ["applied-jobs"],
   )
+
+  // Fetch shortlisted jobs count
+  const { data: shortlistedJobsData } = useApiGet<ShortlistedJobsCountResponse>(
+    `job-seeker-dashboard/shortlisted-jobscount/${user?.id}`,
+  )
+
+  // Fetch applied jobs count
+  const { data: appliedJobsCountData } = useApiGet<ShortlistedJobsCountResponse>(
+    `job-seeker-dashboard/applied-jobscount/${user?.id}`,
+  )
+
+  // Fetch job alerts
+  const { data: jobAlertsCountData } = useApiGet<JobAlertResponse>(
+    `job-alerts-for-jobseekers/get-job-alerts/${user?.id}`,
+  )
+
+  // Fetch messages count
+  const { data: messagesCountData } = useApiGet<ShortlistedJobsCountResponse>(
+    `messages/getMessages-count?userId=${user?.id}`,
+  )
+
+  // Fetch profile performance data
+  const { data: profilePerformanceData } = useApiGet<UserViewsResponse>(`users/get-user-views?userId=${user?.id}`)
+
+  // Transform profile performance data for chart
+  const profilePerformanceChartData = profilePerformanceData?.data?.data?.map((item) => ({
+    day: item?.range,
+    views: item?.views,
+  }))
 
   useEffect(() => {
     if (appliedJobsData) {
@@ -218,6 +250,14 @@ export default function MobileDashboard() {
     )
   }
 
+  // Replace the dummy recommendedJobs array with this API call after the other API calls
+  // Fetch recommended jobs
+  const {
+    data: recommendedJobsData,
+    isLoading: isLoadingRecommendedJobs,
+    error: recommendedJobsError,
+  } = useApiGet<RecommendedJobsResponse>(`job-seeker-dashboard/recommended-jobs/${user?.id}`, ["recommended-jobs"])
+
   if (isLoadingAppliedJobs) {
     return (
       <div className="flex justify-center items-center h-[70vh]">
@@ -235,29 +275,29 @@ export default function MobileDashboard() {
           {[
             {
               title: "Applied Jobs",
-              value: appliedJobs.length || 0,
-              subtext: "5 new this week",
+              value: appliedJobsCountData?.data || 0,
+              subtext: "Your job applications",
               icon: Briefcase,
               color: "blue",
             },
             {
               title: "Job Alerts",
-              value: "9,382",
-              subtext: "142 new alerts",
+              value: jobAlertsCountData?.data?.jobAlertsCount || 0,
+              subtext: "Active alerts",
               icon: Bell,
               color: "purple",
             },
             {
               title: "Messages",
-              value: 74,
-              subtext: "12 unread",
+              value: messagesCountData?.data || 0,
+              subtext: "Unread messages",
               icon: MessageSquare,
               color: "red",
             },
             {
               title: "Shortlisted",
-              value: 32,
-              subtext: "8 new opportunities",
+              value: shortlistedJobsData?.data || 0,
+              subtext: "Shortlisted by employers",
               icon: Bookmark,
               color: "green",
             },
@@ -277,6 +317,7 @@ export default function MobileDashboard() {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
+      {/* Replace the Recommended Jobs section with this updated version that uses real data */}
       {/* Recommended Jobs */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
@@ -286,84 +327,138 @@ export default function MobileDashboard() {
           </Button>
         </div>
 
-        <ScrollArea className="w-full">
-          <div className="flex space-x-4 pb-4">
-            {recommendedJobs.map((job) => (
-              <Card
-                key={job.id}
-                className="min-w-[280px] max-w-[280px] group flex flex-col bg-white border hover:border-blue-200 hover:shadow-md transition-all duration-300"
-              >
-                <CardHeader className="flex-row gap-4 items-start p-4">
-                  <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                    <AvatarImage src={job.logo || "/placeholder.svg"} alt={job.company} />
-                    <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">{job.company[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <CardTitle className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {job.position}
-                    </CardTitle>
-                    <p className="text-sm font-medium text-gray-600">{job.company}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
-                        {job.matchPercentage}% Match
-                      </Badge>
-                      {job.isNew && <Badge className="bg-green-50 text-green-700 border-green-100">New</Badge>}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 p-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.location}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.salary}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.type}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate">{job.experience}</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="p-4 bg-gray-50 flex items-center justify-between gap-2 mt-auto border-t">
-                  <div className="flex gap-2">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-gray-500 hover:text-blue-600"
-                      onClick={() => toggleBookmark(job.id)}
-                    >
-                      <BookmarkPlus className={bookmarkedJobs.has(job.id) ? "fill-blue-600 text-blue-600" : ""} />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="text-gray-500 hover:text-blue-600">
-                      <Share2 />
-                    </Button>
-                  </div>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium">
-                    Apply
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+        {isLoadingRecommendedJobs ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600 mr-2" />
+            <span>Loading recommended jobs...</span>
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        ) : recommendedJobsData?.data?.length ? (
+          <ScrollArea className="w-full">
+            <div className="flex space-x-4 pb-4">
+              {recommendedJobsData.data.map((job) => (
+                <Card
+                  key={job._id}
+                  className="min-w-[280px] max-w-[280px] group flex flex-col bg-white border hover:border-blue-200 hover:shadow-md transition-all duration-300"
+                >
+                  <CardHeader className="flex-row gap-4 items-start p-4">
+                    <Avatar className="h-12 w-12 ring-2 ring-gray-100">
+                      <AvatarImage
+                        src={job?.createdBy?.userId?.employerDetails?.logoUrl || "/placeholder.svg"}
+                        alt={job?.createdBy?.userId?.employerDetails?.companyName || "Company"}
+                      />
+                      <AvatarFallback className="bg-blue-50 text-blue-600 font-semibold">
+                        {job?.createdBy?.userId?.employerDetails?.companyName?.[0] || "C"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <CardTitle className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {job.title}
+                      </CardTitle>
+                      <p className="text-sm font-medium text-gray-600">
+                        {job?.createdBy?.userId?.employerDetails?.companyName || "Company"}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
+                          {job.matchPercentage || "90"}% Match
+                        </Badge>
+                        {job.isNew && <Badge className="bg-green-50 text-green-700 border-green-100">New</Badge>}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 p-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">{job?.location?.city || "Location"}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">
+                          {job?.salary?.min && job?.salary?.max ? `${job.salary.min} - ${job.salary.max}` : "Salary"}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">
+                          {job?.employmentType === "FULL_TIME"
+                            ? "Full Time"
+                            : job?.employmentType === "PART_TIME"
+                              ? "Part Time"
+                              : job?.employmentType === "CONTRACT"
+                                ? "Contract"
+                                : job?.employmentType === "FREELANCE"
+                                  ? "Freelance"
+                                  : job?.employmentType || "Employment Type"}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="truncate">
+                          {job?.experience?.level
+                            ? job.experience.level[0].toUpperCase() + job.experience.level.slice(1).toLowerCase()
+                            : "Experience"}
+                        </span>
+                      </div>
+                    </div>
+                    {job.skills && (
+                      <div className="flex flex-wrap gap-2">
+                        {job.skills.slice(0, 3).map((skill) => (
+                          <Badge key={skill} variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {job.skills.length > 3 && (
+                          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+                            +{job.skills.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="p-4 bg-gray-50 flex items-center justify-between gap-2 mt-auto border-t">
+                    <div className="flex gap-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-gray-500 hover:text-blue-600"
+                        onClick={() => toggleBookmark(job._id)}
+                      >
+                        <BookmarkPlus className={bookmarkedJobs.has(job._id) ? "fill-blue-600 text-blue-600" : ""} />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="text-gray-500 hover:text-blue-600">
+                        <Share2 />
+                      </Button>
+                    </div>
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium">
+                      Apply
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        ) : (
+          <Card className="bg-white">
+            <CardContent className="p-6 text-center">
+              <Briefcase className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-500">No recommended jobs available</p>
+              <Button className="mt-4" size="sm">
+                Browse Jobs
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Profile Performance & Recruiter Actions */}
+      {/* Profile Performance */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Profile Performance</h2>
         <Card className="bg-white shadow-sm">
           <CardContent className="p-4">
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={profileViewsData}>
+                <AreaChart data={profilePerformanceChartData || profileViewsData}>
                   <defs>
                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
@@ -377,28 +472,6 @@ export default function MobileDashboard() {
                   <Area type="monotone" dataKey="views" stroke="#3b82f6" fillOpacity={1} fill="url(#colorViews)" />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Recruiter Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {recruiterActions.map((action, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500">{action.title}</p>
-                    <p className="text-xl font-bold text-gray-900">{action.value}</p>
-                  </div>
-                  <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {action.increase}%
-                  </Badge>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>

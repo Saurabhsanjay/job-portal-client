@@ -93,7 +93,10 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
             console.log(searchParams.get("applied"), "searchParams.get(applied)")
             if(searchParams.get("applied")=="true"){
               router.push("/job-seeker/applied-jobs")
-            }else{
+            } else if(searchParams.get("applied")=="mobile"){
+              router.push("/mobile/applied-jobs")
+            }
+            else{
               router.push("/job-listings")
             }
             // router.push("/job-listings")

@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Briefcase, MapPin, Building2, Loader2, Filter, Eye, Bookmark, Heart } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 
 // Types
 interface JobApplicationResponse {
@@ -53,6 +54,7 @@ interface Pagination {
 
 export default function MobileAppliedJobs() {
   const { user } = useAuth()
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("applied")
   const [duration, setDuration] = useState("")
   const [showFilters, setShowFilters] = useState(false)
@@ -177,7 +179,7 @@ export default function MobileAppliedJobs() {
                         </span>
                       </div>
                       <div className="flex justify-end mt-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {router.push(`/job-listings/${job?.jobId?._id}?applied=mobile`)}}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
@@ -222,7 +224,7 @@ export default function MobileAppliedJobs() {
                         </span>
                       </div>
                       <div className="flex justify-end mt-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {router.push(`/job-listings/${job?.jobId?._id}?applied=mobile`)}}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
@@ -267,7 +269,7 @@ export default function MobileAppliedJobs() {
                         </span>
                       </div>
                       <div className="flex justify-end mt-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {router.push(`/job-listings/${job?.jobId?._id}?applied=mobile`)}}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>

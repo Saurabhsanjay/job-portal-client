@@ -92,7 +92,7 @@ export default function MobileProfile() {
     {
       name: "Edit Profile",
       icon: Edit,
-      action: () => navigateTo("profile/edit"),
+      action: () => navigateTo("update-profile"),
       color: "text-blue-600",
     },
     {
@@ -100,12 +100,6 @@ export default function MobileProfile() {
       icon: FileText,
       action: () => navigateTo("resume"),
       color: "text-green-600",
-    },
-    {
-      name: "Messages",
-      icon: Mail,
-      action: () => navigateTo("messages"),
-      color: "text-purple-600",
     },
     {
       name: "Change Password",

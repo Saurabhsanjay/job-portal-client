@@ -28,10 +28,55 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import Link from "next/link"
 // import PWAInstallPrompt from "@/pwa/pwa-install-prompt"
 import PWARegister from "@/pwa/pwa-register"
+import { useApiGet } from "@/hooks/use-api-query"
+import { useAuth } from "@/app/(providers)/AuthContext"
+
+interface UserProfile {
+  data: {
+    personalDetails: {
+      firstName: string
+      lastName: string
+      email: string
+      phoneNumber: {
+        countryCode: string
+        number: string
+      }
+      profilePicture: string
+      gender: string
+      age: string
+      address: {
+        street: string
+        city: string
+        state: string
+        country: string
+        zipCode: string
+      }
+      bio: string
+      languages: string[]
+    }
+    jobSeekerDetails: {
+      education: any[]
+      professionalExperience: any[]
+      achivements: any[]
+      professionalDetails: {
+        currentJobTitle: string
+        skills: string[]
+        noticePeriod: string
+        currentCTC: number
+        expectedCTC: number
+        employmentType: string
+        website: string
+        linkedIn: string
+        facebook: string
+        portfolio: string
+      }
+    }
+  }
+}
 
 const navigation = [
   { name: "Dashboard", href: "/mobile/dashboard", icon: Home },
-  { name: "My Profile", href: "/job-seeker/profile", icon: User },
+  { name: "My Profile", href: "/mobile/update-profile", icon: User },
   { name: "My Resume", href: "/mobile/resume", icon: FileText },
   { name: "Applied Jobs", href: "/mobile/applied-jobs", icon: Briefcase },
   { name: "Shortlisted Jobs", href: "/mobile/shortlisted-jobs", icon: Bookmark },
@@ -51,12 +96,22 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+    const { user } = useAuth()
+  
 
   // Handle notification click
   const handleNotificationClick = () => {
     setNotificationCount(0)
     router.push("/mobile/alerts")
   }
+
+    const { data: profileData, isLoading } = useApiGet<UserProfile>(
+      "users/get-profile",
+      user?.id ? { userId: user.id } : null,
+      [user?.id, "user-profile"],
+    )
+  
+    const personalDetails = profileData?.data?.personalDetails
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -91,12 +146,20 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
           <SheetHeader className="p-4 border-b">
             <SheetTitle className="flex items-center">
               <Avatar className="h-8 w-8 mr-2">
-                <AvatarImage src="/placeholder.svg" alt="@user" />
-                <AvatarFallback>U</AvatarFallback>
+              <AvatarImage
+                  src={personalDetails?.profilePicture || "/placeholder.svg"}
+                  alt={`${personalDetails?.firstName} ${personalDetails?.lastName}`}
+                />
+                <AvatarFallback>
+                  {personalDetails?.firstName?.[0]}
+                  {personalDetails?.lastName?.[0]}
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">John Doe</span>
-                <span className="text-xs text-muted-foreground">john@example.com</span>
+                <span className="text-sm font-medium">
+                {personalDetails?.firstName} {personalDetails?.lastName}
+                </span>
+                <span className="text-xs text-muted-foreground">{personalDetails?.email || "Not specified"}</span>
               </div>
             </SheetTitle>
           </SheetHeader>
@@ -169,14 +232,14 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
           <span className="text-xs mt-1">Applied</span>
         </Link>
         <Link
-          href="/mobile/alerts"
+          href="/mobile/messages"
           className={cn(
             "flex flex-col items-center justify-center flex-1 h-full",
             pathname === "/mobile/alerts" ? "text-blue-600" : "text-gray-500",
           )}
         >
-          <Bell className="h-5 w-5" />
-          <span className="text-xs mt-1">Alerts</span>
+          <Mail className="h-5 w-5" />
+          <span className="text-xs mt-1">Message</span>
         </Link>
         <Link
           href="/mobile/profile"

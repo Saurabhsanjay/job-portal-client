@@ -45,7 +45,6 @@ export default function LoginForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  // const { toast } = useToast();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const error = searchParams.get("error");
   const { login } = useAuth();
@@ -64,66 +63,10 @@ export default function LoginForm() {
     },
   });
 
-  // Show error toast if there's an error in the URL
-  // useEffect(() => {
-  //   if (error) {
-  //     setLoginError("Authentication failed. Please try again.");
-  //     toast({
-  //       title: "Error",
-  //       description: "Authentication failed. Please try again.",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // }, [error, toast]);
-
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError(null);
-
-    // try {
-    //   const result = await signIn("credentials", {
-    //     email: data.email,
-    //     password: data.password,
-    //     isRecruiter: userType === "recruiter" ? "true" : "false",
-    //     redirect: false,
-    //   });
-
-    //   if (result?.error) {
-    //     setLoginError(result.error);
-    //     toast({
-    //       title: "Login Failed",
-    //       description: result.error,
-    //       variant: "destructive",
-    //     });
-    //   } else if (result?.ok) {
-    //     toast({
-    //       title: "Success",
-    //       description: "You have been logged in successfully!",
-    //     });
-    //     // router.push(callbackUrl);
-    //     router.refresh(); // Refresh to update auth state
-    //   }
-    // } catch (error: any) {
-    //   const errorMessage =
-    //     error.message || "An unexpected error occurred. Please try again.";
-    //   setLoginError(errorMessage);
-    //   toast({
-    //     title: "Error",
-    //     description: errorMessage,
-    //     variant: "destructive",
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
     await login(data?.email, data?.password);
-    // console.log("response------->", response)
-    // if(response?.status==="SUCCESS"){
-    //   console.log("came inside if")
-    //   toast.success("Login Successful")
-    // }else if(response?.status==="error"){
-    //   console.log("came inside else")
-    //   toast.error(response?.message||"Something Went Wrong")
-    // }
     setIsLoading(false);
   };
 
@@ -141,12 +84,12 @@ export default function LoginForm() {
             <Image src="/logo.jpeg" alt="Recruit-G" width={140} height={70} className="h-10 object-contain" />
           </div>
 
-          <div className="flex items-center justify-center gap-3 p-1 bg-gray-50 rounded-lg">
+            <div className="hidden sm:flex items-center justify-center gap-3 p-1 bg-gray-50 rounded-lg">
             <Button
               className={`flex-1 transition-all duration-200 ${
-                userType === "candidate"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              userType === "candidate"
+                ? "bg-green-600 text-white shadow-md"
+                : "bg-transparent text-gray-600 hover:bg-gray-100"
               }`}
               onClick={() => setUserType("candidate")}
               type="button"
@@ -155,16 +98,16 @@ export default function LoginForm() {
             </Button>
             <Button
               className={`flex-1 transition-all duration-200 ${
-                userType === "recruiter"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              userType === "recruiter"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-transparent text-gray-600 hover:bg-gray-100"
               }`}
               onClick={() => setUserType("recruiter")}
               type="button"
             >
               <Backpack size={18} className="mr-2" /> Recruiter
             </Button>
-          </div>
+            </div>
         </CardHeader>
 
         <CardContent className="space-y-5 pt-4">
