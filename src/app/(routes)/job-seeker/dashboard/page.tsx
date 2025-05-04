@@ -33,35 +33,69 @@ import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
 import {ApplicationModal} from "../../job-listings/_components/ApplicationModal"
 
-interface JobApplicationResponse {
-  status: string;
-  statusCode: number;
-  message: string;
-  formattedMessage: string;
-  data: {
-    applications: JobApplication[];
-    pagination: Pagination;
-  };
+// Employer Details Interface
+interface EmployerDetails {
+  companyName: string;
+  logoUrl: string;
 }
 
-interface JobApplication {
+// User ID Interface
+interface UserId {
   _id: string;
-  jobId: JobDetails;
+  employerDetails: EmployerDetails;
+}
+
+// Created By Interface
+interface CreatedBy {
+  userId: UserId;
+}
+
+// Job ID Interface
+interface JobId {
+  _id: string;
+  title: string;
+  validTill: string;
+  createdBy: CreatedBy;
+  status: string;
+}
+
+// Application Interface
+interface Application {
+  _id: string;
+  jobId: JobId;
   candidateId: string;
-  status: "APPLIED" | "SHORTLISTED" | "REJECTED"; // Adjust based on actual statuses
+  status: string;
   isShortlisted: boolean;
+  isBookmarked: boolean;
+  isDeleted: boolean;
   appliedDate: string;
-  shortlistedDate?: string;
+  shortlistedDate: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
 }
 
-interface JobDetails {
-  _id: string;
-  title: string;
-  validTill: string;
-  status: "ACTIVE" | "INACTIVE"; // Adjust based on actual statuses
+// Pagination Interface
+interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+// Data Interface
+interface Data {
+  applications: Application[];
+  pagination: Pagination;
+}
+
+// Response Interface
+interface JobApplicationsResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: Data;
 }
 
 interface Pagination {
@@ -278,21 +312,22 @@ export default function Dashboard() {
     data: appliedJobsData,
     isLoading: isLoadingAppliedJobs,
     error: appliedJobsError,
-  } = useApiGet<JobApplicationResponse>(
+  } = useApiGet<JobApplicationsResponse>(
     `applied-candidates/candidate/${user?.id}`,
     ["applied-jobs"] // Query key for caching
   );
+
+  console.log("appliedJobsData-------->", appliedJobsData);
 
   const {
     data: recommendedJobsData,
     isLoading: isLoadingRecmmendedJobs,
     error: recommendedJobsError,
-  } = useApiGet<JobApplicationResponse>(
+  } = useApiGet<JobApplicationsResponse>(
     `job-seeker-dashboard/recommended-jobs/${user?.id}`,
     ["recommended-jobs"] // Query key for caching
   );
 
-  console.log("appliedJobsData-------->", appliedJobsData);
 
   useEffect(() => {
     if (appliedJobsData) {
@@ -656,17 +691,17 @@ export default function Dashboard() {
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarImage
-                      src={job?.logo || ""}
+                      src={job?.jobId?.createdBy?.userId?.employerDetails?.logoUrl || ""}
                       alt={job?.company || ""}
                     />
                     <AvatarFallback>{job?.company?.[0] || "P"}</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 flex-1">
                     <h4 className="text-base font-semibold text-gray-900">
-                      {job?.position || "No position"}
+                      {job?.jobId?.title || "No position"}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      {job?.company || "No Company"}
+                      {job?.jobId?.createdBy?.userId?.employerDetails?.companyName || "No Company"}
                     </p>
                   </div>
                   <Badge
