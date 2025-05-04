@@ -86,7 +86,16 @@ export function JobDescriptionPage({ job }: JobDescriptionProps) {
         <Button
           variant="ghost"
           className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          onClick={() => router.push("/job-listings")}
+          onClick={() => {
+            const searchParams = new URLSearchParams(window.location.search);
+            if (searchParams.get("applied") === "true") {
+              router.push("/job-seeker/applied-jobs")
+            } else if (searchParams.get("applied") === "mobile") {
+              router.push("/mobile/applied-jobs")
+            } else {
+              router.push("/job-listings")
+            }
+          }}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Jobs

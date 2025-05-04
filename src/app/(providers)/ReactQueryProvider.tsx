@@ -31,7 +31,7 @@ const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>{children}
-      <ReactQueryDevtools />
+      {/* <ReactQueryDevtools /> */}
 
     </QueryClientProvider>
   );
