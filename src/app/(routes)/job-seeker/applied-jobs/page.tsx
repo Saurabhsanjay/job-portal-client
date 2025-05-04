@@ -34,42 +34,78 @@ import { useRouter } from "next/navigation";
 //   description: "View all jobs you have applied to",
 // };
 
-interface JobApplicationResponse {
-  status: string;
-  statusCode: number;
-  message: string;
-  formattedMessage: string;
-  data: {
-    applications: JobApplication[];
-    pagination: Pagination;
-  };
+// Contact Info Interface
+interface ContactInfo {
+  country: string;
+  state: string;
+  city: string;
+  completeAddress: string;
 }
 
-interface JobApplication {
+// Employer Details Interface
+interface EmployerDetails {
+  companyName: string;
+  logoUrl: string;
+  contactInfo: ContactInfo;
+}
+
+// User ID Interface
+interface UserId {
   _id: string;
-  jobId: JobDetails;
+  employerDetails: EmployerDetails;
+}
+
+// Created By Interface
+interface CreatedBy {
+  userId: UserId;
+}
+
+// Job ID Interface
+interface JobId {
+  _id: string;
+  title: string;
+  validTill: string;
+  createdBy: CreatedBy;
+  status: string;
+}
+
+// Application Interface
+interface Application {
+  _id: string;
+  jobId: JobId;
   candidateId: string;
-  status: "APPLIED" | "SHORTLISTED" | "REJECTED"; // Adjust based on actual statuses
+  status: string;
   isShortlisted: boolean;
+  isBookmarked: boolean;
+  isDeleted: boolean;
   appliedDate: string;
-  shortlistedDate?: string;
+  shortlistedDate: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
 }
 
-interface JobDetails {
-  _id: string;
-  title: string;
-  validTill: string;
-  status: "ACTIVE" | "INACTIVE"; // Adjust based on actual statuses
-}
-
+// Pagination Interface
 interface Pagination {
   total: number;
   page: number;
   limit: number;
   pages: number;
+}
+
+// Data Interface
+interface Data {
+  applications: Application[];
+  pagination: Pagination;
+}
+
+// Response Interface
+interface JobApplicationsResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: Data;
 }
 
 
@@ -98,7 +134,7 @@ interface Pagination {
 // };
 
 export default function AppliedJobs() {
-    type JobApplication = JobApplicationResponse["data"]["applications"][0];
+    type JobApplication = JobApplicationsResponse["data"]["applications"][0];
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -118,7 +154,7 @@ export default function AppliedJobs() {
     isLoading: isLoadingAppliedJobs,
     error: appliedJobsError,
     refetch,
-  } = useApiGet<JobApplicationResponse>(
+  } = useApiGet<JobApplicationsResponse>(
     apiEndpoint,
     ["applied-jobs",duration] // Query key for caching
   );
@@ -129,7 +165,7 @@ export default function AppliedJobs() {
     }
   }, [duration, refetch]);
 
-  console.log("appliedJobsData", appliedJobsData);
+  console.log("appliedJobsData--------->", appliedJobsData);
   console.log("isLoadingAppliedJobs", isLoadingAppliedJobs);
   console.log("appliedJobsError", appliedJobsError);
 
@@ -234,16 +270,23 @@ export default function AppliedJobs() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={job?.logo||"P"} alt={"P"} />
+                        <AvatarImage src={job?.jobId?.createdBy?.userId?.employerDetails?.logoUrl||"P"} alt={"P"} />
                         <AvatarFallback>{"P"}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">{job?.jobId?.title}</div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Building2 className="h-3 w-3" />
-                          <span>{job?.company||"No Company"}</span>
+                          <span>{job?.jobId?.createdBy?.userId?.employerDetails?.companyName||"No Company"}</span>
                           <MapPin className="h-3 w-3 ml-2" />
-                          <span>{job?.location||"No Location"}</span>
+                          <span>
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.city ||
+                              ""},{" "}
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.state ||
+                              ""},{" "}
+                            {job?.jobId?.createdBy?.userId?.employerDetails?.contactInfo?.country ||
+                              "No Location"}
+                          </span>
                         </div>
                       </div>
                     </div>
