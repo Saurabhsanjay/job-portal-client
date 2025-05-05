@@ -26,6 +26,7 @@ import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { useApiGet } from "@/hooks/use-api-query"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 interface Job {
   id: string
@@ -80,13 +81,15 @@ export default function JobPage() {
   const jobId = params?.id as string
   const router = useRouter()
   const [job, setJob] = useState("")
+  const { user } = useAuth()
 
   // Fetch job data from API
-  const { data: singleJob, isLoading, error } = useApiGet<Job>(`jobs/get-job/${jobId}`, {}, ["job", { id: jobId }])
+  const { data: singleJob, isLoading, error } = useApiGet<Job>(`jobs/get-job?jobId=${jobId}&userId=${user?.id}`, {}, ["job", { id: jobId }])
   console.log(singleJob, "JOBBB")
 
   useEffect(() => {
     if (singleJob) {
+      console.log("single job ----->",singleJob?.data)
       setJob(singleJob?.data)
     }
   }, [singleJob])
@@ -144,6 +147,8 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
     return job.remote ? `${parts} (Remote)` : parts
   }
 
+  console.log("job-------->",job)
+
   return (
     <div className="px-1 sm:px-6 md:px-8 shadow-sm border-none">
       <div className="mb-6">
@@ -154,14 +159,14 @@ function JobDetails({ job, onEdit, onViewCandidates, onBack }: JobDetailsProps) 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={job?.company?.logoUrl} alt={job?.company?.name} />
-              <AvatarFallback className="text-lg">{job?.company?.name?.[0]}</AvatarFallback>
+              <AvatarImage src={job?.createdBy?.userId?.employerDetails?.logoUrl} alt={"P"} />
+              <AvatarFallback className="text-lg">{job?.createdBy?.userId?.employerDetails?.companyName?.[0]}</AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-2xl font-bold">{job.title}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4" />
-                <span>{job?.company?.name}</span>
+                <span>{job?.createdBy?.userId?.employerDetails?.companyName}</span>
               </div>
             </div>
           </div>

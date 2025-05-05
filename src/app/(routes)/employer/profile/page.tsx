@@ -94,6 +94,7 @@ export default function CompanyProfile() {
       companyName: "",
       email: "",
       phoneNumber: {
+        countryCode: "+91",
         number: "",
       },
       website: "",
@@ -251,6 +252,7 @@ export default function CompanyProfile() {
       setValue("companyName", employerDetails.companyName || "")
       setValue("email", employerDetails.email || "")
       setValue("phoneNumber", {
+        countryCode: "+91",
         number: employerDetails.phoneNumber?.number || "",
       })
       setValue("website", employerDetails.website || "")
@@ -473,12 +475,35 @@ export default function CompanyProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber">
-                  Phone <span className="text-red-500">*</span>
-                </Label>
-                <Input id="phoneNumber" type="number" placeholder="Phone number" {...register("phoneNumber.number")} />
-                {errors.phoneNumber?.number && (
-                  <p className="text-sm text-red-500">{errors.phoneNumber.number.message}</p>
+                <Label htmlFor="phoneNumber">Phone</Label>
+                <div className="flex space-x-2">
+                  {/* <Input id="countryCode" className="w-24" placeholder="+1" {...register("phoneNumber.countryCode")} /> */}
+                  <Input
+                    id="phoneNumber"
+                    className="flex-1"
+                    placeholder="Phone number"
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                        "Tab",
+                        "Home",
+                        "End",
+                      ];
+                      if (
+                        !/^[0-9]$/.test(e.key) &&
+                        !allowedKeys.includes(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    {...register("phoneNumber.number")}
+                  />
+                </div>
+                {(errors.phoneNumber?.countryCode || errors.phoneNumber?.number) && (
+                  <p className="text-sm text-red-500">Please enter a valid phone number</p>
                 )}
               </div>
 
