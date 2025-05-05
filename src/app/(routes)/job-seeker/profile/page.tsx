@@ -837,7 +837,7 @@ export default function Profile() {
               {/* Expected Salary */}
               <div className="space-y-1">
                 <Label htmlFor="expectedSalary">
-                  Expected Salary (per anum)
+                  Expected Salary (per annum)
                 </Label>
                 <Input
                   id="expectedSalary"
