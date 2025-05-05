@@ -232,7 +232,7 @@ export default function EmployerDashboard() {
                     { title: "Total Bookmarks", value: bookmarkData?.data||0, subtext: "For next 7 days", icon: Calendar, color: "purple" },
                     {
                         title: "Jobs Expiring Today",
-                        value: `${jobsExpiringTodayData?.data||0} days`,
+                        value: `${jobsExpiringTodayData?.data||0}`,
                         subtext: "2 days faster than last month",
                         icon: Clock,
                         color: "red",
