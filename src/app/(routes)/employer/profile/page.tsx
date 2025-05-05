@@ -93,7 +93,7 @@ export default function CompanyProfile() {
       companyName: "",
       email: "",
       phoneNumber: {
-        countryCode: "",
+        countryCode: "+91",
         number: "",
       },
       website: "",
@@ -209,7 +209,7 @@ export default function CompanyProfile() {
       setValue("companyName", employerDetails.companyName || "")
       setValue("email", employerDetails.email || "")
       setValue("phoneNumber", {
-        countryCode: employerDetails.phoneNumber?.countryCode || "+1",
+        countryCode: "+91",
         number: employerDetails.phoneNumber?.number || "",
       })
       setValue("website", employerDetails.website || "")
@@ -402,11 +402,28 @@ export default function CompanyProfile() {
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone</Label>
                 <div className="flex space-x-2">
-                  <Input id="countryCode" className="w-24" placeholder="+1" {...register("phoneNumber.countryCode")} />
+                  {/* <Input id="countryCode" className="w-24" placeholder="+1" {...register("phoneNumber.countryCode")} /> */}
                   <Input
                     id="phoneNumber"
                     className="flex-1"
                     placeholder="Phone number"
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                        "Tab",
+                        "Home",
+                        "End",
+                      ];
+                      if (
+                        !/^[0-9]$/.test(e.key) &&
+                        !allowedKeys.includes(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
                     {...register("phoneNumber.number")}
                   />
                 </div>
