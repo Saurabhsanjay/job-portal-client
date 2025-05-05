@@ -10,6 +10,7 @@ interface User {
   lastName: string;
   token: string;
   role: string;
+  companyName: string;
 }
 
 interface AuthContextType {
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           lastName: data.data.user.personalDetails.lastName,
           token: data.data.token,
           role: data.data.user.role,
+          companyName: data.data.user?.employerDetails?.companyName||"",
         };
 
         setUser(loggedInUser);

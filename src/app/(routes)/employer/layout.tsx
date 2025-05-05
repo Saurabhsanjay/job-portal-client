@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Briefcase,
@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge"
 import { usePathname } from "next/navigation"
 import { Notifications } from "@/app/(containers)/notifications/Notifications"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 
 const navigation = [
@@ -165,6 +166,8 @@ export default function EmployerDashboardLayout({ children }: { children: React.
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [count, setCount] = useState(99);
     const pathname = usePathname()
+    const { user } = useAuth()
+    console.log("user------------>", user)
     const handleClick = () => {
         setCount(0);
     };
@@ -226,8 +229,8 @@ export default function EmployerDashboardLayout({ children }: { children: React.
                             <DropdownMenuContent className="w-56" align="end" forceMount>
                                 <DropdownMenuLabel className="font-normal">
                                     <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">John Doe</p>
-                                        <p className="text-xs leading-none text-muted-foreground">john@example.com</p>
+                                        <p className="text-sm font-medium leading-none">{user?.companyName}</p>
+                                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
