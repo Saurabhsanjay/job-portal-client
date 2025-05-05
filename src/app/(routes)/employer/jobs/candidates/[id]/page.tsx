@@ -12,8 +12,14 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, FileText, Search, CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar"
+import {
+  Eye,
+  FileText,
+  Search,
+  CalendarIcon,
+  ArrowLeftCircle,
+} from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +37,7 @@ import {
 } from "@/components/ui/popover";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const jobTitles = [
   "All titles",
@@ -49,141 +56,140 @@ const locations = [
 ];
 
 export interface JobApplicationsResponse {
-    status: string;
-    statusCode: number;
-    message: string;
-    formattedMessage: string;
-    data: {
-      applications: JobApplication[];
-      pagination: Pagination;
-    };
-  }
-  
-  export interface Pagination {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  }
-  
-  export interface JobApplication {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: {
+    applications: JobApplication[];
+    pagination: Pagination;
+  };
+}
+
+export interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface JobApplication {
+  _id: string;
+  jobId: {
     _id: string;
-    jobId: {
-      _id: string;
-      title: string;
-    };
-    candidateId: Candidate;
-    status: string;
-    isShortlisted: boolean;
-    appliedDate: string;
-    shortlistedDate: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-    isBookmarked: boolean;
-    isDeleted: boolean;
-  }
-  
-  export interface Candidate {
-    _id: string;
-    role: string;
-    personalDetails: PersonalDetails;
-    jobSeekerDetails: JobSeekerDetails;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
-  export interface PersonalDetails {
-    firstName: string;
-    lastName: string;
-    age: string;
-    bio: string;
-    address: Address;
-    phoneNumber: PhoneNumber;
-    profilePicture: string;
-    gender: string;
-    email: string;
-    password: string;
-    languages: string[];
-  }
-  
-  export interface Address {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-  }
-  
-  export interface PhoneNumber {
-    number: string;
-    countryCode: string;
-  }
-  
-  export interface JobSeekerDetails {
-    education: Education[];
-    professionalExperience: ProfessionalExperience[];
-    achivements: Achievement[];
-    professionalDetails: ProfessionalDetails;
-    applicationsHistory: any[]; // can be refined later if structure known
-    jobPreferences: JobPreferences;
-  }
-  
-  export interface Education {
-    qualification: string;
-    institution: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-    grade: string;
-    _id: string;
-  }
-  
-  export interface ProfessionalExperience {
-    companyName: string;
-    jobTitle: string;
-    startDate: string;
-    endDate: string;
-    keyAchievements: string;
-    _id: string;
-  }
-  
-  export interface Achievement {
     title: string;
-    organization: string;
-    issuedDate: string;
-    description: string;
-    _id: string;
-  }
-  
-  export interface ProfessionalDetails {
-    currentJobTitle: string;
-    totalExperience: number;
-    skills: string[];
-    noticePeriod: string;
-    currentCTC: number;
-    expectedCTC: number;
-    website: string;
-    linkedIn: string;
-    facebook: string;
-    portfolio: string;
-    resume: Resume;
-  }
-  
-  export interface Resume {
-    url: string;
-    isVerified: boolean;
-    isPublic: boolean;
-    _id: string;
-  }
-  
-  export interface JobPreferences {
-    jobAlerts: boolean;
-    preferredIndustries: string[];
-    preferredJobTitles: string[];
-    preferredLocations: string[];
-  }
-  
+  };
+  candidateId: Candidate;
+  status: string;
+  isShortlisted: boolean;
+  appliedDate: string;
+  shortlistedDate: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  isBookmarked: boolean;
+  isDeleted: boolean;
+}
+
+export interface Candidate {
+  _id: string;
+  role: string;
+  personalDetails: PersonalDetails;
+  jobSeekerDetails: JobSeekerDetails;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalDetails {
+  firstName: string;
+  lastName: string;
+  age: string;
+  bio: string;
+  address: Address;
+  phoneNumber: PhoneNumber;
+  profilePicture: string;
+  gender: string;
+  email: string;
+  password: string;
+  languages: string[];
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+}
+
+export interface PhoneNumber {
+  number: string;
+  countryCode: string;
+}
+
+export interface JobSeekerDetails {
+  education: Education[];
+  professionalExperience: ProfessionalExperience[];
+  achivements: Achievement[];
+  professionalDetails: ProfessionalDetails;
+  applicationsHistory: any[]; // can be refined later if structure known
+  jobPreferences: JobPreferences;
+}
+
+export interface Education {
+  qualification: string;
+  institution: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  grade: string;
+  _id: string;
+}
+
+export interface ProfessionalExperience {
+  companyName: string;
+  jobTitle: string;
+  startDate: string;
+  endDate: string;
+  keyAchievements: string;
+  _id: string;
+}
+
+export interface Achievement {
+  title: string;
+  organization: string;
+  issuedDate: string;
+  description: string;
+  _id: string;
+}
+
+export interface ProfessionalDetails {
+  currentJobTitle: string;
+  totalExperience: number;
+  skills: string[];
+  noticePeriod: string;
+  currentCTC: number;
+  expectedCTC: number;
+  website: string;
+  linkedIn: string;
+  facebook: string;
+  portfolio: string;
+  resume: Resume;
+}
+
+export interface Resume {
+  url: string;
+  isVerified: boolean;
+  isPublic: boolean;
+  _id: string;
+}
+
+export interface JobPreferences {
+  jobAlerts: boolean;
+  preferredIndustries: string[];
+  preferredJobTitles: string[];
+  preferredLocations: string[];
+}
 
 // Mock data generator
 const generateMockData = (start: number, end: number) => {
@@ -212,8 +218,8 @@ const generateMockData = (start: number, end: number) => {
 };
 
 export default function AppliedCandidates() {
-    const params = useParams()
-  const jobId = params?.id as string
+  const params = useParams();
+  const jobId = params?.id as string;
   const [candidates, setCandidates] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
@@ -225,14 +231,23 @@ export default function AppliedCandidates() {
   });
   const [appliedFilters, setAppliedFilters] = React.useState(filters);
 
-  const { data: AppliedCandidatesData, isLoading, error,refetch } = useApiGet<JobApplicationsResponse>(`applied-candidates/job/${jobId}`, {}, ["jobs"])
-  console.log("AppliedCandidatesData", AppliedCandidatesData)
+  const {
+    data: AppliedCandidatesData,
+    isLoading,
+    error,
+    refetch,
+  } = useApiGet<JobApplicationsResponse>(
+    `applied-candidates/job/${jobId}`,
+    {},
+    ["jobs"]
+  );
+  console.log("AppliedCandidatesData", AppliedCandidatesData);
 
   React.useEffect(() => {
     if (AppliedCandidatesData?.data?.applications) {
-      setCandidates(AppliedCandidatesData?.data?.applications)
+      setCandidates(AppliedCandidatesData?.data?.applications);
     }
-  }, [AppliedCandidatesData])
+  }, [AppliedCandidatesData]);
 
   const observer = React.useRef<IntersectionObserver>(null);
   const lastCandidateElementRef = React.useRef<HTMLDivElement>(null);
@@ -271,7 +286,7 @@ export default function AppliedCandidates() {
 
   const filteredCandidates = React.useMemo(() => {
     return candidates.filter((candidate) => {
-        console.log("candidate",candidate)
+      console.log("candidate", candidate);
       const matchesSearch = appliedFilters.search
         ? candidate?.candidateId?.personalDetails?.firstName
             .toLowerCase()
@@ -286,10 +301,12 @@ export default function AppliedCandidates() {
 
       const matchesJobTitle =
         appliedFilters.jobTitle === "All titles" ||
-        candidate?.jobSeekerDetails?.professionalExperience[0]?.jobTitle === appliedFilters.jobTitle;
+        candidate?.jobSeekerDetails?.professionalExperience[0]?.jobTitle ===
+          appliedFilters.jobTitle;
       const matchesLocation =
         appliedFilters.location === "All locations" ||
-        candidate?.candidateId?.personalDetails?.address?.city === appliedFilters.location;
+        candidate?.candidateId?.personalDetails?.address?.city ===
+          appliedFilters.location;
       const matchesDate =
         !appliedFilters.date ||
         format(candidate.shortlistedDate, "PP") ===
@@ -316,102 +333,16 @@ export default function AppliedCandidates() {
 
   return (
     <Card className="p-6 shadow-sm border-none">
+      <Link href="/employer/jobs">
+              <ArrowLeftCircle className="h-5 w-5 mb-2" />
+          </Link>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
-            Applied Candidates for Software Engineer
+            Applied Candidates
           </h2>
         </div>
-
-        {/* Filters Section */}
-        {/* <div className="space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search candidate name, company, or location..."
-                            value={filters.search}
-                            onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-                            className="pl-8"
-                        />
-                    </div>
-
-                    <div className="flex flex-col space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label>Job Title</Label>
-                                <Select
-                                    value={filters.jobTitle}
-                                    onValueChange={(value) => setFilters((prev) => ({ ...prev, jobTitle: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select job title" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {jobTitles.map((title) => (
-                                            <SelectItem key={title} value={title}>
-                                                {title}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Location</Label>
-                                <Select
-                                    value={filters.location}
-                                    onValueChange={(value) => setFilters((prev) => ({ ...prev, location: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select location" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {locations.map((location) => (
-                                            <SelectItem key={location} value={location}>
-                                                {location}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Date Posted</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className={`w-full justify-start text-left font-normal ${!filters.date && "text-muted-foreground"}`}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {filters.date ? format(filters.date, "PPP") : "Pick a date"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                            // @ts-ignore
-                                            selected={filters.date}
-                                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                            // @ts-ignore
-                                            onSelect={(date) => setFilters((prev) => ({ ...prev, date }))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={handleReset}>
-                                Reset Filters
-                            </Button>
-                            <Button onClick={applyFilters}>Apply Filters</Button>
-                        </div>
-                    </div>
-                </div> */}
 
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -422,7 +353,10 @@ export default function AppliedCandidates() {
                 placeholder="Search candidate name, company, or location..."
                 value={appliedFilters.search}
                 onChange={(e) =>
-                  setAppliedFilters((prev) => ({ ...prev, search: e.target.value }))
+                  setAppliedFilters((prev) => ({
+                    ...prev,
+                    search: e.target.value,
+                  }))
                 }
                 className="pl-8"
               />
@@ -451,7 +385,10 @@ export default function AppliedCandidates() {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     onSelect={(date: Date) =>
-                      setAppliedFilters((prev) => ({ ...prev, date: date ? date : undefined }))
+                      setAppliedFilters((prev) => ({
+                        ...prev,
+                        date: date ? date : undefined,
+                      }))
                     }
                     initialFocus
                   />
@@ -465,7 +402,9 @@ export default function AppliedCandidates() {
             <Button variant="outline" onClick={handleReset}>
               Reset Filters
             </Button>
-            <Button className="hidden" onClick={applyFilters}>Apply Filters</Button>
+            <Button className="hidden" onClick={applyFilters}>
+              Apply Filters
+            </Button>
           </div>
         </div>
 
@@ -491,27 +430,50 @@ export default function AppliedCandidates() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCandidates.map((candidate,index) => (
+                filteredCandidates.map((candidate, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage
-                            src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
-                            alt={candidate?.name||candidate?.candidateId?.personalDetails?.firstName}
+                            src={
+                              candidate?.avatar ||
+                              candidate?.candidateId?.personalDetails
+                                ?.profilePicture
+                            }
+                            alt={
+                              candidate?.name ||
+                              candidate?.candidateId?.personalDetails?.firstName
+                            }
                           />
-                          <AvatarFallback>{candidate?.name?.[0]||candidate?.candidateId?.personalDetails?.firstName?.[0]}</AvatarFallback>
+                          <AvatarFallback>
+                            {candidate?.name?.[0] ||
+                              candidate?.candidateId?.personalDetails
+                                ?.firstName?.[0]}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{candidate?.name||candidate?.candidateId?.personalDetails?.firstName}</div>
+                          <div className="font-medium">
+                            {candidate?.name ||
+                              candidate?.candidateId?.personalDetails
+                                ?.firstName}
+                          </div>
                           <div className="text-sm text-muted-foreground">
-                            {candidate?.candidateId?.personalDetails?.email||"No email"}
+                            {candidate?.candidateId?.personalDetails?.email ||
+                              "No email"}
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{candidate?.jobTitle||candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                    <TableCell>{candidate?.candidateId?.personalDetails?.address?.city||"-"}</TableCell>
+                    <TableCell>
+                      {candidate?.jobTitle ||
+                        candidate?.candidateId?.jobSeekerDetails
+                          ?.professionalDetails?.currentJobTitle}
+                    </TableCell>
+                    <TableCell>
+                      {candidate?.candidateId?.personalDetails?.address?.city ||
+                        "-"}
+                    </TableCell>
                     <TableCell>
                       {format(candidate?.appliedDate, "MMM d, yyyy")}
                     </TableCell>
@@ -526,7 +488,10 @@ export default function AppliedCandidates() {
                         asChild
                       >
                         <a
-                          href={candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url||""}
+                          href={
+                            candidate?.candidateId?.jobSeekerDetails
+                              ?.professionalDetails?.resume?.url || ""
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -548,7 +513,7 @@ export default function AppliedCandidates() {
 
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
-          {filteredCandidates.map((candidate,index) => (
+          {filteredCandidates.map((candidate, index) => (
             <Card key={index} className="p-4">
               <div className="flex items-start gap-4">
                 <Avatar className="h-10 w-10">

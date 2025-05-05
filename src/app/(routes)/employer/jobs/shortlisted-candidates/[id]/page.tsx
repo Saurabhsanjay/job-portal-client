@@ -12,8 +12,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, FileText, Search, CalendarIcon, Loader, Loader2 } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar"
+import {
+  Eye,
+  FileText,
+  Search,
+  CalendarIcon,
+  Loader,
+  Loader2,
+  ArrowLeftCircle,
+} from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +39,7 @@ import {
 } from "@/components/ui/popover";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const jobTitles = [
   "All titles",
@@ -49,141 +58,140 @@ const locations = [
 ];
 
 export interface JobApplicationsResponse {
-    status: string;
-    statusCode: number;
-    message: string;
-    formattedMessage: string;
-    data: {
-      applications: JobApplication[];
-      pagination: Pagination;
-    };
-  }
-  
-  export interface Pagination {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  }
-  
-  export interface JobApplication {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: {
+    applications: JobApplication[];
+    pagination: Pagination;
+  };
+}
+
+export interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface JobApplication {
+  _id: string;
+  jobId: {
     _id: string;
-    jobId: {
-      _id: string;
-      title: string;
-    };
-    candidateId: Candidate;
-    status: string;
-    isShortlisted: boolean;
-    appliedDate: string;
-    shortlistedDate: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-    isBookmarked: boolean;
-    isDeleted: boolean;
-  }
-  
-  export interface Candidate {
-    _id: string;
-    role: string;
-    personalDetails: PersonalDetails;
-    jobSeekerDetails: JobSeekerDetails;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
-  export interface PersonalDetails {
-    firstName: string;
-    lastName: string;
-    age: string;
-    bio: string;
-    address: Address;
-    phoneNumber: PhoneNumber;
-    profilePicture: string;
-    gender: string;
-    email: string;
-    password: string;
-    languages: string[];
-  }
-  
-  export interface Address {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-  }
-  
-  export interface PhoneNumber {
-    number: string;
-    countryCode: string;
-  }
-  
-  export interface JobSeekerDetails {
-    education: Education[];
-    professionalExperience: ProfessionalExperience[];
-    achivements: Achievement[];
-    professionalDetails: ProfessionalDetails;
-    applicationsHistory: any[]; // can be refined later if structure known
-    jobPreferences: JobPreferences;
-  }
-  
-  export interface Education {
-    qualification: string;
-    institution: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-    grade: string;
-    _id: string;
-  }
-  
-  export interface ProfessionalExperience {
-    companyName: string;
-    jobTitle: string;
-    startDate: string;
-    endDate: string;
-    keyAchievements: string;
-    _id: string;
-  }
-  
-  export interface Achievement {
     title: string;
-    organization: string;
-    issuedDate: string;
-    description: string;
-    _id: string;
-  }
-  
-  export interface ProfessionalDetails {
-    currentJobTitle: string;
-    totalExperience: number;
-    skills: string[];
-    noticePeriod: string;
-    currentCTC: number;
-    expectedCTC: number;
-    website: string;
-    linkedIn: string;
-    facebook: string;
-    portfolio: string;
-    resume: Resume;
-  }
-  
-  export interface Resume {
-    url: string;
-    isVerified: boolean;
-    isPublic: boolean;
-    _id: string;
-  }
-  
-  export interface JobPreferences {
-    jobAlerts: boolean;
-    preferredIndustries: string[];
-    preferredJobTitles: string[];
-    preferredLocations: string[];
-  }
-  
+  };
+  candidateId: Candidate;
+  status: string;
+  isShortlisted: boolean;
+  appliedDate: string;
+  shortlistedDate: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  isBookmarked: boolean;
+  isDeleted: boolean;
+}
+
+export interface Candidate {
+  _id: string;
+  role: string;
+  personalDetails: PersonalDetails;
+  jobSeekerDetails: JobSeekerDetails;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalDetails {
+  firstName: string;
+  lastName: string;
+  age: string;
+  bio: string;
+  address: Address;
+  phoneNumber: PhoneNumber;
+  profilePicture: string;
+  gender: string;
+  email: string;
+  password: string;
+  languages: string[];
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+}
+
+export interface PhoneNumber {
+  number: string;
+  countryCode: string;
+}
+
+export interface JobSeekerDetails {
+  education: Education[];
+  professionalExperience: ProfessionalExperience[];
+  achivements: Achievement[];
+  professionalDetails: ProfessionalDetails;
+  applicationsHistory: any[]; // can be refined later if structure known
+  jobPreferences: JobPreferences;
+}
+
+export interface Education {
+  qualification: string;
+  institution: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  grade: string;
+  _id: string;
+}
+
+export interface ProfessionalExperience {
+  companyName: string;
+  jobTitle: string;
+  startDate: string;
+  endDate: string;
+  keyAchievements: string;
+  _id: string;
+}
+
+export interface Achievement {
+  title: string;
+  organization: string;
+  issuedDate: string;
+  description: string;
+  _id: string;
+}
+
+export interface ProfessionalDetails {
+  currentJobTitle: string;
+  totalExperience: number;
+  skills: string[];
+  noticePeriod: string;
+  currentCTC: number;
+  expectedCTC: number;
+  website: string;
+  linkedIn: string;
+  facebook: string;
+  portfolio: string;
+  resume: Resume;
+}
+
+export interface Resume {
+  url: string;
+  isVerified: boolean;
+  isPublic: boolean;
+  _id: string;
+}
+
+export interface JobPreferences {
+  jobAlerts: boolean;
+  preferredIndustries: string[];
+  preferredJobTitles: string[];
+  preferredLocations: string[];
+}
 
 // Mock data generator
 const generateMockData = (start: number, end: number) => {
@@ -212,8 +220,8 @@ const generateMockData = (start: number, end: number) => {
 };
 
 export default function AppliedCandidates() {
-    const params = useParams()
-  const jobId = params?.id as string
+  const params = useParams();
+  const jobId = params?.id as string;
   const [candidates, setCandidates] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
@@ -225,14 +233,19 @@ export default function AppliedCandidates() {
   });
   const [appliedFilters, setAppliedFilters] = React.useState(filters);
 
-  const { data: ShortlistedCandidatesData, isLoading } = useApiGet<JobApplicationsResponse>(`applied-candidates/shortlisted-candidates-data/${jobId}`, {}, ["jobs"])
-  console.log("ShortlistedCandidatesData", ShortlistedCandidatesData)
+  const { data: ShortlistedCandidatesData, isLoading } =
+    useApiGet<JobApplicationsResponse>(
+      `applied-candidates/shortlisted-candidates-data/${jobId}`,
+      {},
+      ["jobs"]
+    );
+  console.log("ShortlistedCandidatesData", ShortlistedCandidatesData);
 
   React.useEffect(() => {
     if (ShortlistedCandidatesData?.data) {
-      setCandidates(ShortlistedCandidatesData?.data)
+      setCandidates(ShortlistedCandidatesData?.data);
     }
-  }, [ShortlistedCandidatesData])
+  }, [ShortlistedCandidatesData]);
 
   const observer = React.useRef<IntersectionObserver>(null);
   const lastCandidateElementRef = React.useRef<HTMLDivElement>(null);
@@ -271,22 +284,23 @@ export default function AppliedCandidates() {
 
   const filteredCandidates = React.useMemo(() => {
     return candidates?.filter((candidate) => {
-        console.log("candidate",candidate)
+      console.log("candidate", candidate);
       const matchesSearch = appliedFilters?.search
         ? candidate?.candidateId?.firstName
             .toLowerCase()
             .includes(appliedFilters?.search?.toLowerCase()) ||
-            candidate?.candidateId?.professionalDetails?.currentJobTitle
+          candidate?.candidateId?.professionalDetails?.currentJobTitle
             .toLowerCase()
             .includes(appliedFilters?.search?.toLowerCase()) ||
-            candidate?.jobId?.location?.city
+          candidate?.jobId?.location?.city
             .toLowerCase()
             .includes(appliedFilters?.search?.toLowerCase())
         : true;
 
       const matchesJobTitle =
         appliedFilters.jobTitle === "All titles" ||
-        candidate?.candidateId?.professionalDetails?.currentJobTitle === appliedFilters?.jobTitle;
+        candidate?.candidateId?.professionalDetails?.currentJobTitle ===
+          appliedFilters?.jobTitle;
       const matchesLocation =
         appliedFilters.location === "All locations" ||
         candidate?.jobId?.location?.city === appliedFilters?.location;
@@ -316,11 +330,14 @@ export default function AppliedCandidates() {
 
   return (
     <Card className="p-6 shadow-sm border-none">
+      <Link href="/employer/jobs">
+        <ArrowLeftCircle className="h-5 w-5 mb-2" />
+      </Link>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
-            Applied Candidates for Software Engineer
+            Shortlisted Candidates
           </h2>
         </div>
 
@@ -333,7 +350,10 @@ export default function AppliedCandidates() {
                 placeholder="Search candidate name, company, or location..."
                 value={appliedFilters.search}
                 onChange={(e) =>
-                  setAppliedFilters((prev) => ({ ...prev, search: e.target.value }))
+                  setAppliedFilters((prev) => ({
+                    ...prev,
+                    search: e.target.value,
+                  }))
                 }
                 className="pl-8"
               />
@@ -362,7 +382,10 @@ export default function AppliedCandidates() {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     onSelect={(date: Date) =>
-                      setAppliedFilters((prev) => ({ ...prev, date: date ? date : undefined }))
+                      setAppliedFilters((prev) => ({
+                        ...prev,
+                        date: date ? date : undefined,
+                      }))
                     }
                     initialFocus
                   />
@@ -376,7 +399,9 @@ export default function AppliedCandidates() {
             <Button variant="outline" onClick={handleReset}>
               Reset Filters
             </Button>
-            <Button className="hidden" onClick={applyFilters}>Apply Filters</Button>
+            <Button className="hidden" onClick={applyFilters}>
+              Apply Filters
+            </Button>
           </div>
         </div>
 
@@ -397,38 +422,54 @@ export default function AppliedCandidates() {
             <TableBody>
               {filteredCandidates?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center font-medium text-md">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center font-medium text-md"
+                  >
                     No Candidates To Show
                   </TableCell>
                 </TableRow>
               ) : isLoading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCandidates?.map((candidate,index) => (
+                filteredCandidates?.map((candidate, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage
-                            src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
-                            alt={candidate?.candidateId?.firstName||"Avatar"}
+                            src={
+                              candidate?.avatar ||
+                              candidate?.candidateId?.personalDetails
+                                ?.profilePicture
+                            }
+                            alt={candidate?.candidateId?.firstName || "Avatar"}
                           />
-                          <AvatarFallback>{candidate?.candidateId?.firstName?.[0]||"P"}</AvatarFallback>
+                          <AvatarFallback>
+                            {candidate?.candidateId?.firstName?.[0] || "P"}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{candidate?.candidateId?.firstName||"No name"}</div>
+                          <div className="font-medium">
+                            {candidate?.candidateId?.firstName || "No name"}
+                          </div>
                           <div className="text-sm text-muted-foreground">
-                            {candidate?.candidateId?.email||"No email"}
+                            {candidate?.candidateId?.email || "No email"}
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{candidate?.candidateId?.professionalDetails?.currentJobTitle||"No Title"}</TableCell>
-                    <TableCell>{candidate?.jobId?.location?.city||"-"}</TableCell>
+                    <TableCell>
+                      {candidate?.candidateId?.professionalDetails
+                        ?.currentJobTitle || "No Title"}
+                    </TableCell>
+                    <TableCell>
+                      {candidate?.jobId?.location?.city || "-"}
+                    </TableCell>
                     <TableCell>
                       {format(candidate?.appliedDate, "MMM d, yyyy")}
                     </TableCell>
@@ -443,7 +484,10 @@ export default function AppliedCandidates() {
                         asChild
                       >
                         <a
-                          href={candidate?.candidateId?.professionalDetails?.resume?.url||""}
+                          href={
+                            candidate?.candidateId?.professionalDetails?.resume
+                              ?.url || ""
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -465,23 +509,34 @@ export default function AppliedCandidates() {
 
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
-          {filteredCandidates.map((candidate,index) => (
+          {filteredCandidates.map((candidate, index) => (
             <Card key={index} className="p-4">
               <div className="flex items-start gap-4">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture} alt={candidate?.candidateId?.firstName||"Avatar"} />
-                  <AvatarFallback>{candidate?.candidateId?.firstName?.[0]||"P"}</AvatarFallback>
+                  <AvatarImage
+                    src={
+                      candidate?.avatar ||
+                      candidate?.candidateId?.personalDetails?.profilePicture
+                    }
+                    alt={candidate?.candidateId?.firstName || "Avatar"}
+                  />
+                  <AvatarFallback>
+                    {candidate?.candidateId?.firstName?.[0] || "P"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-medium">{candidate?.candidateId?.firstName||"No name"}</div>
+                  <div className="font-medium">
+                    {candidate?.candidateId?.firstName || "No name"}
+                  </div>
                   <div className="text-sm text-muted-foreground">
-                  {candidate?.candidateId?.email||"No email"}
+                    {candidate?.candidateId?.email || "No email"}
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                  {candidate?.candidateId?.professionalDetails?.currentJobTitle||"No Title"}
+                    {candidate?.candidateId?.professionalDetails
+                      ?.currentJobTitle || "No Title"}
                   </div>
                   <div className="text-sm text-gray-500">
-                  {candidate?.jobId?.location?.city||"-"}
+                    {candidate?.jobId?.location?.city || "-"}
                   </div>
                   <div className="mt-2 flex items-center text-sm text-gray-500">
                     <Calendar className="mr-2 h-4 w-4" />
@@ -495,7 +550,10 @@ export default function AppliedCandidates() {
                   <div className="mt-3 flex justify-between items-center">
                     <Button variant="ghost" size="sm" asChild>
                       <a
-                        href={candidate?.candidateId?.professionalDetails?.resume?.url||""}
+                        href={
+                          candidate?.candidateId?.professionalDetails?.resume
+                            ?.url || ""
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
