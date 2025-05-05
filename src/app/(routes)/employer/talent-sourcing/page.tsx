@@ -302,15 +302,30 @@ export default function TalentSourcing() {
     setQueryString(queryStr)
   }
 
+  const handleResetFilters = () => {
+    setSearchParams({
+      keywords: "",
+      location: "",
+      experienceLevel: "",
+      industry: "",
+      availability: "",
+      salaryRange: "",
+      workType: "",
+    })
+    setQueryString("")
+    setCandidates([])
+  }
+
   const {
     data: TalentScoutDetails,
     isLoading,
     error,
     refetch,
-  } = useApiGet<TalentScoutResponse>(`talent-scout/advance-talent-scout-details?${queryString}`, {}, [
-    "talent-scouts",
-    queryString,
-  ])
+  } = useApiGet<TalentScoutResponse>(
+    queryString ? `talent-scout/advance-talent-scout-details?${queryString}` : null,
+    {},
+    ["talent-scouts", queryString],
+  )
 
   console.log("TalentScoutDetails----------------->", TalentScoutDetails)
 
@@ -325,7 +340,7 @@ export default function TalentSourcing() {
     isJobsLoading,
     // error,
     // refetch,
-  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/65ff4a2b8c9d4e001c3a7b89`, {}, ["talent-scouts-jobs"])
+  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/${user?.id}`, {}, ["talent-scouts-jobs"])
 
   console.log("talent scout jobs------------->", TalentScoutJobs)
 
@@ -351,16 +366,15 @@ export default function TalentSourcing() {
     isMatchCandidatesLoading,
     // error,
     refetch: refetchMatchCandidates,
-  } = useApiGet<MatchTalentScoutResponse>(
-    jobId ? `talent-scout/talent-scout-details?jobId=${jobId}` : null, 
-    {}, 
-    ["match-candidates", jobId]
-  )
+  } = useApiGet<MatchTalentScoutResponse>(jobId ? `talent-scout/talent-scout-details?jobId=${jobId}` : null, {}, [
+    "match-candidates",
+    jobId,
+  ])
 
   React.useEffect(() => {
     refetchMatchCandidates()
     console.log("jobId----------->", jobId)
-    if(jobId!==null){
+    if (jobId !== null) {
       setIsMatchModalOpen(true)
     }
   }, [jobId, refetchMatchCandidates])
@@ -372,7 +386,7 @@ export default function TalentSourcing() {
     // })
   }
 
-  console.log("MatchCandidates------->",MatchCandidates)
+  console.log("MatchCandidates------->", MatchCandidates)
 
   return (
     <div className="container mx-auto py-6">
@@ -394,24 +408,24 @@ export default function TalentSourcing() {
 
         <TabsContent value="jobs" className="space-y-4">
           <div className="grid gap-4">
-            {activeJobs.map((job) => (
-              <Card key={job.id}>
+            {activeJobs.map((job, index) => (
+              <Card key={index}>
                 <CardContent className="flex items-center justify-between p-6">
                   <div className="space-y-1">
                     <h3 className="font-semibold">{job.title}</h3>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <MapPin className="mr-1 h-4 w-4" />
-                      {job.location}
+                      {job?.location}
                       <Separator orientation="vertical" className="mx-2 h-4" />
                       <Briefcase className="mr-1 h-4 w-4" />
-                      {job.type}
+                      {job?.employmentType}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="font-semibold">{job.matches} matches</div>
+                      <div className="font-semibold">{job?.matches} matches</div>
                     </div>
-                    <Button onClick={() => handleViewMatches(job.id)}>View Matches</Button>
+                    <Button onClick={() => handleViewMatches(job?.id)}>View Matches</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -444,7 +458,7 @@ export default function TalentSourcing() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Experience Level</label>
-                  <Select onValueChange={(value) => handleInputChange("experienceLevel", value)}>
+                  <Select value={searchParams?.experienceLevel} onValueChange={(value) => handleInputChange("experienceLevel", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
@@ -464,7 +478,7 @@ export default function TalentSourcing() {
                 <div className="flex flex-wrap gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Industry</label>
-                    <Select onValueChange={(value) => handleInputChange("industry", value)}>
+                    <Select value={searchParams?.industry} onValueChange={(value) => handleInputChange("industry", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Industry" />
                       </SelectTrigger>
@@ -481,7 +495,7 @@ export default function TalentSourcing() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Availability</label>
-                    <Select onValueChange={(value) => handleInputChange("availability", value)}>
+                    <Select value={searchParams?.availability} onValueChange={(value) => handleInputChange("availability", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Availability" />
                       </SelectTrigger>
@@ -495,7 +509,7 @@ export default function TalentSourcing() {
 
                   <div className="space-y-2 hidden">
                     <label className="text-sm font-medium">Salary Range</label>
-                    <Select onValueChange={(value) => handleInputChange("salaryRange", value)}>
+                    <Select value={searchParams?.salaryRange} onValueChange={(value) => handleInputChange("salaryRange", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Salary Range" />
                       </SelectTrigger>
@@ -509,7 +523,7 @@ export default function TalentSourcing() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Work Type</label>
-                    <Select onValueChange={(value) => handleInputChange("workType", value)}>
+                    <Select value={searchParams?.workType} onValueChange={(value) => handleInputChange("workType", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Work Type" />
                       </SelectTrigger>
@@ -530,10 +544,9 @@ export default function TalentSourcing() {
                   <Search className="mr-2 h-4 w-4" />
                   Search Candidates
                 </Button>
-                {/* <Button variant="outline">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Search
-                </Button> */}
+                <Button variant="outline" onClick={handleResetFilters}>
+                  Reset Filters
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -577,7 +590,7 @@ export default function TalentSourcing() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage
-                              src={candidate?.personalDetails?.profilePicture}
+                              src={candidate?.personalDetails?.profilePicture || "/placeholder.svg"}
                               alt={candidate.personalDetails?.firstName}
                             />
                             <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
@@ -643,7 +656,7 @@ export default function TalentSourcing() {
                     <div className="flex items-start gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={candidate?.personalDetails?.profilePicture}
+                          src={candidate?.personalDetails?.profilePicture || "/placeholder.svg"}
                           alt={candidate.personalDetails?.firstName}
                         />
                         <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
@@ -757,7 +770,10 @@ export default function TalentSourcing() {
                       <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
-                ) : (MatchCandidates?.data?.[0]?.candidateId?.length === 0 || MatchCandidates?.data?.length===0 || MatchCandidates===undefined||MatchCandidates===null) ? (
+                ) : MatchCandidates?.data?.[0]?.candidateId?.length === 0 ||
+                  MatchCandidates?.data?.length === 0 ||
+                  MatchCandidates === undefined ||
+                  MatchCandidates === null ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
                       No matching candidates found
@@ -770,7 +786,7 @@ export default function TalentSourcing() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
-                              src={candidate.personalDetails.profilePicture}
+                              src={candidate.personalDetails.profilePicture || "/placeholder.svg"}
                               alt={candidate.personalDetails.firstName}
                             />
                             <AvatarFallback>
