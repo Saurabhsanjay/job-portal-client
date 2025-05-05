@@ -825,7 +825,7 @@ export default function Profile() {
 
               {/* Current Salary */}
               <div className="space-y-1">
-                <Label htmlFor="currentSalary">Current Salary (per anum)</Label>
+                <Label htmlFor="currentSalary">Current Salary (per annum)</Label>
                 <Input
                   id="currentSalary"
                   type="number"
