@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import toast from "react-hot-toast"
 import { useApiGet, useApiPut } from "@/hooks/use-api-query"
 import { useQueryClient } from "@tanstack/react-query"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT",  "INTERNSHIP", "VOLUNTEER"] as const
 
@@ -163,6 +164,7 @@ export default function UpdateJobForm() {
   const router = useRouter()
   // Extract job ID from URL path
   const jobId = params?.id as string
+  const { user } = useAuth()
 
 
   // Modify the form initialization to ensure we have a complete form reset when data is loaded
@@ -197,7 +199,7 @@ export default function UpdateJobForm() {
     data: jobData,
     isLoading,
     error,
-  } = useApiGet<any>(`jobs/get-job/${jobId}`, {}, ["job", { id: jobId }])
+  } = useApiGet<any>(`jobs/get-job?jobId=${jobId}&userId=${user?.id}`, {}, ["job", { id: jobId }])
 
   // Handle loading and error states
   const [formError, setFormError] = React.useState<string | null>(null)

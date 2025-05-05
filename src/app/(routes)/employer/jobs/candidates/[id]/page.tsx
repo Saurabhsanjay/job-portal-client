@@ -484,56 +484,64 @@ export default function AppliedCandidates() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCandidates.map((candidate,index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
-                          alt={candidate?.name||candidate?.candidateId?.personalDetails?.firstName}
-                        />
-                        <AvatarFallback>{candidate?.name?.[0]||candidate?.candidateId?.personalDetails?.firstName?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{candidate?.name||candidate?.candidateId?.personalDetails?.firstName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {candidate?.candidateId?.personalDetails?.email||"No email"}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{candidate?.jobTitle||candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                  <TableCell>{candidate?.candidateId?.personalDetails?.address?.city||"-"}</TableCell>
-                  <TableCell>
-                    {format(candidate?.appliedDate, "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    {format(candidate?.shortlistedDate, "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      asChild
-                    >
-                      <a
-                        href={candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url||""}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+              {filteredCandidates.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-gray-500">
+                    No Applied Candidates To Show
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredCandidates.map((candidate,index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={candidate?.avatar||candidate?.candidateId?.personalDetails?.profilePicture}
+                            alt={candidate?.name||candidate?.candidateId?.personalDetails?.firstName}
+                          />
+                          <AvatarFallback>{candidate?.name?.[0]||candidate?.candidateId?.personalDetails?.firstName?.[0]}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{candidate?.name||candidate?.candidateId?.personalDetails?.firstName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {candidate?.candidateId?.personalDetails?.email||"No email"}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{candidate?.jobTitle||candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
+                    <TableCell>{candidate?.candidateId?.personalDetails?.address?.city||"-"}</TableCell>
+                    <TableCell>
+                      {format(candidate?.appliedDate, "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      {format(candidate?.shortlistedDate, "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        asChild
+                      >
+                        <a
+                          href={candidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url||""}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

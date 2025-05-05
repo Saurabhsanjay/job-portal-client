@@ -270,26 +270,26 @@ export default function AppliedCandidates() {
   };
 
   const filteredCandidates = React.useMemo(() => {
-    return candidates.filter((candidate) => {
+    return candidates?.filter((candidate) => {
         console.log("candidate",candidate)
-      const matchesSearch = appliedFilters.search
+      const matchesSearch = appliedFilters?.search
         ? candidate?.candidateId?.firstName
             .toLowerCase()
-            .includes(appliedFilters.search.toLowerCase()) ||
+            .includes(appliedFilters?.search?.toLowerCase()) ||
             candidate?.candidateId?.professionalDetails?.currentJobTitle
             .toLowerCase()
-            .includes(appliedFilters.search.toLowerCase()) ||
+            .includes(appliedFilters?.search?.toLowerCase()) ||
             candidate?.jobId?.location?.city
             .toLowerCase()
-            .includes(appliedFilters.search.toLowerCase())
+            .includes(appliedFilters?.search?.toLowerCase())
         : true;
 
       const matchesJobTitle =
         appliedFilters.jobTitle === "All titles" ||
-        candidate?.candidateId?.professionalDetails?.currentJobTitle === appliedFilters.jobTitle;
+        candidate?.candidateId?.professionalDetails?.currentJobTitle === appliedFilters?.jobTitle;
       const matchesLocation =
         appliedFilters.location === "All locations" ||
-        candidate?.jobId?.location?.city === appliedFilters.location;
+        candidate?.jobId?.location?.city === appliedFilters?.location;
       const matchesDate =
         !appliedFilters.date ||
         format(candidate?.shortlistedDate, "PP") ===

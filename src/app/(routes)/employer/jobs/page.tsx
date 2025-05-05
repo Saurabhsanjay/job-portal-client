@@ -319,17 +319,17 @@ export default function SavedJobs() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/${job?.id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/${job?._id}`} className="flex w-full">
                                 View job details
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/candidates/${job?.id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/candidates/${job?._id}`} className="flex w-full">
                                 View applied candidates
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/shortlisted-candidates/${job?.id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/shortlisted-candidates/${job?._id}`} className="flex w-full">
                                 View shortlisted candidates
                               </Link>
                             </DropdownMenuItem>
