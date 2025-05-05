@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -53,7 +53,43 @@ export default function SavedJobs() {
   const [locationFilter, setLocationFilter] = useState("all")
   const [titleFilter, setTitleFilter] = useState("all")
 
-  const { data: jobsData, isLoading, error, refetch } = useApiGet<Job[]>("jobs/get-jobs", {}, ["jobs"])
+  // Create a query string with the filter parameters
+  const buildQueryString = () => {
+    const params = new URLSearchParams()
+
+    // Add search term if it exists
+    if (searchTerm) {
+      params.append("keywords", searchTerm)
+    }
+
+    // Add date filter if it exists
+    if (dateFilter) {
+      params.append("datePosted", format(dateFilter, "yyyy-MM-dd"))
+    }
+
+    // Add location filter if it's not "all"
+    if (locationFilter && locationFilter !== "all") {
+      params.append("location", locationFilter)
+    }
+
+    // Add title filter if it's not "all"
+    if (titleFilter && titleFilter !== "all") {
+      params.append("title", titleFilter)
+    }
+
+    return params.toString()
+  }
+
+  // Use the query string in the API call
+  const queryString = buildQueryString()
+  const endpoint = `jobs/get-jobs${queryString ? `?${queryString}` : ""}`
+
+  const {
+    data: jobsData,
+    isLoading,
+    error,
+    refetch,
+  } = useApiGet<Job[]>(endpoint, {}, ["jobs", searchTerm, dateFilter?.toString(), locationFilter, titleFilter])
 
   // Store jobs in state
   const [jobs, setJobs] = useState<Job[]>([])
@@ -84,28 +120,12 @@ export default function SavedJobs() {
     return [job.location.city, job.location.state, job.location.country].filter(Boolean).join(", ")
   }
 
-  // Filter jobs based on search and filters
+  // Replace the complex filteredJobs logic with this simpler version
+  // that just uses the data from the API
   const filteredJobs = useMemo(() => {
-    if (!jobs?.length) return []
-
-    return jobs?.filter((job) => {
-      const locationString = getLocationString(job)
-
-      const matchesSearch =
-        job?.title.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-        job?.company?.name.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-        locationString.toLowerCase().includes(searchTerm?.toLowerCase())
-
-      const jobDate = new Date(job?.postedAt)
-      const matchesDate = dateFilter === undefined || (dateFilter && jobDate >= dateFilter)
-
-      const matchesLocation = locationFilter === "all" || locationString === locationFilter
-
-      const matchesTitle = titleFilter === "all" || job?.title === titleFilter
-
-      return matchesSearch && matchesDate && matchesLocation && matchesTitle
-    })
-  }, [jobs, searchTerm, dateFilter, locationFilter, titleFilter])
+    if (!jobsData?.data?.length) return []
+    return jobsData.data
+  }, [jobsData])
 
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -126,7 +146,7 @@ export default function SavedJobs() {
 
   useEffect(() => {
     refetch()
-  }, [refetch])
+  }, [refetch, searchTerm, dateFilter, locationFilter, titleFilter])
 
   // Show loading state
   if (isLoading) {
@@ -259,18 +279,19 @@ export default function SavedJobs() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredJobs.map((job) => (
-                  <TableRow key={job._id} className="group">
+                {filteredJobs.map((job,index) => (
+                  <TableRow key={index} className="group">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarFallback>{job?.company?.name?.[0]}</AvatarFallback>
+                          <AvatarImage src={job?.createdByDetails?.logoUrl||"P"} alt={"P"} />
+                          <AvatarFallback>{job?.createdByDetails?.companyName?.[0]}</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">{job.title}</div>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Building2 className="h-3 w-3" />
-                            <span>{job?.company?.name}</span>
+                            <span>{job?.createdByDetails?.companyName}</span>
                             <MapPin className="h-3 w-3 ml-2" />
                             <span>{getLocationString(job)}</span>
                           </div>
@@ -298,17 +319,17 @@ export default function SavedJobs() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/${job?._id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/${job?.id}`} className="flex w-full">
                                 View job details
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/candidates/${job?._id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/candidates/${job?.id}`} className="flex w-full">
                                 View applied candidates
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <Link href={`/employer/jobs/shortlisted-candidates/${job?._id}`} className="flex w-full">
+                              <Link href={`/employer/jobs/shortlisted-candidates/${job?.id}`} className="flex w-full">
                                 View shortlisted candidates
                               </Link>
                             </DropdownMenuItem>
@@ -327,17 +348,18 @@ export default function SavedJobs() {
         {filteredJobs.length > 0 && (
           <div className="md:hidden space-y-4">
             {filteredJobs.map((job) => (
-              <Card key={job._id} className="p-4 hover:bg-gray-50 transition-colors">
+              <Card key={job.id} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback>{job?.company?.name?.[0]}</AvatarFallback>
+                  <AvatarImage src={job?.createdByDetails?.logoUrl||"P"} alt={"P"} />
+                  <AvatarFallback>{job?.createdByDetails?.companyName?.[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="font-medium">{job?.title}</div>
                     <div className="text-sm text-gray-500 space-y-1 mt-1">
                       <div className="flex items-center gap-1">
                         <Building2 className="h-3 w-3" />
-                        <span>{job?.company?.name}</span>
+                        <span>{job?.createdByDetails?.companyName}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
@@ -354,29 +376,29 @@ export default function SavedJobs() {
                       <Button variant="ghost" size="sm">
                         <Link href={`/employer/jobs/edit/${job?._id}`}>
                           <Pencil className="h-4 w-4 mr-1" />
-                          Edit
+                          {/* Edit */}
                         </Link>
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
                             <MoreVertical className="h-4 w-4 mr-1" />
-                            Options
+                            {/* Options */}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
-                            <Link href={`/employer/jobs/${job?._id}`} className="flex w-full">
+                            <Link href={`/employer/jobs/${job?.id}`} className="flex w-full">
                               View job details
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Link href={`/employer/jobs/candidates/${job?._id}`} className="flex w-full">
+                            <Link href={`/employer/jobs/candidates/${job?.id}`} className="flex w-full">
                               View applied candidates
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Link href={`/employer/jobs/shortlisted-candidates/${job?._id}`} className="flex w-full">
+                            <Link href={`/employer/jobs/shortlisted-candidates/${job?.id}`} className="flex w-full">
                               View shortlisted candidates
                             </Link>
                           </DropdownMenuItem>
@@ -393,4 +415,3 @@ export default function SavedJobs() {
     </Card>
   )
 }
-
