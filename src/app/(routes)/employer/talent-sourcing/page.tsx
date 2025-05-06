@@ -280,7 +280,7 @@ export default function TalentSourcing() {
   const [jobId, setJobId] = React.useState(null)
   const [isMatchModalOpen, setIsMatchModalOpen] = React.useState(false)
 
-  const [shortlistedCandidates, setShortlistedCandidates] = React.useState<Set<string>>(new Set())
+  // const [shortlistedCandidates, setShortlistedCandidates] = React.useState<Set<string>>(new Set())
   const [selectedCandidate, setSelectedCandidate] = React.useState<TalentScout | null>(null)
   const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = React.useState(false)
 

@@ -18,6 +18,13 @@ import {
   Search,
   CalendarIcon,
   ArrowLeftCircle,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  Award,
+  ExternalLink,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -35,9 +42,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useApiGet } from "@/hooks/use-api-query";
+import { useApiGet, useApiPatch } from "@/hooks/use-api-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import toast from "react-hot-toast";
 
 const jobTitles = [
   "All titles",
@@ -191,6 +209,33 @@ export interface JobPreferences {
   preferredLocations: string[];
 }
 
+export interface CandidateShortlistResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: CandidateShortlistData;
+}
+
+export interface CandidateShortlistData {
+  _id: string;
+  jobId: string;
+  candidateId: string;
+  status: "SHORTLISTED";
+  isShortlisted: boolean;
+  isBookmarked: boolean;
+  isDeleted: boolean;
+  appliedDate: string;        // ISO Date string
+  shortlistedDate: string;    // ISO Date string
+  createdAt: string;          // ISO Date string
+  updatedAt: string;          // ISO Date string
+  __v: number;
+}
+
+interface CandidateShortlistPayload{
+  isShortlisted: boolean;
+}
+
 // Mock data generator
 const generateMockData = (start: number, end: number) => {
   return Array.from({ length: end - start }, (_, index) => ({
@@ -230,18 +275,29 @@ export default function AppliedCandidates() {
     date: undefined as Date | undefined,
   });
   const [appliedFilters, setAppliedFilters] = React.useState(filters);
+  const [activeTab, setActiveTab] = React.useState("profile")
+
+  const [selectedCandidate, setSelectedCandidate] =
+    React.useState<JobApplication | null>(null);
+  const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] =
+    React.useState(false);
+  const [shortlistedCandidates, setShortlistedCandidates] = React.useState<
+    Set<string>
+  >(new Set());
 
   const {
     data: AppliedCandidatesData,
     isLoading,
     error,
-    refetch,
+    refetch: refetchAppliedCandidates,
   } = useApiGet<JobApplicationsResponse>(
     `applied-candidates/job/${jobId}`,
     {},
     ["jobs"]
   );
   console.log("AppliedCandidatesData", AppliedCandidatesData);
+
+  const shortlistCandidateMutation = useApiPatch<CandidateShortlistResponse, CandidateShortlistPayload>();
 
   React.useEffect(() => {
     if (AppliedCandidatesData?.data?.applications) {
@@ -331,11 +387,71 @@ export default function AppliedCandidates() {
     });
   };
 
+  const handleViewDetails = (candidate: JobApplication) => {
+    console.log("candidate------->", candidate);
+    setSelectedCandidate(candidate);
+    setIsUserDetailsModalOpen(true);
+  };
+
+  const handleToggleShortlist = (candidate: JobApplication) => {
+    // setShortlistedCandidates((prev) => {
+    //   const newSet = new Set(prev)
+    //   if (newSet.has(candidateId)) {
+    //     newSet.delete(candidateId)
+    //   } else {
+    //     newSet.add(candidateId)
+    //   }
+    //   return newSet
+    // })
+
+    shortlistCandidateMutation.mutate(
+          {
+            endpoint: `applied-candidates/shortlist/${candidate?._id}`,
+            payload: {
+              "isShortlisted":candidate?.isShortlisted ? false : true,
+            },
+            invalidateQueries: [["shortlist-candidate"]],
+          },
+          {
+            onSuccess: (response) => {
+              // setIsSubmitting(false);
+              if (response.data) {
+                toast.success("Candidate shortlisted successfully");
+                refetchAppliedCandidates()
+                setIsUserDetailsModalOpen(false);
+              } else if (response.error) {
+                toast.error(response?.error?.message || "Something Went Wrong");
+              }
+            },
+            onError: (error) => {
+              // setIsSubmitting(false);
+              toast.error(error?.message || "Something Went Wrong");
+            },
+          }
+        );
+  }
+
+  // const handleShortlistFromModal = () => {
+  //   if (selectedCandidate) {
+  //     handleToggleShortlist(selectedCandidate._id)
+  //   }
+  //   setIsUserDetailsModalOpen(false)
+  // }
+
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return "-"
+    try {
+      return format(new Date(dateString), "MMM d, yyyy")
+    } catch (error) {
+      return error
+    }
+  }
+
   return (
     <Card className="p-6 shadow-sm border-none">
       <Link href="/employer/jobs">
-              <ArrowLeftCircle className="h-5 w-5 mb-2" />
-          </Link>
+        <ArrowLeftCircle className="h-5 w-5 mb-2" />
+      </Link>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -420,6 +536,9 @@ export default function AppliedCandidates() {
                 <TableHead className="w-[150px]">Shortlisted Date</TableHead>
                 <TableHead className="w-[100px]">Resume</TableHead>
                 <TableHead className="w-[100px]">Action</TableHead>
+                <TableHead className="w-[100px] text-nowrap">
+                  Shortlist
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -478,7 +597,9 @@ export default function AppliedCandidates() {
                       {format(candidate?.appliedDate, "MMM d, yyyy")}
                     </TableCell>
                     <TableCell>
-                      {format(candidate?.shortlistedDate, "MMM d, yyyy")}
+                      {candidate?.shortlistedDate
+                        ? format(candidate?.shortlistedDate, "MMM d, yyyy")
+                        : "-"}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -500,8 +621,29 @@ export default function AppliedCandidates() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleViewDetails(candidate)}
+                      >
                         <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+
+                    <TableCell>
+                      <Button
+                        variant={
+                          shortlistedCandidates.has(candidate._id)
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => handleToggleShortlist(candidate)}
+                      >
+                        {candidate?.isShortlisted
+                          ? "Shortlisted"
+                          : "Shortlist"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -538,7 +680,9 @@ export default function AppliedCandidates() {
                   <div className="mt-1 flex items-center text-sm text-gray-500">
                     <Calendar className="mr-2 h-4 w-4" />
                     Shortlisted:{" "}
-                    {format(candidate.shortlistedDate, "MMM d, yyyy")}
+                    {candidate.shortlistedDate
+                      ? format(candidate.shortlistedDate, "MMM d, yyyy")
+                      : "-"}
                   </div>
                   <div className="mt-3 flex justify-between items-center">
                     <Button variant="ghost" size="sm" asChild>
@@ -551,9 +695,26 @@ export default function AppliedCandidates() {
                         Resume
                       </a>
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewDetails(candidate)}
+                    >
                       <Eye className="mr-2 h-4 w-4" />
                       View
+                    </Button>
+                    <Button
+                      variant={
+                        shortlistedCandidates.has(candidate._id)
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      onClick={() => handleToggleShortlist(candidate)}
+                    >
+                      {candidate?.isShortlisted
+                        ? "Shortlisted"
+                        : "Shortlist"}
                     </Button>
                   </div>
                 </div>
@@ -572,6 +733,307 @@ export default function AppliedCandidates() {
             </div>
           )}
         </div>
+
+        <Dialog open={isUserDetailsModalOpen} onOpenChange={setIsUserDetailsModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 md:p-6">
+            <DialogHeader>
+              <DialogTitle>Candidate Details</DialogTitle>
+              <DialogDescription>Full details of the selected candidate</DialogDescription>
+            </DialogHeader>
+
+            {selectedCandidate && (
+              <div className="grid gap-6">
+                {/* Header with basic info */}
+                <div className="bg-muted/30 p-3 md:p-6 rounded-lg">
+                  <div className="flex flex-col items-center gap-4 md:flex-row md:items-start md:gap-6">
+                    <Avatar className="h-20 w-20 md:h-24 md:w-24">
+                      <AvatarImage
+                        src={selectedCandidate?.candidateId?.personalDetails?.profilePicture || "/placeholder.svg"}
+                        alt={selectedCandidate?.candidateId?.personalDetails?.firstName || "Candidate"}
+                      />
+                      <AvatarFallback className="text-lg">
+                        <User className="h-6 w-6 md:h-8 md:w-8" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="text-center md:text-left flex-1 space-y-2">
+                      <h3 className="text-xl md:text-2xl font-medium">
+                        {selectedCandidate?.candidateId?.personalDetails?.firstName || ""}{" "}
+                        {selectedCandidate?.candidateId?.personalDetails?.lastName || ""}
+                      </h3>
+                      <p className="text-muted-foreground text-base md:text-lg">
+                        {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentJobTitle || "-"}
+                      </p>
+
+                      <div className="flex flex-col gap-2 mt-2">
+                        {selectedCandidate?.candidateId?.personalDetails?.email && (
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
+                            <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="truncate">{selectedCandidate.candidateId.personalDetails.email}</span>
+                          </div>
+                        )}
+
+                        {selectedCandidate?.candidateId?.personalDetails?.phoneNumber && (
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
+                            <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span>
+                              {selectedCandidate.candidateId.personalDetails.phoneNumber.countryCode}{" "}
+                              {selectedCandidate.candidateId.personalDetails.phoneNumber.number}
+                            </span>
+                          </div>
+                        )}
+
+                        {selectedCandidate?.candidateId?.personalDetails?.address?.city && (
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
+                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="truncate">
+                              {selectedCandidate.candidateId.personalDetails.address.city}
+                              {selectedCandidate.candidateId.personalDetails.address.state
+                                ? `, ${selectedCandidate.candidateId.personalDetails.address.state}`
+                                : ""}
+                              {selectedCandidate.candidateId.personalDetails.address.country
+                                ? `, ${selectedCandidate.candidateId.personalDetails.address.country}`
+                                : ""}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-row md:flex-col justify-center gap-4 md:gap-2 mt-2 md:mt-0 w-full md:w-auto">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Applied:</span>{" "}
+                        <span className="font-medium">{formatDate(selectedCandidate.appliedDate)}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Status:</span>{" "}
+                        <Badge variant="outline" className="ml-1">
+                          {selectedCandidate.status || "Applied"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tabs for different sections */}
+                <Tabs defaultValue="profile" className="w-full" onValueChange={setActiveTab}>
+                  <TabsList className="grid grid-cols-3 mb-4 w-full">
+                    <TabsTrigger value="profile">Profile</TabsTrigger>
+                    <TabsTrigger value="experience">Experience</TabsTrigger>
+                    <TabsTrigger value="education">Education</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="profile" className="space-y-4">
+                    {/* Professional Details */}
+                    <div className="grid gap-4">
+                      <h4 className="text-lg font-medium">Professional Details</h4>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-3 md:p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Briefcase className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <h5 className="font-medium">Work Information</h5>
+                          </div>
+                          <div className="grid gap-2 text-sm">
+                            <div className="flex flex-col sm:flex-row sm:justify-between">
+                              <span className="text-muted-foreground">Current Job:</span>
+                              <span className="sm:text-right">
+                                {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails
+                                  ?.currentJobTitle || "-"}
+                              </span>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:justify-between">
+                              <span className="text-muted-foreground">Experience:</span>
+                              <span className="sm:text-right">
+                                {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails
+                                  ?.totalExperience || "-"}{" "}
+                                years
+                              </span>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:justify-between">
+                              <span className="text-muted-foreground">Notice Period:</span>
+                              <span className="sm:text-right">
+                                {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.noticePeriod ||
+                                  "-"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border rounded-lg p-3 md:p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Award className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <h5 className="font-medium">Compensation</h5>
+                          </div>
+                          <div className="grid gap-2 text-sm">
+                            <div className="flex flex-col sm:flex-row sm:justify-between">
+                              <span className="text-muted-foreground">Current CTC:</span>
+                              <span className="sm:text-right">
+                                $
+                                {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.currentCTC ||
+                                  "-"}
+                              </span>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:justify-between">
+                              <span className="text-muted-foreground">Expected CTC:</span>
+                              <span className="sm:text-right">
+                                $
+                                {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.expectedCTC ||
+                                  "-"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Skills */}
+                      <div className="border rounded-lg p-3 md:p-4">
+                        <h5 className="font-medium mb-3">Skills</h5>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.skills?.map(
+                            (skill, index) => (
+                              <Badge key={index} variant="secondary">
+                                {skill}
+                              </Badge>
+                            ),
+                          ) || <p className="text-muted-foreground text-sm">No skills listed</p>}
+                        </div>
+                      </div>
+
+                      {/* Bio */}
+                      {selectedCandidate?.candidateId?.personalDetails?.bio && (
+                        <div className="border rounded-lg p-3 md:p-4">
+                          <h5 className="font-medium mb-2">Bio</h5>
+                          <p className="text-sm">{selectedCandidate.candidateId.personalDetails.bio}</p>
+                        </div>
+                      )}
+
+                      {/* External Links */}
+                      <div className="border rounded-lg p-3 md:p-4">
+                        <h5 className="font-medium mb-3">Links & Documents</h5>
+                        <div className="flex flex-wrap gap-4">
+                          {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.linkedIn && (
+                            <a
+                              href={selectedCandidate.candidateId.jobSeekerDetails.professionalDetails.linkedIn}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline text-sm"
+                            >
+                              <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                              LinkedIn
+                            </a>
+                          )}
+
+                          {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.portfolio && (
+                            <a
+                              href={selectedCandidate.candidateId.jobSeekerDetails.professionalDetails.portfolio}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline text-sm"
+                            >
+                              <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                              Portfolio
+                            </a>
+                          )}
+
+                          {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url && (
+                            <a
+                              href={selectedCandidate.candidateId.jobSeekerDetails.professionalDetails.resume.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline text-sm"
+                            >
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              Resume
+                            </a>
+                          )}
+
+                          {!selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.linkedIn &&
+                            !selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.portfolio &&
+                            !selectedCandidate?.candidateId?.jobSeekerDetails?.professionalDetails?.resume?.url && (
+                              <p className="text-muted-foreground text-sm">No links available</p>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="experience" className="space-y-4">
+                    <h4 className="text-lg font-medium">Work Experience</h4>
+                    {selectedCandidate?.candidateId?.jobSeekerDetails?.professionalExperience?.length > 0 ? (
+                      <div className="space-y-4">
+                        {selectedCandidate.candidateId.jobSeekerDetails.professionalExperience.map((exp, index) => (
+                          <div key={index} className="border rounded-lg p-3 md:p-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-0">
+                              <div>
+                                <h5 className="font-medium">{exp.jobTitle}</h5>
+                                <p className="text-muted-foreground">{exp.companyName}</p>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                              </div>
+                            </div>
+                            {exp.keyAchievements && (
+                              <div className="mt-2">
+                                <p className="text-sm mt-2">{exp.keyAchievements}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 md:py-8 border rounded-lg">
+                        <p className="text-muted-foreground">No work experience listed</p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="education" className="space-y-4">
+                    <h4 className="text-lg font-medium">Education</h4>
+                    {selectedCandidate?.candidateId?.jobSeekerDetails?.education?.length > 0 ? (
+                      <div className="space-y-4">
+                        {selectedCandidate.candidateId.jobSeekerDetails.education.map((edu, index) => (
+                          <div key={index} className="border rounded-lg p-3 md:p-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-0">
+                              <div>
+                                <h5 className="font-medium">{edu.qualification}</h5>
+                                <p className="text-muted-foreground">{edu.institution}</p>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                              </div>
+                            </div>
+                            {edu.grade && (
+                              <div className="mt-1 text-sm">
+                                <span className="text-muted-foreground">Grade: </span>
+                                {edu.grade}
+                              </div>
+                            )}
+                            {edu.description && <p className="text-sm mt-2">{edu.description}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 md:py-8 border rounded-lg">
+                        <p className="text-muted-foreground">No education details listed</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+
+            <DialogFooter className="mt-4 md:mt-6 flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsUserDetailsModalOpen(false)} className="w-full sm:w-auto">
+                Close
+              </Button>
+              <Button onClick={()=>{handleToggleShortlist(selectedCandidate)}} className="w-full sm:w-auto">
+                {selectedCandidate?.isShortlisted
+                  ? "Remove from Shortlist"
+                  : "Shortlist Candidate"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Card>
   );
