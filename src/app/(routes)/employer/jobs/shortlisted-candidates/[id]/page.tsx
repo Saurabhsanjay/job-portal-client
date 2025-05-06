@@ -330,12 +330,12 @@ export default function AppliedCandidates() {
 
   return (
     <Card className="p-6 shadow-sm border-none">
-      <Link href="/employer/jobs">
-        <ArrowLeftCircle className="h-5 w-5 mb-2" />
-      </Link>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex gap-2 items-center">
+          <Link href="/employer/jobs">
+            <ArrowLeftCircle className="h-5 w-5" />
+          </Link>
           <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
             Shortlisted Candidates
           </h2>
@@ -373,9 +373,9 @@ export default function AppliedCandidates() {
                     {filters.date ? format(filters.date, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0"  align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
-                    mode="single"   
+                    mode="single"
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     selected={appliedFilters.date}
