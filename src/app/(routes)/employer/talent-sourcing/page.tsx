@@ -408,28 +408,32 @@ export default function TalentSourcing() {
 
         <TabsContent value="jobs" className="space-y-4">
           <div className="grid gap-4">
-            {activeJobs.map((job, index) => (
-              <Card key={index}>
-                <CardContent className="flex items-center justify-between p-6">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">{job.title}</h3>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-1 h-4 w-4" />
-                      {job?.location}
-                      <Separator orientation="vertical" className="mx-2 h-4" />
-                      <Briefcase className="mr-1 h-4 w-4" />
-                      {job?.employmentType}
+            {activeJobs.length > 0 ? (
+              activeJobs.map((job, index) => (
+                <Card key={index}>
+                  <CardContent className="flex items-center justify-between p-6">
+                    <div className="space-y-1">
+                      <h3 className="font-semibold">{job.title}</h3>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {job?.location}
+                        <Separator orientation="vertical" className="mx-2 h-4" />
+                        <Briefcase className="mr-1 h-4 w-4" />
+                        {job?.employmentType}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold">{job?.matches} matches</div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-semibold">{job?.matches} matches</div>
+                      </div>
+                      <Button onClick={() => handleViewMatches(job?.id)}>View Matches</Button>
                     </div>
-                    <Button onClick={() => handleViewMatches(job?.id)}>View Matches</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">No Active Jobs</div>
+            )}
           </div>
         </TabsContent>
 
@@ -556,16 +560,16 @@ export default function TalentSourcing() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[250px]">Candidate</TableHead>
-                  <TableHead className="w-[200px]">Job Title</TableHead>
-                  <TableHead className="w-[150px]">Location</TableHead>
-                  <TableHead className="w-[150px]">Experience Level</TableHead>
-                  <TableHead className="w-[150px]">Employment Type</TableHead>
-                  <TableHead className="w-[150px]">Industry</TableHead>
-                  <TableHead className="w-[150px]">Availability</TableHead>
-                  <TableHead className="w-[150px]">Skills</TableHead>
-                  <TableHead className="w-[100px]">Resume</TableHead>
-                  <TableHead className="w-[100px]">Action</TableHead>
+                  <TableHead className="w-[250px] text-nowrap">Candidate</TableHead>
+                  <TableHead className="w-[200px] text-nowrap">Job Title</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Location</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Experience Level</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Employment Type</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Industry</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Availability</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Skills</TableHead>
+                  <TableHead className="w-[100px] text-nowrap">Resume</TableHead>
+                  <TableHead className="w-[100px] text-nowrap">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -601,9 +605,11 @@ export default function TalentSourcing() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                      <TableCell>
-                        {candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}
+                      <TableCell className="text-nowrap">{candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
+                      <TableCell className="text-nowrap">
+                        {(candidate?.personalDetails?.address?.city || "-") +
+                          (candidate?.personalDetails?.address?.state ? `, ${candidate.personalDetails.address.state}` : "") +
+                          (candidate?.personalDetails?.address?.country ? `, ${candidate.personalDetails.address.country}` : "")}
                       </TableCell>
                       <TableCell>
                         {getExperienceLevelLabel(candidate?.jobSeekerDetails?.professionalDetails?.totalExperience) ||
@@ -621,7 +627,7 @@ export default function TalentSourcing() {
                       <TableCell>
                         <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                           <a
-                            href={candidate?.jobSeekerDetails?.professionalDetails?.resume}
+                            href={candidate?.jobSeekerDetails?.professionalDetails?.resume?.url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

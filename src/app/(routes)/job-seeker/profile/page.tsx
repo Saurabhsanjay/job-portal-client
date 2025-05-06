@@ -572,21 +572,6 @@ export default function Profile() {
             </div>
 
             {/* Logo Upload */}
-            {/* <div className="space-y-1">
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-              <div className="mx-auto flex flex-col items-center">
-                <div className="mb-4">
-                  <Upload className="h-10 w-10 text-gray-400" />
-                </div>
-                <div className="text-sm">Browse Photo</div>
-                <div className="mt-2 text-xs text-gray-500">
-                  Max file size is 1MB, Minimum dimension: 330x300 And Suitable
-                  files are .jpg & .png
-                </div>
-              </div>
-            </div>
-          </div> */}
-
             <div className="space-y-1">
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
                 <div
