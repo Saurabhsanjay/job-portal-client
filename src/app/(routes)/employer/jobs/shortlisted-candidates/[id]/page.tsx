@@ -373,9 +373,9 @@ export default function AppliedCandidates() {
                     {filters.date ? format(filters.date, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0"  align="start">
                   <Calendar
-                    mode="single"
+                    mode="single"   
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     selected={appliedFilters.date}
