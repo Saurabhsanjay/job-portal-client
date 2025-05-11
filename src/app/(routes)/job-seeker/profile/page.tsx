@@ -25,11 +25,12 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import axios from "axios";
 
 export default function Profile() {
   // const { toast } = useToast();
-  const {user}=useAuth();
-  console.log("user",user)
+  const { user } = useAuth();
+  console.log("user", user);
 
   const frameworksList = [
     { value: "react", label: "React" },
@@ -366,9 +367,10 @@ export default function Profile() {
         employmentType:
           data?.jobSeekerDetails?.professionalDetails?.employmentType || "",
         noticePeriod:
-          data.jobSeekerDetails?.professionalDetails?.noticePeriod || "",
+          data.jobSeekerDetails?.professionalDetails?.noticePeriod?.toString() || "",
         gender: data?.personalDetails?.gender || "",
       });
+      setProfileImage(data?.personalDetails?.profilePicture || null);
     }
   }, [profileData, reset]);
 
@@ -380,16 +382,41 @@ export default function Profile() {
   const countryData =
     profileData?.data?.personalDetails?.address?.country || "";
 
-  const handleProfileImageUpload = (
+  const handleProfileImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    // if (file) {
+    //   const reader = new FileReader();
+    //   reader.onloadend = () => {
+    //     setProfileImage(reader.result as string);
+    //   };
+    //   reader.readAsDataURL(file);
+    // }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Axios configuration
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/users/upload-profile-picture?userId=${user?.id}`,
+        formData,
+        config
+      );
+      console.log("File uploaded successfully:", response.data);
+      if(response?.data?.status==="SUCCESS"){
+        toast.success("Profile image uploaded successfully");
+      }
+      setProfileImage(response.data?.data?.personalDetails?.profilePicture || null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -401,7 +428,6 @@ export default function Profile() {
   }
 
   const profileMutation = useApiPut<JobSeekerProfileResponse, UserProfile>();
-  
 
   // Helper function to remove _id from objects in an array
   const removeIdFromArray = (array) => {
@@ -419,7 +445,7 @@ export default function Profile() {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        password:"",
+        password: "",
         phoneNumber: {
           countryCode: data.phoneNumber?.countryCode || "+91",
           number: data.phoneNumber || "",
@@ -447,7 +473,7 @@ export default function Profile() {
           skills: data.skills || [],
           // resume: data.resume || "",
           achivements: achievements || "",
-          noticePeriod: data.noticePeriod || "",
+          noticePeriod: data.noticePeriod?.toString() || "",
           currentCTC: data.currentCTC || 0,
           expectedCTC: data.expectedCTC || 0,
           employmentType: data.employmentType || "",
@@ -489,12 +515,12 @@ export default function Profile() {
             // reset();
             // invalidateQueries([["user-profile"]]);
           } else if (response.error) {
-            toast.error(response?.error?.message||"Something Went Wrong");
+            toast.error(response?.error?.message || "Something Went Wrong");
           }
         },
         onError: (error) => {
-        setIsSubmitting(false);
-        toast.error(error?.message||"Something Went Wrong");
+          setIsSubmitting(false);
+          toast.error(error?.message || "Something Went Wrong");
         },
       }
     );
@@ -546,21 +572,6 @@ export default function Profile() {
             </div>
 
             {/* Logo Upload */}
-            {/* <div className="space-y-1">
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-              <div className="mx-auto flex flex-col items-center">
-                <div className="mb-4">
-                  <Upload className="h-10 w-10 text-gray-400" />
-                </div>
-                <div className="text-sm">Browse Photo</div>
-                <div className="mt-2 text-xs text-gray-500">
-                  Max file size is 1MB, Minimum dimension: 330x300 And Suitable
-                  files are .jpg & .png
-                </div>
-              </div>
-            </div>
-          </div> */}
-
             <div className="space-y-1">
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
                 <div
@@ -572,6 +583,11 @@ export default function Profile() {
                       <Image
                         src={profileImage || "/placeholder.svg"}
                         alt="Profile"
+                        width={24}
+                        height={24}
+                        priority
+                        quality={100}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -711,10 +727,28 @@ export default function Profile() {
 
               {/* Notice Period */}
               <div className="space-y-1">
-                <Label htmlFor="noticePeriod">Notice Period</Label>
+                <Label htmlFor="noticePeriod">Notice Period(in days)</Label>
                 <Input
+                  min={0}
                   id="noticePeriod"
                   placeholder="EnterNotice Period"
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                      "Tab",
+                      "Home",
+                      "End",
+                    ];
+                    if (
+                      !/^[0-9]$/.test(e.key) &&
+                      !allowedKeys.includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   {...register("noticePeriod")}
                   className={errors.noticePeriod ? "border-red-500" : ""}
                 />
@@ -733,6 +767,23 @@ export default function Profile() {
                   id="phoneNumber"
                   placeholder="Enter Phone Number"
                   {...register("phoneNumber")}
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                      "Tab",
+                      "Home",
+                      "End",
+                    ];
+                    if (
+                      !/^[0-9]$/.test(e.key) &&
+                      !allowedKeys.includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   className={errors?.phoneNumber ? "border-red-500" : ""}
                 />
                 {errors?.phoneNumber && (
@@ -759,7 +810,7 @@ export default function Profile() {
 
               {/* Current Salary */}
               <div className="space-y-1">
-                <Label htmlFor="currentSalary">Current Salary (per anum)</Label>
+                <Label htmlFor="currentSalary">Current Salary (per annum)</Label>
                 <Input
                   id="currentSalary"
                   type="number"
@@ -771,7 +822,7 @@ export default function Profile() {
               {/* Expected Salary */}
               <div className="space-y-1">
                 <Label htmlFor="expectedSalary">
-                  Expected Salary (per anum)
+                  Expected Salary (per annum)
                 </Label>
                 <Input
                   id="expectedSalary"

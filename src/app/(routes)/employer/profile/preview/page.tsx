@@ -154,7 +154,7 @@ export default function CompanyProfilePreviewPage() {
 
   // Format phone number
   const formattedPhone = employer.phoneNumber
-    ? `${employer.phoneNumber.countryCode} ${employer.phoneNumber.number}`
+    ? `${employer.phoneNumber.countryCode ?? ""} ${employer.phoneNumber.number}`
     : "Not provided"
 
   // Format established year

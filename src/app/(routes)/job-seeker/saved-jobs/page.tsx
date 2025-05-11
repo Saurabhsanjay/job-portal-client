@@ -24,42 +24,68 @@ import { Eye, Copy, MapPin, Building2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import { useRouter } from "next/navigation";
 
-interface JobApplication {
-  _id: string;
-  jobId: {
-    _id: string;
-    title: string;
-    validTill: string; // ISO date string
-    status: string;
-  };
-  candidateId: string;
-  status: string;
-  isShortlisted: boolean;
-  appliedDate: string; // ISO date string
-  shortlistedDate: string; // ISO date string
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-  __v: number;
-}
-
-interface Pagination {
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
-}
-
-interface JobApplicationsResponse {
+export interface BookmarkedJobsResponse {
   status: string;
   statusCode: number;
   message: string;
   formattedMessage: string;
   data: {
-    applications: JobApplication[];
-    pagination: Pagination;
+    bookmarkedJobs: BookmarkedJob[];
+    totalbookmarkedJobCount: number;
   };
 }
+
+export interface BookmarkedJob {
+  _id: string;
+  title: string;
+  description: string;
+  category: string;
+  location: {
+    city: string;
+    state: string;
+    country: string;
+  };
+  employmentType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | string;
+  industry: string;
+  skills: string[];
+  experience: {
+    level: 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | string;
+    years: {
+      min: number;
+      max: number;
+      _id: string;
+    };
+  };
+  education: string[];
+  languages: string[];
+  salary: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  numberOfOpenings: number;
+  postedAt: string;
+  validTill: string;
+  remote: boolean;
+  benefits: string[];
+  applicationLink: string;
+  createdBy: {
+    userId: string;
+  };
+  status: 'ACTIVE' | 'INACTIVE' | string;
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | string;
+  tags: string[];
+  views: number;
+  applicationsCount: number;
+  savedCount: number;
+  moderationStatus: 'APPROVED' | 'PENDING' | 'REJECTED' | string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 
 // Mock data generator
 const generateMockData = (start: number, end: number) => {
@@ -86,27 +112,30 @@ const generateMockData = (start: number, end: number) => {
 };
 
 export default function SavedJobs() {
-  const [jobs, setJobs] = useState<JobApplication[]>([]);
+  const [jobs, setJobs] = useState<BookmarkedJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver>(null);
   const lastJobElementRef = useRef<HTMLDivElement>(null);
   const [duration, setDuration] = useState("");
   const { user } = useAuth();
+  const router = useRouter();
 
   const apiEndpoint = duration
-    ? `applied-candidates/candidate/${user?.id}?saved=true?appliedDateFilter=${duration}`
-    : `applied-candidates/candidate/${user?.id}?saved=true`;
+    ? `bookmark-jobs/get-all-bookmark-jobs?userId=${user?.id}?appliedDateFilter=${duration}`
+    : `bookmark-jobs/get-all-bookmark-jobs?userId=${user?.id}`;
 
   const {
     data: savedJobsData,
     isLoading: isLoadingSavedJobs,
     error: savedJobsError,
     refetch,
-  } = useApiGet<JobApplicationsResponse>(
+  } = useApiGet<BookmarkedJobsResponse>(
     apiEndpoint,
     ["saved-jobs", duration] // Query key for caching
   );
+
+  console.log("savedJobsData------->",savedJobsData)
 
   useEffect(() => {
     if (duration !== undefined) {
@@ -118,8 +147,8 @@ export default function SavedJobs() {
 
   useEffect(() => {
     if (savedJobsData && savedJobsData?.statusCode === 200) {
-      console.log("savedJobsData", savedJobsData?.data?.applications);
-      setJobs(savedJobsData?.data?.applications || []);
+      console.log("savedJobsData", savedJobsData?.data?.bookmarkedJobs);
+      setJobs(savedJobsData?.data?.bookmarkedJobs || []);
     }
   }, [savedJobsData]);
 
@@ -202,7 +231,7 @@ export default function SavedJobs() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[400px]">Job Title</TableHead>
-              <TableHead className="w-[200px]">Date Applied</TableHead>
+              <TableHead className="w-[200px]">Valid Till</TableHead>
               <TableHead className="w-[150px]">Status</TableHead>
               <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
@@ -218,18 +247,26 @@ export default function SavedJobs() {
                         <AvatarFallback>{job?.company?.[0] || "P"}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{job?.jobId?.title}</div>
+                        <div className="font-medium">{job?.title}</div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Building2 className="h-3 w-3" />
                           <span>{job?.company || "No Company"}</span>
                           <MapPin className="h-3 w-3 ml-2" />
-                          <span>{job?.location || "No Location"}</span>
+                          <span>
+                            {[
+                              job?.location?.city,
+                              job?.location?.state,
+                              job?.location?.country,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-gray-500">
-                    {format(job?.appliedDate, "MMM d, yyyy")}
+                    {format(job?.validTill, "MMM d, yyyy")}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={getStatusColor(job?.status)}>
@@ -238,7 +275,7 @@ export default function SavedJobs() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {router.push(`/job-listings/${job?._id}?saved=true`)}}>
                         <Eye className="h-4 w-4" />
                       </Button>
                       {/* <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -270,7 +307,7 @@ export default function SavedJobs() {
                   <AvatarFallback>{job?.company?.[0] || "P"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-medium">{job?.jobId?.title}</div>
+                  <div className="font-medium">{job?.title}</div>
                   <div className="text-sm text-gray-500 space-y-1 mt-1">
                     <div className="flex items-center gap-1">
                       <Building2 className="h-3 w-3" />
@@ -278,7 +315,15 @@ export default function SavedJobs() {
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      <span>{job?.location || "No Location"}</span>
+                      <span>
+                            {[
+                              job?.location?.city,
+                              job?.location?.state,
+                              job?.location?.country,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-3">
@@ -289,7 +334,7 @@ export default function SavedJobs() {
                       {job?.status}
                     </Badge>
                     <span className="text-sm text-gray-500">
-                      {format(job?.appliedDate, "MMM d, yyyy")}
+                      {format(job?.validTill, "MMM d, yyyy")}
                     </span>
                   </div>
                 </div>

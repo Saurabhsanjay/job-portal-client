@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { useApiGet } from "@/hooks/use-api-query";
+import { useApiGet, useApiPost } from "@/hooks/use-api-query";
 import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,6 +41,8 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/app/(providers)/AuthContext";
+import toast from "react-hot-toast";
 
 const locations = [
   { city: "New York", state: "NY", country: "USA" },
@@ -69,11 +71,47 @@ const educationLevels = [
   "Doctorate",
 ];
 
+export interface BookmarkJobResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: {
+    userId: string;
+    jobIds: string[];
+    _id: string;
+    createdAt: string; // or Date, depending on how you use it
+    updatedAt: string; // or Date
+    __v: number;
+  };
+}
+
+export interface BookmarkJobPayload {
+  userId:string,
+  jobId:string
+}
+
+export interface UnbookmarkJobResponse {
+  status: string;
+  statusCode: number;
+  message: string;
+  formattedMessage: string;
+  data: {
+    _id: string;
+    userId: string;
+    jobIds: string[];
+    createdAt: string; // You can use Date if you're parsing it
+    updatedAt: string;
+    __v: number;
+  };
+}
+
+
 export function JobBoard() {
-  console.log("job board rereendered------------->");
   const searchParams = useSearchParams();
   const query = searchParams.get("title");
   const router = useRouter();
+  const {user}=useAuth();
 
   const [jobs, setJobs] = useState<IJob[]>([]);
   const [filters, setFilters] = useState<JobFilters>({
@@ -92,6 +130,10 @@ export function JobBoard() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [openCombobox, setOpenCombobox] = useState<string | null>(null);
+
+  const bookmarkJobMutation = useApiPost<BookmarkJobResponse, BookmarkJobPayload>();
+
+  const removeBookmarkJobMutation = useApiPost<UnbookmarkJobResponse, BookmarkJobPayload>();
 
   // Memoized callback functions to prevent unnecessary re-renders
   const handleFilterChange = useCallback((newFilters: JobFilters) => {
@@ -309,6 +351,7 @@ export function JobBoard() {
     data: jobList,
     isLoading,
     error,
+    refetch,
   } = useApiGet<IJob[]>(
     `jobs/get-jobs${queryString ? `?${queryString}` : ""}`,
     {},
@@ -329,9 +372,63 @@ export function JobBoard() {
     setSortBy(value);
   }, []);
 
-  const handleSaveJob = useCallback((jobId: string) => {
-    console.log("Save job:", jobId);
-  }, []);
+  const handleSaveJob = useCallback((job: IJob) => {
+    console.log("Save job:", job?._id);
+
+    if(job?.bookmarked){
+      removeBookmarkJobMutation.mutate(
+        {
+          endpoint: "bookmark-jobs/remove-job-bookmark",
+          payload: {
+            "userId":user?.id||"",
+            "jobId":job?._id||"",
+          },
+        // payload: data,
+        //   invalidateQueries: [["user-profile"]],
+        },
+        {
+          onSuccess: (response) => {
+            if (response.data) {
+                // reset();
+                toast.success("Job unbookmarked successfully");
+                refetch()
+            } else if (response.error) {
+              toast.error(response?.error?.message||"Something Went Wrong");
+            }
+          },
+          onError: (error) => {
+            toast.error(error?.message||"Something Went Wrong");
+          },
+        }
+      );
+    }else{
+      bookmarkJobMutation.mutate(
+        {
+          endpoint: "bookmark-jobs/create-job-bookmark",
+          payload: {
+            "userId":user?.id||"",
+            "jobId":job?._id||"",
+          },
+        // payload: data,
+        //   invalidateQueries: [["user-profile"]],
+        },
+        {
+          onSuccess: (response) => {
+            if (response.data) {
+                // reset();
+                toast.success("Job bookmarked successfully");
+                refetch()
+            } else if (response.error) {
+              toast.error(response?.error?.message||"Something Went Wrong");
+            }
+          },
+          onError: (error) => {
+            toast.error(error?.message||"Something Went Wrong");
+          },
+        }
+      );
+    }
+  }, [bookmarkJobMutation,user?.id,refetch,removeBookmarkJobMutation]);
 
   const handleApplyJob = useCallback(
     (jobId: string) => {

@@ -24,7 +24,7 @@ import { useApiPost } from "@/hooks/use-api-query"
 import toast from "react-hot-toast"
 import { useAuth } from "@/app/(providers)/AuthContext"
 
-const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT",  "INTERNSHIP", "VOLUNTEER"] as const
+const employmentTypes = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "VOLUNTEER"] as const
 
 const experienceLevels = ["JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"] as const
 
@@ -97,6 +97,7 @@ const jobFormSchema = z.object({
   languages: z.array(z.string()),
   benefits: z.array(z.string()),
   tags: z.array(z.string()),
+  keyResponsibilities: z.array(z.string().min(1, "Responsibility cannot be empty")),
 })
 
 type JobFormValues = z.infer<typeof jobFormSchema>
@@ -144,6 +145,7 @@ type JobPayload = {
   status: string
   priority: string
   tags: string[]
+  keyResponsibilities: string[]
   createdBy: {
     userId: string
   }
@@ -155,6 +157,7 @@ export default function JobPostingForm() {
   const [newLanguage, setNewLanguage] = React.useState("")
   const [newEducation, setNewEducation] = React.useState("")
   const [newTag, setNewTag] = React.useState("")
+  const [newResponsibility, setNewResponsibility] = React.useState("")
 
   const { user } = useAuth()
 
@@ -183,13 +186,17 @@ export default function JobPostingForm() {
       languages: [],
       benefits: [],
       tags: [],
+      keyResponsibilities: [],
     },
   })
 
   // Use the API post hook for creating jobs
   const jobMutation = useApiPost<JobResponse, JobPayload>()
 
-  const addItem = (type: "skills" | "benefits" | "languages" | "education" | "tags", item: string) => {
+  const addItem = (
+    type: "skills" | "benefits" | "languages" | "education" | "tags" | "keyResponsibilities",
+    item: string,
+  ) => {
     if (!item.trim()) return
 
     const currentItems = watch(type) || []
@@ -212,10 +219,33 @@ export default function JobPostingForm() {
       case "tags":
         setNewTag("")
         break
+      case "keyResponsibilities":
+        setNewResponsibility("")
+        break
     }
+
+    // Show a subtle toast notification
+    toast.success(
+      `Added new ${type
+        .replace(/([A-Z])/g, " $1")
+        .toLowerCase()
+        .slice(0, -1)}`,
+      {
+        duration: 1500,
+        style: {
+          background: "#f3f4f6",
+          color: "#1f2937",
+          border: "1px solid #e5e7eb",
+        },
+        icon: "✓",
+      },
+    )
   }
 
-  const removeItem = (type: "skills" | "benefits" | "languages" | "education" | "tags", index: number) => {
+  const removeItem = (
+    type: "skills" | "benefits" | "languages" | "education" | "tags" | "keyResponsibilities",
+    index: number,
+  ) => {
     const currentItems = watch(type) || []
     setValue(
       type,
@@ -259,10 +289,13 @@ export default function JobPostingForm() {
       status: "ACTIVE",
       priority: data.priority,
       tags: data.tags,
+      keyResponsibilities: data.keyResponsibilities,
       createdBy: {
         userId: user?.id || "",
       },
     }
+
+    console.log("Job Payload:", payload)
 
     // Create new job
     jobMutation.mutate(
@@ -274,19 +307,16 @@ export default function JobPostingForm() {
       {
         onSuccess: (response) => {
           if (response.data) {
-            
             toast.success("Job posting created successfully")
             reset()
             // Navigate back to jobs list
             router.push("/employer/jobs")
           } else if (response.error) {
-            
             toast.error("Failed to create job posting")
           }
         },
         onError: (error) => {
           toast.error(error.message || "Failed to create job posting")
-         
         },
       },
     )
@@ -350,6 +380,73 @@ export default function JobPostingForm() {
               {...register("description")}
             />
             {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Key Responsibilities */}
+      <Card className="shadow-sm border-none">
+        <CardHeader>
+          <CardTitle>Key Responsibilities</CardTitle>
+          <CardDescription>List the key responsibilities for this position</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Responsibilities</Label>
+            <Controller
+              name="keyResponsibilities"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No responsibilities added yet</p>
+                    ) : (
+                      field.value.map((responsibility, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {responsibility}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("keyResponsibilities", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type a responsibility and press Enter or Add"
+                        value={newResponsibility}
+                        onChange={(e) => setNewResponsibility(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("keyResponsibilities", newResponsibility)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("keyResponsibilities", newResponsibility)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Press Enter or click Add to add each responsibility
+                    </p>
+                  </div>
+                </div>
+              )}
+            />
           </div>
         </CardContent>
       </Card>
@@ -522,40 +619,52 @@ export default function JobPostingForm() {
               name="skills"
               control={control}
               render={({ field }) => (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((skill, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {skill}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => removeItem("skills", index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No skills added yet</p>
+                    ) : (
+                      field.value.map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {skill}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("skills", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add a skill"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addItem("skills", newSkill)
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => addItem("skills", newSkill)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type a skill and press Enter or Add"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("skills", newSkill)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("skills", newSkill)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Press Enter or click Add to add each skill</p>
                   </div>
-                </>
+                </div>
               )}
             />
           </div>
@@ -593,45 +702,54 @@ export default function JobPostingForm() {
               name="education"
               control={control}
               render={({ field }) => (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((edu, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {edu}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => removeItem("education", index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No education requirements added yet</p>
+                    ) : (
+                      field.value.map((edu, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {edu}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("education", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add education requirement"
-                      value={newEducation}
-                      onChange={(e) => setNewEducation(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addItem("education", newEducation)
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => addItem("education", newEducation)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type education requirement and press Enter or Add"
+                        value={newEducation}
+                        onChange={(e) => setNewEducation(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("education", newEducation)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("education", newEducation)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Press Enter or click Add to add each education requirement
+                    </p>
                   </div>
-                </>
+                </div>
               )}
             />
           </div>
@@ -642,45 +760,52 @@ export default function JobPostingForm() {
               name="languages"
               control={control}
               render={({ field }) => (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((lang, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {lang}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => removeItem("languages", index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No languages added yet</p>
+                    ) : (
+                      field.value.map((lang, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {lang}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("languages", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add language requirement"
-                      value={newLanguage}
-                      onChange={(e) => setNewLanguage(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addItem("languages", newLanguage)
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => addItem("languages", newLanguage)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type a language and press Enter or Add"
+                        value={newLanguage}
+                        onChange={(e) => setNewLanguage(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("languages", newLanguage)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("languages", newLanguage)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Press Enter or click Add to add each language</p>
                   </div>
-                </>
+                </div>
               )}
             />
           </div>
@@ -733,40 +858,52 @@ export default function JobPostingForm() {
               name="benefits"
               control={control}
               render={({ field }) => (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((benefit, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {benefit}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => removeItem("benefits", index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No benefits added yet</p>
+                    ) : (
+                      field.value.map((benefit, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {benefit}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("benefits", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add a benefit"
-                      value={newBenefit}
-                      onChange={(e) => setNewBenefit(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addItem("benefits", newBenefit)
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => addItem("benefits", newBenefit)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type a benefit and press Enter or Add"
+                        value={newBenefit}
+                        onChange={(e) => setNewBenefit(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("benefits", newBenefit)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("benefits", newBenefit)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Press Enter or click Add to add each benefit</p>
                   </div>
-                </>
+                </div>
               )}
             />
           </div>
@@ -855,40 +992,52 @@ export default function JobPostingForm() {
               name="tags"
               control={control}
               render={({ field }) => (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {tag}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => removeItem("tags", index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md bg-gray-50">
+                    {field.value.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic p-1">No tags added yet</p>
+                    ) : (
+                      field.value.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                          {tag}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => removeItem("tags", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add a tag"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addItem("tags", newTag)
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => addItem("tags", newTag)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type a tag and press Enter or Add"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addItem("tags", newTag)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => addItem("tags", newTag)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Press Enter or click Add to add each tag</p>
                   </div>
-                </>
+                </div>
               )}
             />
           </div>
@@ -915,4 +1064,3 @@ export default function JobPostingForm() {
     </form>
   )
 }
-

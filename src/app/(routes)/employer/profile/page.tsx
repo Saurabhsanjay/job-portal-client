@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Building2, Facebook, Twitter, Linkedin, Instagram, Sparkles, Loader2 } from "lucide-react"
+import { Building2, Facebook, Twitter, Linkedin, Instagram, Sparkles, Loader2, Upload } from 'lucide-react'
 import toast from "react-hot-toast"
+import axios from "axios"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,13 +23,12 @@ import { useAuth } from "@/app/(providers)/AuthContext"
 
 // Validation schema using zod
 const benefitSchema = z.object({
-  title: z.string(),
-  description: z.string(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
 })
 
 const phoneNumberSchema = z.object({
-  countryCode: z.string(),
-  number: z.string(),
+  number: z.string().min(1, "Phone number is required"),
 })
 
 const socialLinksSchema = z.object({
@@ -39,23 +39,23 @@ const socialLinksSchema = z.object({
 })
 
 const contactInfoSchema = z.object({
-  country: z.string(),
-  state: z.string(),
-  city: z.string(),
-  completeAddress: z.string(),
+  country: z.string().min(1, "Country is required"),
+  state: z.string().min(1, "State is required"),
+  city: z.string().min(1, "City is required"),
+  completeAddress: z.string().min(1, "Complete address is required"),
 })
 
 const employerProfileSchema = z.object({
-  companyName: z.string(),
+  companyName: z.string().min(1, "Company name is required"),
   email: z.string().email("Please enter a valid email address"),
   phoneNumber: phoneNumberSchema,
-  website: z.string().url("Please enter a valid URL"),
-  logoUrl: z.string().optional(),
-  establishedYear: z.string(), // We'll handle the Date conversion in the form submission
-  companySize: z.string(),
-  industry: z.string(),
+  website: z.string().url("Please enter a valid URL").min(1, "Website URL is required"),
+  logoUrl: z.string().min(1, "Company logo is required"),
+  establishedYear: z.string().min(1, "Established year is required"),
+  companySize: z.string().min(1, "Company size is required"),
+  industry: z.string().min(1, "Industry is required"),
   allowInSearch: z.boolean().default(true),
-  companyDescription: z.string(),
+  companyDescription: z.string().min(1, "Company description is required"),
   benefitsAndPerks: z.array(benefitSchema),
   socialLinks: socialLinksSchema,
   contactInfo: contactInfoSchema,
@@ -78,6 +78,7 @@ export default function CompanyProfile() {
   const [city, setCity] = React.useState<string>("")
   const { user } = useAuth()
   const [isFormInitialized, setIsFormInitialized] = React.useState(false)
+  const [isUploading, setIsUploading] = React.useState(false)
 
   const {
     register,
@@ -93,7 +94,7 @@ export default function CompanyProfile() {
       companyName: "",
       email: "",
       phoneNumber: {
-        countryCode: "",
+        countryCode: "+91",
         number: "",
       },
       website: "",
@@ -119,6 +120,9 @@ export default function CompanyProfile() {
     },
   })
 
+  console.log("Form values:")
+  console.log("Form errors:", errors)
+
   // Store form data in localStorage when it changes
   React.useEffect(() => {
     const subscription = watch((value) => {
@@ -129,17 +133,48 @@ export default function CompanyProfile() {
     return () => subscription.unsubscribe()
   }, [watch, isFormInitialized])
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      setIsUploading(true)
+
+      // Show preview immediately
       const reader = new FileReader()
       reader.onloadend = () => {
         const result = reader.result as string
         setLogo(result)
-        // Update the form value for logoUrl
-        setValue("logoUrl", result)
       }
       reader.readAsDataURL(file)
+
+      try {
+        // Create form data for upload
+        const formData = new FormData()
+        formData.append("file", file)
+
+        // Send to server
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-profile-picture?userId=${user?.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        )
+
+        if (response.data && response.data.logoUrl) {
+          // Update the form value with the returned URL
+          setValue("logoUrl", response.data.logoUrl)
+          toast.success("Logo uploaded successfully")
+        } else {
+          toast.error("Failed to upload logo")
+        }
+      } catch (error) {
+        console.error("Error uploading logo:", error)
+        toast.error("Error uploading logo")
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
@@ -164,7 +199,11 @@ export default function CompanyProfile() {
 
         // Set the form values from localStorage
         Object.entries(parsedForm).forEach(([key, value]) => {
-          if (key !== "contactInfo" && key !== "socialLinks" && key !== "phoneNumber" && key !== "benefitsAndPerks") {
+          if (
+            key !== "contactInfo" &&
+            key !== "socialLinks" &&
+            key !== "phoneNumber" &&
+            key !== "benefitsAndPerks"           ) {
             setValue(key as any, value as any)
           }
         })
@@ -182,12 +221,16 @@ export default function CompanyProfile() {
         }
 
         if (parsedForm.phoneNumber) {
-          setValue("phoneNumber", parsedForm.phoneNumber)
+          setValue("phoneNumber", {
+            number: parsedForm.phoneNumber.number || "",
+          })
         }
 
         if (parsedForm.benefitsAndPerks) {
           setValue("benefitsAndPerks", parsedForm.benefitsAndPerks)
         }
+
+      
 
         if (parsedForm.industry) {
           setIndustry(parsedForm.industry)
@@ -209,7 +252,7 @@ export default function CompanyProfile() {
       setValue("companyName", employerDetails.companyName || "")
       setValue("email", employerDetails.email || "")
       setValue("phoneNumber", {
-        countryCode: employerDetails.phoneNumber?.countryCode || "+1",
+        countryCode: "+91",
         number: employerDetails.phoneNumber?.number || "",
       })
       setValue("website", employerDetails.website || "")
@@ -232,6 +275,9 @@ export default function CompanyProfile() {
       if (employerDetails.benefitsAndPerks && employerDetails.benefitsAndPerks.length > 0) {
         setValue("benefitsAndPerks", employerDetails.benefitsAndPerks)
       }
+
+      // Set key responsibilities
+     
 
       // Set social links
       setValue("socialLinks", {
@@ -260,7 +306,7 @@ export default function CompanyProfile() {
           ...employerDetails,
           contactInfo: employerDetails.contactInfo || {},
           socialLinks: employerDetails.socialLinks || {},
-          phoneNumber: employerDetails.phoneNumber || {},
+          phoneNumber: { number: employerDetails.phoneNumber?.number || "" },
           benefitsAndPerks: employerDetails.benefitsAndPerks || [{ title: "", description: "" }],
         }),
       )
@@ -275,7 +321,9 @@ export default function CompanyProfile() {
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     console.log("Form submitted with data:", data)
     const formattedData = {
-      employerDetails: data,
+      employerDetails: {
+        ...data,
+      },
       role: "EMPLOYER",
       id: user?.id,
     }
@@ -349,7 +397,9 @@ export default function CompanyProfile() {
           </CardHeader>
           <CardContent className="space-y-6 flex flex-col">
             <div className="space-y-4">
-              <Label>Company Logo</Label>
+              <Label>
+                Company Logo <span className="text-red-500">*</span>
+              </Label>
               <div className="flex items-center gap-4">
                 <div className="h-32 w-32 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative hover:border-gray-400 transition-colors">
                   {logo ? (
@@ -373,8 +423,29 @@ export default function CompanyProfile() {
                 <div className="text-sm text-muted-foreground">
                   <p>Upload your company logo</p>
                   <p>Max file size: 1MB. Formats: JPG, PNG</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={isUploading}
+                    onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Logo
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
+              {errors.logoUrl && <p className="text-sm text-red-500">{errors.logoUrl.message}</p>}
             </div>
           </CardContent>
         </Card>
@@ -388,13 +459,17 @@ export default function CompanyProfile() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
+                <Label htmlFor="companyName">
+                  Company Name <span className="text-red-500">*</span>
+                </Label>
                 <Input id="companyName" {...register("companyName")} />
                 {errors.companyName && <p className="text-sm text-red-500">{errors.companyName.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input id="email" type="email" {...register("email")} />
                 {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
               </div>
@@ -402,11 +477,28 @@ export default function CompanyProfile() {
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone</Label>
                 <div className="flex space-x-2">
-                  <Input id="countryCode" className="w-24" placeholder="+1" {...register("phoneNumber.countryCode")} />
+                  {/* <Input id="countryCode" className="w-24" placeholder="+1" {...register("phoneNumber.countryCode")} /> */}
                   <Input
                     id="phoneNumber"
                     className="flex-1"
                     placeholder="Phone number"
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                        "Tab",
+                        "Home",
+                        "End",
+                      ];
+                      if (
+                        !/^[0-9]$/.test(e.key) &&
+                        !allowedKeys.includes(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
                     {...register("phoneNumber.number")}
                   />
                 </div>
@@ -416,18 +508,24 @@ export default function CompanyProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="website">
+                  Website <span className="text-red-500">*</span>
+                </Label>
                 <Input id="website" {...register("website")} placeholder="https://" />
                 {errors.website && <p className="text-sm text-red-500">{errors.website.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="establishedYear">Established Year</Label>
+                <Label htmlFor="establishedYear">
+                  Established Year <span className="text-red-500">*</span>
+                </Label>
                 <Input id="establishedYear" type="date" {...register("establishedYear")} placeholder="YYYY-MM-DD" />
                 {errors.establishedYear && <p className="text-sm text-red-500">{errors.establishedYear.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size</Label>
+                <Label htmlFor="companySize">
+                  Company Size <span className="text-red-500">*</span>
+                </Label>
                 <select
                   id="companySize"
                   {...register("companySize")}
@@ -445,8 +543,10 @@ export default function CompanyProfile() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
+            <div className="space-y-2 w-1/2">
+              <Label htmlFor="industry">
+                Industry <span className="text-red-500">*</span>
+              </Label>
               <Controller
                 name="industry"
                 control={control}
@@ -494,6 +594,9 @@ export default function CompanyProfile() {
             <CardDescription>Tell potential candidates about your company</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Label htmlFor="companyDescription">
+              Company Description <span className="text-red-500">*</span>
+            </Label>
             <Textarea
               id="companyDescription"
               {...register("companyDescription")}
@@ -519,6 +622,9 @@ export default function CompanyProfile() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
+              <Label>
+                Benefits <span className="text-red-500">*</span>
+              </Label>
               <Controller
                 name="benefitsAndPerks"
                 control={control}
@@ -589,7 +695,9 @@ export default function CompanyProfile() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="contactInfo.country">Country</Label>
+                <Label htmlFor="contactInfo.country">
+                  Country <span className="text-red-500">*</span>
+                </Label>
                 <Controller
                   name="contactInfo.country"
                   control={control}
@@ -621,7 +729,9 @@ export default function CompanyProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactInfo.state">State/Province</Label>
+                <Label htmlFor="contactInfo.state">
+                  State/Province <span className="text-red-500">*</span>
+                </Label>
                 <Controller
                   name="contactInfo.state"
                   control={control}
@@ -654,7 +764,9 @@ export default function CompanyProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactInfo.city">City</Label>
+                <Label htmlFor="contactInfo.city">
+                  City <span className="text-red-500">*</span>
+                </Label>
                 <Controller
                   name="contactInfo.city"
                   control={control}
@@ -685,7 +797,9 @@ export default function CompanyProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactInfo.completeAddress">Complete Address</Label>
+                <Label htmlFor="contactInfo.completeAddress">
+                  Complete Address <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="contactInfo.completeAddress"
                   {...register("contactInfo.completeAddress")}
@@ -709,48 +823,60 @@ export default function CompanyProfile() {
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Facebook className="h-5 w-5 text-blue-600" />
-                <Input
-                  id="socialLinks.facebook"
-                  {...register("socialLinks.facebook")}
-                  placeholder="Facebook profile URL"
-                />
-                {errors.socialLinks?.facebook && (
-                  <p className="text-sm text-red-500">{errors.socialLinks.facebook.message}</p>
-                )}
+                <div className="flex-1">
+                  <Label htmlFor="socialLinks.facebook">Facebook</Label>
+                  <Input
+                    id="socialLinks.facebook"
+                    {...register("socialLinks.facebook")}
+                    placeholder="Facebook profile URL"
+                  />
+                  {errors.socialLinks?.facebook && (
+                    <p className="text-sm text-red-500">{errors.socialLinks.facebook.message}</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center space-x-4">
                 <Twitter className="h-5 w-5 text-blue-400" />
-                <Input
-                  id="socialLinks.twitter"
-                  {...register("socialLinks.twitter")}
-                  placeholder="https://twitter.com/yourcompany"
-                />
-                {errors.socialLinks?.twitter && (
-                  <p className="text-sm text-red-500">{errors.socialLinks.twitter.message}</p>
-                )}
+                <div className="flex-1">
+                  <Label htmlFor="socialLinks.twitter">Twitter</Label>
+                  <Input
+                    id="socialLinks.twitter"
+                    {...register("socialLinks.twitter")}
+                    placeholder="https://twitter.com/yourcompany"
+                  />
+                  {errors.socialLinks?.twitter && (
+                    <p className="text-sm text-red-500">{errors.socialLinks.twitter.message}</p>
+                  )}
+                </div>
               </div>
               <div className="flex items-center space-x-4">
                 <Linkedin className="h-5 w-5 text-blue-800" />
-                <Input
-                  id="socialLinks.linkedIn"
-                  {...register("socialLinks.linkedIn")}
-                  placeholder="https://www.linkedin.com/company/yourcompany"
-                />
-                {errors.socialLinks?.linkedIn && (
-                  <p className="text-sm text-red-500">{errors.socialLinks.linkedIn.message}</p>
-                )}
+                <div className="flex-1">
+                  <Label htmlFor="socialLinks.linkedIn">LinkedIn</Label>
+                  <Input
+                    id="socialLinks.linkedIn"
+                    {...register("socialLinks.linkedIn")}
+                    placeholder="https://www.linkedin.com/company/yourcompany"
+                  />
+                  {errors.socialLinks?.linkedIn && (
+                    <p className="text-sm text-red-500">{errors.socialLinks.linkedIn.message}</p>
+                  )}
+                </div>
               </div>
               <div className="flex items-center space-x-4">
                 <Instagram className="h-5 w-5 text-pink-500" />
-                <Input
-                  id="socialLinks.instagram"
-                  {...register("socialLinks.instagram")}
-                  placeholder="https://www.instagram.com/yourcompany"
-                />
-                {errors.socialLinks?.instagram && (
-                  <p className="text-sm text-red-500">{errors.socialLinks.instagram.message}</p>
-                )}
+                <div className="flex-1">
+                  <Label htmlFor="socialLinks.instagram">Instagram</Label>
+                  <Input
+                    id="socialLinks.instagram"
+                    {...register("socialLinks.instagram")}
+                    placeholder="https://www.instagram.com/yourcompany"
+                  />
+                  {errors.socialLinks?.instagram && (
+                    <p className="text-sm text-red-500">{errors.socialLinks.instagram.message}</p>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -760,7 +886,7 @@ export default function CompanyProfile() {
           <Button type="button" variant="outline" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="submit" disabled={profileMutation.isPending}>
+          <Button type="submit" disabled={profileMutation.isPending || isUploading}>
             {profileMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -775,4 +901,3 @@ export default function CompanyProfile() {
     </div>
   )
 }
-

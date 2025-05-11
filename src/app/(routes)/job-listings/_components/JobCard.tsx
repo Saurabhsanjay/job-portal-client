@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Bookmark, Building2, MapPin, Clock, DollarSign, ExternalLink } from "lucide-react"
+import { Bookmark, Building2, MapPin, Clock, DollarSign, ExternalLink, Share2 } from "lucide-react"
 import { type IJob, JobPriority } from "../types/job.types"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -11,11 +11,13 @@ import Link from "next/link"
 
 interface JobCardProps {
   job: IJob
-  onSave?: (jobId: string) => void
+  onSave?: (job: IJob) => void
   onApply?: (jobId: string) => void
 }
 
 export function JobCard({ job, onSave, onApply }: JobCardProps) {
+
+  console.log("JobCard--------->", job)
   const formatSalary = (min?: number, max?: number, currency = "USD") => {
     if (!min && !max) return "Competitive"
     if (!max) return `${currency} ${min?.toLocaleString()}+`
@@ -33,6 +35,21 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
   }
 
   const jobId = job._id || job.id || ""
+
+  const handleShare = () => {
+    console.log("Share job:", job)
+    // In a real app, this would open a share dialog
+    if (navigator.share) {
+      navigator.share({
+        title: job?.title,
+        text: `Check out this job: ${job?.title} at ${job?.createdByDetails?.companyName}`,
+        url: `${window.location.href}/${jobId}`,
+      })
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      alert(`Share URL: ${window.location.href}/${jobId}`)
+    }
+  }
 
   return (
     <Card className="p-4 sm:p-6 hover:shadow-lg shadow-sm border-none transition-shadow duration-200">
@@ -58,11 +75,9 @@ export function JobCard({ job, onSave, onApply }: JobCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-1">
               <h3 className="text-lg font-semibold text-gray-900 truncate md:text-xl">{job?.title}</h3>
-              <Button variant="ghost" size="icon" className="shrink-0 h-2 w-2" onClick={() => onSave?.(jobId)}>
-                <Bookmark
-                  className={cn("h-5 w-5 md:h-6 md:w-6", (job?.savedCount || 0) < 0 && "fill-current text-blue-500")}
-                />
-              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10" onClick={handleShare}>
+                      <Share2 className="h-3 w-3 md:h-4 md:w-4" />
+                    </Button>
             </div>
             <p className="text-sm text-gray-500 md:text-base">{job?.createdByDetails?.companyName}</p>
           </div>

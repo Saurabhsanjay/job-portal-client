@@ -13,6 +13,7 @@ import {
   BookmarkPlus,
   Clock,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import toast from "react-hot-toast";
 import { useApiGet } from "@/hooks/use-api-query";
 import { useAuth } from "@/app/(providers)/AuthContext";
 import {ApplicationModal} from "../../job-listings/_components/ApplicationModal"
+import { useRouter } from "next/navigation";
 
 // Employer Details Interface
 interface EmployerDetails {
@@ -301,6 +303,7 @@ export interface UserViewsResponse {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const router = useRouter();
   console.log("user------>", user);
   const [bookmarkedJobs, setBookmarkedJobs] = useState(new Set());
   const [appliedJobs, setAppliedJobs] = useState<JobApplication[]>([]);
@@ -619,7 +622,7 @@ export default function Dashboard() {
                   </CardContent>
                   <div className="p-4 bg-gray-50 flex items-center justify-between gap-2 mt-auto border-t border-gray-100 rounded-b-xl">
                     <div className="flex gap-2">
-                      <Button
+                      {/* <Button
                         size="icon"
                         variant="ghost"
                         className="text-gray-500 hover:text-blue-600"
@@ -632,7 +635,7 @@ export default function Dashboard() {
                               : ""
                           }
                         />
-                      </Button>
+                      </Button> */}
                       <Button
                         size="icon"
                         variant="ghost"
@@ -643,6 +646,18 @@ export default function Dashboard() {
                     </div>
                     <Button
                       size="sm"
+                      variant={"outline"}
+                      className=" rounded-xl text-black font-medium px-4 flex items-center"
+                      onClick={()=>{
+                        router.push(`/job-listings/${job._id}`)
+                      }}
+                    >
+                      View Details
+                      <ExternalLink className="h-4 w-4" />
+                    </Button> 
+                    
+                    <Button
+                      size="sm"
                       className="bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium px-6"
                       onClick={()=>{
                         setIsApplicationModalOpen(true)
@@ -651,6 +666,7 @@ export default function Dashboard() {
                     >
                       Apply Now
                     </Button>
+
                   </div>
                 </Card>
               ))

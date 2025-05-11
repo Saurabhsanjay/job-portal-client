@@ -9,11 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { useApiGet } from "@/hooks/use-api-query"
+import { useApiGet,useApiPatch } from "@/hooks/use-api-query"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/app/(providers)/AuthContext"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
 
@@ -228,6 +228,7 @@ interface ProfessionalDetailsMatch {
   employmentType: string
 }
 
+
 const getExperienceLevelLabel = (years: number | null | undefined): string => {
   if (years === null || years === undefined || isNaN(Number(years))) return "-"
 
@@ -279,6 +280,10 @@ export default function TalentSourcing() {
   const [jobId, setJobId] = React.useState(null)
   const [isMatchModalOpen, setIsMatchModalOpen] = React.useState(false)
 
+  // const [shortlistedCandidates, setShortlistedCandidates] = React.useState<Set<string>>(new Set())
+  const [selectedCandidate, setSelectedCandidate] = React.useState<TalentScout | null>(null)
+  const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = React.useState(false)
+
   // Handle input changes
   const handleInputChange = (field: string, value: string) => {
     setSearchParams((prev) => ({
@@ -302,15 +307,30 @@ export default function TalentSourcing() {
     setQueryString(queryStr)
   }
 
+  const handleResetFilters = () => {
+    setSearchParams({
+      keywords: "",
+      location: "",
+      experienceLevel: "",
+      industry: "",
+      availability: "",
+      salaryRange: "",
+      workType: "",
+    })
+    setQueryString("")
+    setCandidates([])
+  }
+
   const {
     data: TalentScoutDetails,
     isLoading,
     error,
     refetch,
-  } = useApiGet<TalentScoutResponse>(`talent-scout/advance-talent-scout-details?${queryString}`, {}, [
-    "talent-scouts",
-    queryString,
-  ])
+  } = useApiGet<TalentScoutResponse>(
+    queryString ? `talent-scout/advance-talent-scout-details?${queryString}` : null,
+    {},
+    ["talent-scouts", queryString],
+  )
 
   console.log("TalentScoutDetails----------------->", TalentScoutDetails)
 
@@ -325,7 +345,7 @@ export default function TalentSourcing() {
     isJobsLoading,
     // error,
     // refetch,
-  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/65ff4a2b8c9d4e001c3a7b89`, {}, ["talent-scouts-jobs"])
+  } = useApiGet<JobResponse>(`talent-scout/talent-scout-jobs/${user?.id}`, {}, ["talent-scouts-jobs"])
 
   console.log("talent scout jobs------------->", TalentScoutJobs)
 
@@ -351,16 +371,15 @@ export default function TalentSourcing() {
     isMatchCandidatesLoading,
     // error,
     refetch: refetchMatchCandidates,
-  } = useApiGet<MatchTalentScoutResponse>(
-    jobId ? `talent-scout/talent-scout-details?jobId=${jobId}` : null, 
-    {}, 
-    ["match-candidates", jobId]
-  )
+  } = useApiGet<MatchTalentScoutResponse>(jobId ? `talent-scout/talent-scout-details?jobId=${jobId}` : null, {}, [
+    "match-candidates",
+    jobId,
+  ])
 
   React.useEffect(() => {
     refetchMatchCandidates()
     console.log("jobId----------->", jobId)
-    if(jobId!==null){
+    if (jobId !== null) {
       setIsMatchModalOpen(true)
     }
   }, [jobId, refetchMatchCandidates])
@@ -372,7 +391,33 @@ export default function TalentSourcing() {
     // })
   }
 
-  console.log("MatchCandidates------->",MatchCandidates)
+  console.log("MatchCandidates------->", MatchCandidates)
+
+  const handleViewDetails = (candidate: TalentScout) => {
+    console.log("candidate------->", candidate)
+    setSelectedCandidate(candidate)
+    setIsUserDetailsModalOpen(true)
+  }
+
+  
+  // const handleToggleShortlist = (candidateId: string) => {
+  //   setShortlistedCandidates((prev) => {
+  //     const newSet = new Set(prev)
+  //     if (newSet.has(candidateId)) {
+  //       newSet.delete(candidateId)
+  //     } else {
+  //       newSet.add(candidateId)
+  //     }
+  //     return newSet
+  //   })
+  // }
+
+  // const handleShortlistFromModal = () => {
+  //   if (selectedCandidate) {
+  //     handleToggleShortlist(selectedCandidate._id)
+  //   }
+  //   setIsUserDetailsModalOpen(false)
+  // }
 
   return (
     <div className="container mx-auto py-6">
@@ -394,28 +439,32 @@ export default function TalentSourcing() {
 
         <TabsContent value="jobs" className="space-y-4">
           <div className="grid gap-4">
-            {activeJobs.map((job) => (
-              <Card key={job.id}>
-                <CardContent className="flex items-center justify-between p-6">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">{job.title}</h3>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-1 h-4 w-4" />
-                      {job.location}
-                      <Separator orientation="vertical" className="mx-2 h-4" />
-                      <Briefcase className="mr-1 h-4 w-4" />
-                      {job.type}
+            {activeJobs.length > 0 ? (
+              activeJobs.map((job, index) => (
+                <Card key={index}>
+                  <CardContent className="flex items-center justify-between p-6">
+                    <div className="space-y-1">
+                      <h3 className="font-semibold">{job.title}</h3>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {job?.location}
+                        <Separator orientation="vertical" className="mx-2 h-4" />
+                        <Briefcase className="mr-1 h-4 w-4" />
+                        {job?.employmentType}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold">{job.matches} matches</div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-semibold">{job?.matches} matches</div>
+                      </div>
+                      <Button onClick={() => handleViewMatches(job?.id)}>View Matches</Button>
                     </div>
-                    <Button onClick={() => handleViewMatches(job.id)}>View Matches</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">No Active Jobs</div>
+            )}
           </div>
         </TabsContent>
 
@@ -444,7 +493,7 @@ export default function TalentSourcing() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Experience Level</label>
-                  <Select onValueChange={(value) => handleInputChange("experienceLevel", value)}>
+                  <Select value={searchParams?.experienceLevel} onValueChange={(value) => handleInputChange("experienceLevel", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
@@ -464,7 +513,7 @@ export default function TalentSourcing() {
                 <div className="flex flex-wrap gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Industry</label>
-                    <Select onValueChange={(value) => handleInputChange("industry", value)}>
+                    <Select value={searchParams?.industry} onValueChange={(value) => handleInputChange("industry", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Industry" />
                       </SelectTrigger>
@@ -481,7 +530,7 @@ export default function TalentSourcing() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Availability</label>
-                    <Select onValueChange={(value) => handleInputChange("availability", value)}>
+                    <Select value={searchParams?.availability} onValueChange={(value) => handleInputChange("availability", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Availability" />
                       </SelectTrigger>
@@ -495,7 +544,7 @@ export default function TalentSourcing() {
 
                   <div className="space-y-2 hidden">
                     <label className="text-sm font-medium">Salary Range</label>
-                    <Select onValueChange={(value) => handleInputChange("salaryRange", value)}>
+                    <Select value={searchParams?.salaryRange} onValueChange={(value) => handleInputChange("salaryRange", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Salary Range" />
                       </SelectTrigger>
@@ -509,7 +558,7 @@ export default function TalentSourcing() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Work Type</label>
-                    <Select onValueChange={(value) => handleInputChange("workType", value)}>
+                    <Select value={searchParams?.workType} onValueChange={(value) => handleInputChange("workType", value)}>
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Work Type" />
                       </SelectTrigger>
@@ -530,10 +579,9 @@ export default function TalentSourcing() {
                   <Search className="mr-2 h-4 w-4" />
                   Search Candidates
                 </Button>
-                {/* <Button variant="outline">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Search
-                </Button> */}
+                <Button variant="outline" onClick={handleResetFilters}>
+                  Reset Filters
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -543,22 +591,23 @@ export default function TalentSourcing() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[250px]">Candidate</TableHead>
-                  <TableHead className="w-[200px]">Job Title</TableHead>
-                  <TableHead className="w-[150px]">Location</TableHead>
-                  <TableHead className="w-[150px]">Experience Level</TableHead>
-                  <TableHead className="w-[150px]">Employment Type</TableHead>
-                  <TableHead className="w-[150px]">Industry</TableHead>
-                  <TableHead className="w-[150px]">Availability</TableHead>
-                  <TableHead className="w-[150px]">Skills</TableHead>
-                  <TableHead className="w-[100px]">Resume</TableHead>
-                  <TableHead className="w-[100px]">Action</TableHead>
+                  <TableHead className="w-[250px] text-nowrap">Candidate</TableHead>
+                  <TableHead className="w-[200px] text-nowrap">Job Title</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Location</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Experience Level</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Employment Type</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Industry</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Availability</TableHead>
+                  <TableHead className="w-[150px] text-nowrap">Skills</TableHead>
+                  <TableHead className="w-[100px] text-nowrap">Resume</TableHead>
+                  <TableHead className="w-[100px] text-nowrap">Action</TableHead>
+                  {/* <TableHead className="w-[100px] text-nowrap">Shortlist</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center text-sm text-muted-foreground">
                       <div className="flex justify-center items-center">
                         <Loader2 className="h-6 w-6 animate-spin" />
                       </div>
@@ -566,7 +615,7 @@ export default function TalentSourcing() {
                   </TableRow>
                 ) : candidates?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center text-sm text-muted-foreground">
                       No Candidates To Show
                     </TableCell>
                   </TableRow>
@@ -577,7 +626,7 @@ export default function TalentSourcing() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage
-                              src={candidate?.personalDetails?.profilePicture}
+                              src={candidate?.personalDetails?.profilePicture || "/placeholder.svg"}
                               alt={candidate.personalDetails?.firstName}
                             />
                             <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
@@ -588,9 +637,17 @@ export default function TalentSourcing() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}</TableCell>
-                      <TableCell>
-                        {candidate?.jobSeekerDetails?.jobPreferences?.preferredLocations?.[0] || "-"}
+                      <TableCell className="text-nowrap">
+                        {candidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle}
+                      </TableCell>
+                      <TableCell className="text-nowrap">
+                        {(candidate?.personalDetails?.address?.city || "-") +
+                          (candidate?.personalDetails?.address?.state
+                            ? `, ${candidate.personalDetails.address.state}`
+                            : "") +
+                          (candidate?.personalDetails?.address?.country
+                            ? `, ${candidate.personalDetails.address.country}`
+                            : "")}
                       </TableCell>
                       <TableCell>
                         {getExperienceLevelLabel(candidate?.jobSeekerDetails?.professionalDetails?.totalExperience) ||
@@ -608,7 +665,7 @@ export default function TalentSourcing() {
                       <TableCell>
                         <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                           <a
-                            href={candidate?.jobSeekerDetails?.professionalDetails?.resume}
+                            href={candidate?.jobSeekerDetails?.professionalDetails?.resume?.url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -617,10 +674,24 @@ export default function TalentSourcing() {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleViewDetails(candidate)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>
+                      {/* <TableCell>
+                        <Button
+                          variant={shortlistedCandidates.has(candidate._id) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleToggleShortlist(candidate._id)}
+                        >
+                          {shortlistedCandidates.has(candidate._id) ? "Shortlisted" : "Shortlist"}
+                        </Button>
+                      </TableCell> */}
                     </TableRow>
                   ))
                 )}
@@ -643,7 +714,7 @@ export default function TalentSourcing() {
                     <div className="flex items-start gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={candidate?.personalDetails?.profilePicture}
+                          src={candidate?.personalDetails?.profilePicture || "/placeholder.svg"}
                           alt={candidate.personalDetails?.firstName}
                         />
                         <AvatarFallback>{candidate?.personalDetails?.firstName[0]}</AvatarFallback>
@@ -705,10 +776,19 @@ export default function TalentSourcing() {
                           Resume
                         </a>
                       </Button>
-                      <Button variant="secondary" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Profile
-                      </Button>
+                      <div className="space-x-2">
+                        <Button variant="secondary" size="sm" onClick={() => handleViewDetails(candidate)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Profile
+                        </Button>
+                        {/* <Button
+                          variant={shortlistedCandidates.has(candidate._id) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleToggleShortlist(candidate._id)}
+                        >
+                          {shortlistedCandidates.has(candidate._id) ? "Shortlisted" : "Shortlist"}
+                        </Button> */}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -757,7 +837,10 @@ export default function TalentSourcing() {
                       <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
-                ) : (MatchCandidates?.data?.[0]?.candidateId?.length === 0 || MatchCandidates?.data?.length===0 || MatchCandidates===undefined||MatchCandidates===null) ? (
+                ) : MatchCandidates?.data?.[0]?.candidateId?.length === 0 ||
+                  MatchCandidates?.data?.length === 0 ||
+                  MatchCandidates === undefined ||
+                  MatchCandidates === null ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
                       No matching candidates found
@@ -770,7 +853,7 @@ export default function TalentSourcing() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
-                              src={candidate.personalDetails.profilePicture}
+                              src={candidate.personalDetails.profilePicture || "/placeholder.svg"}
                               alt={candidate.personalDetails.firstName}
                             />
                             <AvatarFallback>
@@ -801,6 +884,176 @@ export default function TalentSourcing() {
               </TableBody>
             </Table>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      
+      {/* User Details Modal */}
+      <Dialog open={isUserDetailsModalOpen} onOpenChange={setIsUserDetailsModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Candidate Details</DialogTitle>
+            <DialogDescription>Full details of the selected candidate</DialogDescription>
+          </DialogHeader>
+
+          {selectedCandidate && (
+            <div className="grid gap-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-1/3">
+                  <div className="flex flex-col items-center">
+                    <Avatar className="h-24 w-24 mb-4">
+                      <AvatarImage
+                        src={selectedCandidate?.personalDetails?.profilePicture || "/placeholder.svg"}
+                        alt={selectedCandidate.personalDetails?.firstName}
+                      />
+                      <AvatarFallback className="text-lg">
+                        {selectedCandidate?.personalDetails?.firstName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h3 className="text-xl font-medium">
+                      {selectedCandidate?.personalDetails?.firstName} {selectedCandidate?.personalDetails?.lastName}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {selectedCandidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle || "-"}
+                    </p>
+                    <div className="mt-2 text-center">
+                      <p className="text-sm">
+                        <span className="text-muted-foreground">Email:</span>{" "}
+                        {selectedCandidate?.personalDetails?.email}
+                      </p>
+                      {selectedCandidate?.personalDetails?.phoneNumber && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground">Phone:</span>{" "}
+                          {selectedCandidate.personalDetails.phoneNumber.countryCode}{" "}
+                          {selectedCandidate.personalDetails.phoneNumber.number}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full md:w-2/3">
+                  <div className="grid gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Professional Details</h4>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium">Current Employer:</span>
+                          <p>{selectedCandidate?.jobSeekerDetails?.professionalDetails?.currentJobTitle || "-"}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Total Experience:</span>
+                          <p>
+                            {selectedCandidate?.jobSeekerDetails?.professionalDetails?.totalExperience || "-"} years
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Current CTC:</span>
+                          <p>${selectedCandidate?.jobSeekerDetails?.professionalDetails?.currentCTC || "-"}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Expected CTC:</span>
+                          <p>${selectedCandidate?.jobSeekerDetails?.professionalDetails?.expectedCTC || "-"}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Employment Type:</span>
+                          <p>{selectedCandidate?.jobSeekerDetails?.professionalDetails?.employmentType || "-"}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Notice Period:</span>
+                          <p>{selectedCandidate?.jobSeekerDetails?.professionalDetails?.noticePeriod || "-"}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Skills</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidate?.jobSeekerDetails?.professionalDetails?.skills?.map((skill, index) => (
+                          <Badge key={index} variant="secondary">
+                            {skill}
+                          </Badge>
+                        )) || <p>No skills listed</p>}
+                      </div>
+                    </div>
+
+                    {selectedCandidate?.personalDetails?.bio && (
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Bio</h4>
+                        <p className="text-sm">{selectedCandidate.personalDetails.bio}</p>
+                      </div>
+                    )}
+
+                    {selectedCandidate?.jobSeekerDetails?.professionalDetails?.keyAchievements && (
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Key Achievements</h4>
+                        <p className="text-sm">
+                          {selectedCandidate.jobSeekerDetails.professionalDetails.keyAchievements}
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Location</h4>
+                      <p className="text-sm">
+                        {(selectedCandidate?.personalDetails?.address?.city || "-") +
+                          (selectedCandidate?.personalDetails?.address?.state
+                            ? `, ${selectedCandidate.personalDetails.address.state}`
+                            : "") +
+                          (selectedCandidate?.personalDetails?.address?.country
+                            ? `, ${selectedCandidate.personalDetails.address.country}`
+                            : "")}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                      {selectedCandidate?.jobSeekerDetails?.professionalDetails?.linkedIn && (
+                        <a
+                          href={selectedCandidate.jobSeekerDetails.professionalDetails.linkedIn}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          LinkedIn
+                        </a>
+                      )}
+                      {selectedCandidate?.jobSeekerDetails?.professionalDetails?.portfolio && (
+                        <a
+                          href={selectedCandidate.jobSeekerDetails.professionalDetails.portfolio}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Portfolio
+                        </a>
+                      )}
+                      {selectedCandidate?.jobSeekerDetails?.professionalDetails?.resume && (
+                        <a
+                          href={selectedCandidate.jobSeekerDetails.professionalDetails.resume}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Resume
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsUserDetailsModalOpen(false)}>
+              Close
+            </Button>
+            {/* <Button onClick={handleShortlistFromModal}>
+              {shortlistedCandidates.has(selectedCandidate?._id || "")
+                ? "Remove from Shortlist"
+                : "Shortlist Candidate"}
+            </Button> */}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

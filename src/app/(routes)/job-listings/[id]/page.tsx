@@ -6,14 +6,16 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { JobDescriptionPage } from "../_components/JobDescriptionPage"
 import { IJob } from "../types/job.types"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 export default function JobPage() {
   const params = useParams()
   const jobId = params?.id as string
   const router = useRouter()
+  const {user} = useAuth()
 
   // Fetch job data from API
-  const { data: job, isLoading, error } = useApiGet<IJob>(`jobs/get-job/${jobId}`, {}, ["job", { id: jobId }])
+  const { data: job, isLoading, error,refetch: jobRefetch } = useApiGet<IJob>(`jobs/get-job?jobId=${jobId}&userId=${user?.id}`, {}, ["job", { id: jobId }])
   console.log(job, "JOBBBBBBBB")
 
   // Handle loading state
@@ -41,7 +43,10 @@ export default function JobPage() {
 
   // Transform API job data to match the JobDescriptionPage props format
   const formattedJob = {
+    _id: jobId,
     title: job?.data?.title,
+    isBookmarked: job?.data?.isBookmarked || false,
+    isAppliedBookmarked: job?.data?.isAppliedBookmarked || false,
     company: {
       name: job?.data?.createdBy?.userId?.employerDetails?.companyName||"",
       logo: job?.data?.createdBy?.userId?.employerDetails?.logoUrl || "/placeholder.svg?height=48&width=48",
@@ -63,7 +68,7 @@ export default function JobPage() {
     isUrgent: job?.data.priority === "URGENT" || job.priority === "HIGH",
   }
 
-  return <JobDescriptionPage job={formattedJob} />
+  return <JobDescriptionPage job={formattedJob} jobRefetch={jobRefetch}/>
 }
 
 // Helper function to format salary

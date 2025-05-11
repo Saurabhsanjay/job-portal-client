@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useApiGet } from "@/hooks/use-api-query";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect,  } from "react";
 import { useAuth } from "@/app/(providers)/AuthContext";
 import {
   Dialog,
@@ -66,6 +66,7 @@ export interface Automation {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  icon?: React.ComponentType; // Optional icon property
 }
 
 export interface EmployeeAutomationsResponse {
