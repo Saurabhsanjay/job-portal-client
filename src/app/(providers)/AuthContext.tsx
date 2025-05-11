@@ -60,11 +60,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
         console.log("Logged in user:", loggedInUser);
-        if(loggedInUser?.role==="JOBSEEKER"){
-          router.push("/job-seeker/dashboard");
-        }else{
-          router.push("/employer/dashboard");
-        }
+        // if(loggedInUser?.role==="JOBSEEKER"){
+        //   router.push("/job-seeker/dashboard");
+        // }else{
+        //   router.push("/employer/dashboard");
+        // }
         // router.push("/");
         toast.success("Login successful");
       } else {

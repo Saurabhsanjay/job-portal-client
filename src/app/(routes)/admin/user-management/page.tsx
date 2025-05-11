@@ -330,7 +330,7 @@ export default function UserManagement() {
                       <TableHead>Name</TableHead>
                       <TableHead>Profile Completion</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Last Active</TableHead>
+                      <TableHead>Created At</TableHead>
                       <TableHead>Skills</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -399,11 +399,11 @@ export default function UserManagement() {
                               <DropdownMenuItem className="flex items-center gap-2">
                                 <Edit className="h-4 w-4" /> Edit Profile
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="flex items-center gap-2">
+                              {/* <DropdownMenuItem className="flex items-center gap-2">
                                 <Mail className="h-4 w-4" /> Send Message
-                              </DropdownMenuItem>
+                              </DropdownMenuItem> */}
                               <DropdownMenuSeparator />
-                              {user.status !== "Verified" ? (
+                              {/* {user.status !== "Verified" ? (
                                 <DropdownMenuItem className="flex items-center gap-2">
                                   <CheckCircle className="h-4 w-4" /> Verify Profile
                                 </DropdownMenuItem>
@@ -411,7 +411,7 @@ export default function UserManagement() {
                                 <DropdownMenuItem className="flex items-center gap-2">
                                   <XCircle className="h-4 w-4" /> Revoke Verification
                                 </DropdownMenuItem>
-                              )}
+                              )} */}
                               <DropdownMenuItem className="flex items-center gap-2 text-destructive">
                                 <UserX className="h-4 w-4" /> Suspend Account
                               </DropdownMenuItem>
