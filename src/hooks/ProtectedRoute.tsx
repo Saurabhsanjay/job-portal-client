@@ -21,31 +21,31 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   //   }
   // }, [user, loading, pathname, router]);
 
-  useEffect(() => {
-    if (loading) return;
+  // useEffect(() => {
+  //   if (loading) return;
 
-    // Redirect unauthenticated users
-    if (!user && !PUBLIC_ROUTES.includes(pathname)) {
-      router.push("/auth/login");
-      return;
-    }
+  //   // Redirect unauthenticated users
+  //   if (!user && !PUBLIC_ROUTES.includes(pathname)) {
+  //     router.push("/auth/login");
+  //     return;
+  //   }
 
-    if (user) {
-      const role = user.role;
+  //   if (user) {
+  //     const role = user.role;
 
-      // Block JOBSEEKER from EMPLOYER-specific routes
-      if (role === "JOBSEEKER" && pathname.includes("/employer")) {
-        router.push("/job-seeker/dashboard");
-        return;
-      }
+  //     // Block JOBSEEKER from EMPLOYER-specific routes
+  //     if (role === "JOBSEEKER" && pathname.includes("/employer")) {
+  //       router.push("/job-seeker/dashboard");
+  //       return;
+  //     }
 
-      // Block EMPLOYER from JOBSEEKER-specific routes
-      if (role === "EMPLOYER" && pathname.includes("/job-seeker")) {
-        router.push("/employer/dashboard");
-        return;
-      }
-    }
-  }, [user, loading, pathname, router]);
+  //     // Block EMPLOYER from JOBSEEKER-specific routes
+  //     if (role === "EMPLOYER" && pathname.includes("/job-seeker")) {
+  //       router.push("/employer/dashboard");
+  //       return;
+  //     }
+  //   }
+  // }, [user, loading, pathname, router]);
 
 
   if (loading) {

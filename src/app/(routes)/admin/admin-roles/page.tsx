@@ -11,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,60 +26,365 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
-  BarChart,
   CheckCircle,
   ChevronDown,
-  Clock,
   Edit,
   Eye,
-  FileText,
   Filter,
   Lock,
   MoreHorizontal,
   Plus,
   Search,
   Shield,
-  ShieldAlert,
   Trash,
   UserCog,
   UserPlus,
   Users,
   XCircle,
-  MessageSquare,
-  CheckSquare,
-  Calendar,
-  AlertCircle,
-  Bell,
 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-export default function AdminRoles() {
+// Sample data for admin users
+const initialAdminUsers = [
+  {
+    id: 1,
+    name: "Jane Doe",
+    email: "jane.doe@example.com",
+    role: "Super Admin",
+    status: "Active",
+    lastActive: "Just now",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+  {
+    id: 2,
+    name: "John Smith",
+    email: "john.smith@example.com",
+    role: "Content Manager",
+    status: "Active",
+    lastActive: "2 hours ago",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+  {
+    id: 3,
+    name: "Alex Kim",
+    email: "alex.kim@example.com",
+    role: "Support Admin",
+    status: "Active",
+    lastActive: "1 day ago",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+  {
+    id: 4,
+    name: "Maria Perez",
+    email: "maria.perez@example.com",
+    role: "Analytics Admin",
+    status: "Inactive",
+    lastActive: "2 weeks ago",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+]
+
+// Sample data for admin roles
+const initialAdminRoles = [
+  {
+    id: 1,
+    name: "Super Admin",
+    description: "Full access to all system features",
+    icon: "Shield",
+    permissions: ["User Management", "Content Management", "Analytics", "Security", "Admin Management"],
+  },
+  {
+    id: 2,
+    name: "Content Manager",
+    description: "Manage blog posts, resources, and events",
+    icon: "FileText",
+    permissions: ["Content Management", "Event Promotion", "Blog Management"],
+  },
+  {
+    id: 3,
+    name: "Support Admin",
+    description: "Handle user support and feedback",
+    icon: "Users",
+    permissions: ["User Management", "Feedback Management", "Support Tools"],
+  },
+  {
+    id: 4,
+    name: "Analytics Admin",
+    description: "Access and generate analytics reports",
+    icon: "BarChart",
+    permissions: ["Analytics", "Reports", "Dashboard Access"],
+  },
+]
+
+// Interface for admin user form
+interface AdminUserFormData {
+  id?: number
+  name: string
+  email: string
+  role: string
+  status: string
+}
+
+// Interface for admin role form
+interface AdminRoleFormData {
+  id?: number
+  name: string
+  description: string
+  permissions: string[]
+}
+
+export default function AdminManagement() {
+  // State for admin users
+  const [adminUsers, setAdminUsers] = useState(initialAdminUsers)
+  const [searchUsers, setSearchUsers] = useState("")
+  const [isUserFormOpen, setIsUserFormOpen] = useState(false)
+  const [userFormMode, setUserFormMode] = useState<"create" | "edit">("create")
+  const [currentUser, setCurrentUser] = useState<AdminUserFormData>({
+    name: "",
+    email: "",
+    role: "",
+    status: "Active",
+  })
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<number | null>(null)
+
+  // State for admin roles
+  const [adminRoles, setAdminRoles] = useState(initialAdminRoles)
   const [searchRoles, setSearchRoles] = useState("")
-  const [searchLogs, setSearchLogs] = useState("")
-  const [searchTasks, setSearchTasks] = useState("")
+  const [isRoleFormOpen, setIsRoleFormOpen] = useState(false)
+  const [roleFormMode, setRoleFormMode] = useState<"create" | "edit">("create")
+  const [currentRole, setCurrentRole] = useState<AdminRoleFormData>({
+    name: "",
+    description: "",
+    permissions: [],
+  })
+  const [deleteRoleDialogOpen, setDeleteRoleDialogOpen] = useState(false)
+  const [roleToDelete, setRoleToDelete] = useState<number | null>(null)
+
+  // Filter admin users based on search
+  const filteredUsers = adminUsers.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchUsers.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchUsers.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchUsers.toLowerCase()),
+  )
+
+  // Filter admin roles based on search
+  const filteredRoles = adminRoles.filter(
+    (role) =>
+      role.name.toLowerCase().includes(searchRoles.toLowerCase()) ||
+      role.description.toLowerCase().includes(searchRoles.toLowerCase()),
+  )
+
+  // Handle creating a new admin user
+  const handleCreateUser = () => {
+    setCurrentUser({
+      name: "",
+      email: "",
+      role: "",
+      status: "Active",
+    })
+    setUserFormMode("create")
+    setIsUserFormOpen(true)
+  }
+
+  // Handle editing an admin user
+  const handleEditUser = (user: any) => {
+    setCurrentUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    })
+    setUserFormMode("edit")
+    setIsUserFormOpen(true)
+  }
+
+  // Handle saving an admin user
+  const handleSaveUser = () => {
+    if (userFormMode === "create") {
+      // Create new user
+      const newUser = {
+        id: adminUsers.length > 0 ? Math.max(...adminUsers.map((user) => user.id)) + 1 : 1,
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
+        status: currentUser.status,
+        lastActive: "Never",
+        avatar: "/placeholder.svg?height=32&width=32",
+      }
+      setAdminUsers([...adminUsers, newUser])
+    } else {
+      // Update existing user
+      setAdminUsers(
+        adminUsers.map((user) =>
+          user.id === currentUser.id
+            ? {
+              ...user,
+              name: currentUser.name,
+              email: currentUser.email,
+              role: currentUser.role,
+              status: currentUser.status,
+            }
+            : user,
+        ),
+      )
+    }
+    setIsUserFormOpen(false)
+  }
+
+  // Handle deleting an admin user
+  const handleDeleteUser = (userId: number) => {
+    setUserToDelete(userId)
+    setDeleteUserDialogOpen(true)
+  }
+
+  // Confirm delete admin user
+  const confirmDeleteUser = () => {
+    if (userToDelete) {
+      setAdminUsers(adminUsers.filter((user) => user.id !== userToDelete))
+      setDeleteUserDialogOpen(false)
+      setUserToDelete(null)
+    }
+  }
+
+  // Handle creating a new admin role
+  const handleCreateRole = () => {
+    setCurrentRole({
+      name: "",
+      description: "",
+      permissions: [],
+    })
+    setRoleFormMode("create")
+    setIsRoleFormOpen(true)
+  }
+
+  // Handle editing an admin role
+  const handleEditRole = (role: any) => {
+    setCurrentRole({
+      id: role.id,
+      name: role.name,
+      description: role.description,
+      permissions: role.permissions,
+    })
+    setRoleFormMode("edit")
+    setIsRoleFormOpen(true)
+  }
+
+  // Handle saving an admin role
+  const handleSaveRole = () => {
+    if (roleFormMode === "create") {
+      // Create new role
+      const newRole = {
+        id: adminRoles.length > 0 ? Math.max(...adminRoles.map((role) => role.id)) + 1 : 1,
+        name: currentRole.name,
+        description: currentRole.description,
+        icon: "Shield",
+        permissions: currentRole.permissions,
+      }
+      setAdminRoles([...adminRoles, newRole])
+    } else {
+      // Update existing role
+      setAdminRoles(
+        adminRoles.map((role) =>
+          role.id === currentRole.id
+            ? {
+              ...role,
+              name: currentRole.name,
+              description: currentRole.description,
+              permissions: currentRole.permissions,
+            }
+            : role,
+        ),
+      )
+    }
+    setIsRoleFormOpen(false)
+  }
+
+  // Handle deleting an admin role
+  const handleDeleteRole = (roleId: number) => {
+    setRoleToDelete(roleId)
+    setDeleteRoleDialogOpen(true)
+  }
+
+  // Confirm delete admin role
+  const confirmDeleteRole = () => {
+    if (roleToDelete) {
+      setAdminRoles(adminRoles.filter((role) => role.id !== roleToDelete))
+      setDeleteRoleDialogOpen(false)
+      setRoleToDelete(null)
+    }
+  }
+
+  // Toggle permission in role form
+  const togglePermission = (permission: string) => {
+    if (currentRole.permissions.includes(permission)) {
+      setCurrentRole({
+        ...currentRole,
+        permissions: currentRole.permissions.filter((p) => p !== permission),
+      })
+    } else {
+      setCurrentRole({
+        ...currentRole,
+        permissions: [...currentRole.permissions, permission],
+      })
+    }
+  }
+
+  // Get role badge color
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "Super Admin":
+        return "bg-blue-50 text-blue-700 hover:bg-blue-50"
+      case "Content Manager":
+        return "bg-purple-50 text-purple-700 hover:bg-purple-50"
+      case "Support Admin":
+        return "bg-amber-50 text-amber-700 hover:bg-amber-50"
+      case "Analytics Admin":
+        return "bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+      default:
+        return "bg-gray-50 text-gray-700 hover:bg-gray-50"
+    }
+  }
+
+  // Get status badge color
+  const getStatusBadgeColor = (status: string) => {
+    return status === "Active"
+      ? "bg-green-50 text-green-700 hover:bg-green-50"
+      : "bg-red-50 text-red-700 hover:bg-red-50"
+  }
 
   return (
     <div className="space-y-6">
-      {/* <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Multi-Administrator Roles</h1>
-          <p className="text-muted-foreground">Manage admin roles, track activities, and collaborate with your team</p>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Management</h1>
+          <p className="text-muted-foreground">Manage administrator roles and users</p>
         </div>
-      </div> */}
+      </div>
 
-      <Tabs defaultValue="role-based-access" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="role-based-access">Role-Based Access</TabsTrigger>
-          <TabsTrigger value="activity-logs">Activity Logs</TabsTrigger>
-          <TabsTrigger value="team-collaboration">Team Collaboration</TabsTrigger>
+      <Tabs defaultValue="admin-users" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="admin-users">Admin Users</TabsTrigger>
+          <TabsTrigger value="admin-roles">Admin Roles</TabsTrigger>
         </TabsList>
 
-        {/* Role-Based Access Tab */}
-        <TabsContent value="role-based-access" className="space-y-4">
+        {/* Admin Users Tab */}
+        <TabsContent value="admin-users" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -88,8 +392,30 @@ export default function AdminRoles() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">24</div>
-                <p className="text-xs text-muted-foreground">+3 from last month</p>
+                <div className="text-2xl font-bold">{adminUsers.length}</div>
+                <p className="text-xs text-muted-foreground">Manage your admin team</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Admins</CardTitle>
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{adminUsers.filter((user) => user.status === "Active").length}</div>
+                <p className="text-xs text-muted-foreground">Currently active administrators</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Inactive Admins</CardTitle>
+                <XCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {adminUsers.filter((user) => user.status === "Inactive").length}
+                </div>
+                <p className="text-xs text-muted-foreground">Deactivated administrator accounts</p>
               </CardContent>
             </Card>
             <Card>
@@ -98,18 +424,278 @@ export default function AdminRoles() {
                 <UserCog className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">6</div>
-                <p className="text-xs text-muted-foreground">Super Admin, Content, Support, etc.</p>
+                <div className="text-2xl font-bold">{adminRoles.length}</div>
+                <p className="text-xs text-muted-foreground">Available administrator roles</p>
               </CardContent>
             </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Administrator Users</CardTitle>
+                <Button onClick={handleCreateUser}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add Admin
+                </Button>
+              </div>
+              <CardDescription>Manage administrator accounts and their assigned roles</CardDescription>
+              <div className="flex items-center space-x-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search administrators..."
+                  value={searchUsers}
+                  onChange={(e) => setSearchUsers(e.target.value)}
+                  className="h-8 w-[200px] lg:w-[300px]"
+                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="ml-auto h-8 gap-1">
+                      <Filter className="h-3.5 w-3.5" />
+                      <span>Filter</span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter by Role</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Checkbox id="super-admin" className="mr-2" />
+                      <label htmlFor="super-admin">Super Admin</label>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Checkbox id="content-manager" className="mr-2" />
+                      <label htmlFor="content-manager">Content Manager</label>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Checkbox id="support-admin" className="mr-2" />
+                      <label htmlFor="support-admin">Support Admin</label>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Checkbox id="analytics-admin" className="mr-2" />
+                      <label htmlFor="analytics-admin">Analytics Admin</label>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Checkbox id="active" className="mr-2" />
+                      <label htmlFor="active">Active</label>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Checkbox id="inactive" className="mr-2" />
+                      <label htmlFor="inactive">Inactive</label>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Administrator</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Active</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                              <AvatarFallback>
+                                {user.name.charAt(0)}
+                                {user.name.split(" ")[1]?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-xs text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getRoleBadgeColor(user.role)}>
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getStatusBadgeColor(user.status)}>
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{user.lastActive}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit User
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Lock className="mr-2 h-4 w-4" />
+                                Manage Permissions
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Activity
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {user.status === "Active" ? (
+                                <DropdownMenuItem className="text-red-600">
+                                  <XCircle className="mr-2 h-4 w-4" />
+                                  Deactivate
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem className="text-green-600">
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Activate
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(user.id)}>
+                                <Trash className="mr-2 h-4 w-4" />
+                                Delete User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        No administrators found
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Admin User Form Dialog */}
+          <Dialog open={isUserFormOpen} onOpenChange={setIsUserFormOpen}>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>{userFormMode === "create" ? "Add New Administrator" : "Edit Administrator"}</DialogTitle>
+                <DialogDescription>
+                  {userFormMode === "create"
+                    ? "Create a new administrator account with specific role and permissions."
+                    : "Update administrator account details and permissions."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    className="col-span-3"
+                    value={currentUser.name}
+                    onChange={(e) => setCurrentUser({ ...currentUser, name: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    placeholder="john.doe@example.com"
+                    className="col-span-3"
+                    value={currentUser.email}
+                    onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="role" className="text-right">
+                    Role
+                  </Label>
+                  <Select
+                    value={currentUser.role}
+                    onValueChange={(value) => setCurrentUser({ ...currentUser, role: value })}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {adminRoles.map((role) => (
+                        <SelectItem key={role.id} value={role.name}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Status</Label>
+                  <div className="flex items-center space-x-2 col-span-3">
+                    <Switch
+                      id="active-status"
+                      checked={currentUser.status === "Active"}
+                      onCheckedChange={(checked) =>
+                        setCurrentUser({ ...currentUser, status: checked ? "Active" : "Inactive" })
+                      }
+                    />
+                    <Label htmlFor="active-status">Active</Label>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsUserFormOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveUser}>
+                  {userFormMode === "create" ? "Create Administrator" : "Update Administrator"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete User Confirmation Dialog */}
+          <AlertDialog open={deleteUserDialogOpen} onOpenChange={setDeleteUserDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the administrator account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteUser} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TabsContent>
+
+        {/* Admin Roles Tab */}
+        <TabsContent value="admin-roles" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Total Roles</CardTitle>
+                <UserCog className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">Currently logged in admins</p>
+                <div className="text-2xl font-bold">{adminRoles.length}</div>
+                <p className="text-xs text-muted-foreground">Defined administrator roles</p>
               </CardContent>
             </Card>
             <Card>
@@ -122,677 +708,33 @@ export default function AdminRoles() {
                 <p className="text-xs text-muted-foreground">Customizable permission groups</p>
               </CardContent>
             </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-7">
-            {/* Admin Users Table */}
-            <Card className="md:col-span-4">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Administrator Users</CardTitle>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Add Admin
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[525px]">
-                      <DialogHeader>
-                        <DialogTitle>Add New Administrator</DialogTitle>
-                        <DialogDescription>
-                          Create a new administrator account with specific role and permissions.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="name" className="text-right">
-                            Name
-                          </Label>
-                          <Input id="name" placeholder="John Doe" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="email" className="text-right">
-                            Email
-                          </Label>
-                          <Input id="email" placeholder="john.doe@example.com" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="role" className="text-right">
-                            Role
-                          </Label>
-                          <Select>
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select a role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="super-admin">Super Admin</SelectItem>
-                              <SelectItem value="content-manager">Content Manager</SelectItem>
-                              <SelectItem value="support-admin">Support Admin</SelectItem>
-                              <SelectItem value="analytics-admin">Analytics Admin</SelectItem>
-                              <SelectItem value="verification-admin">Verification Admin</SelectItem>
-                              <SelectItem value="read-only">Read Only</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label className="text-right">Status</Label>
-                          <div className="flex items-center space-x-2 col-span-3">
-                            <Switch id="active-status" defaultChecked />
-                            <Label htmlFor="active-status">Active</Label>
-                          </div>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit">Create Administrator</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <CardDescription>Manage administrator accounts and their assigned roles</CardDescription>
-                <div className="flex items-center space-x-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search administrators..."
-                    value={searchRoles}
-                    onChange={(e) => setSearchRoles(e.target.value)}
-                    className="h-8 w-[200px] lg:w-[300px]"
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="ml-auto h-8 gap-1">
-                        <Filter className="h-3.5 w-3.5" />
-                        <span>Filter</span>
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Filter by Role</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Checkbox id="super-admin" className="mr-2" />
-                        <label htmlFor="super-admin">Super Admin</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="content-manager" className="mr-2" />
-                        <label htmlFor="content-manager">Content Manager</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="support-admin" className="mr-2" />
-                        <label htmlFor="support-admin">Support Admin</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="analytics-admin" className="mr-2" />
-                        <label htmlFor="analytics-admin">Analytics Admin</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Checkbox id="active" className="mr-2" />
-                        <label htmlFor="active">Active</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="inactive" className="mr-2" />
-                        <label htmlFor="inactive">Inactive</label>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Administrator</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Last Active</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                            <AvatarFallback>JD</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">Jane Doe</div>
-                            <div className="text-xs text-muted-foreground">jane.doe@recruit-g.com</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                          Super Admin
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                          Active
-                        </Badge>
-                      </TableCell>
-                      <TableCell>Just now</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Lock className="mr-2 h-4 w-4" />
-                              Manage Permissions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Activity
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Deactivate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                            <AvatarFallback>JS</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">John Smith</div>
-                            <div className="text-xs text-muted-foreground">john.smith@recruit-g.com</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-50">
-                          Content Manager
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                          Active
-                        </Badge>
-                      </TableCell>
-                      <TableCell>2 hours ago</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Lock className="mr-2 h-4 w-4" />
-                              Manage Permissions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Activity
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Deactivate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                            <AvatarFallback>AK</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">Alex Kim</div>
-                            <div className="text-xs text-muted-foreground">alex.kim@recruit-g.com</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-50">
-                          Support Admin
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                          Active
-                        </Badge>
-                      </TableCell>
-                      <TableCell>1 day ago</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Lock className="mr-2 h-4 w-4" />
-                              Manage Permissions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Activity
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Deactivate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                            <AvatarFallback>MP</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">Maria Perez</div>
-                            <div className="text-xs text-muted-foreground">maria.perez@recruit-g.com</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50">
-                          Analytics Admin
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-50">
-                          Inactive
-                        </Badge>
-                      </TableCell>
-                      <TableCell>2 weeks ago</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Lock className="mr-2 h-4 w-4" />
-                              Manage Permissions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Activity
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-green-600">
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Activate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Role Management */}
-            <Card className="md:col-span-3">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Role Management</CardTitle>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" />
-                        New Role
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[525px]">
-                      <DialogHeader>
-                        <DialogTitle>Create New Role</DialogTitle>
-                        <DialogDescription>
-                          Define a new administrator role with specific permissions.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="role-name" className="text-right">
-                            Role Name
-                          </Label>
-                          <Input id="role-name" placeholder="e.g. Event Manager" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="role-description" className="text-right">
-                            Description
-                          </Label>
-                          <Input
-                            id="role-description"
-                            placeholder="Brief description of role responsibilities"
-                            className="col-span-3"
-                          />
-                        </div>
-                        <Separator />
-                        <h3 className="font-medium">Permission Groups</h3>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox id="user-management" />
-                              <Label htmlFor="user-management">User Management</Label>
-                            </div>
-                            <Select defaultValue="read">
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue placeholder="Access Level" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Access</SelectItem>
-                                <SelectItem value="read">Read Only</SelectItem>
-                                <SelectItem value="write">Read/Write</SelectItem>
-                                <SelectItem value="full">Full Access</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox id="content-management" />
-                              <Label htmlFor="content-management">Content Management</Label>
-                            </div>
-                            <Select defaultValue="read">
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue placeholder="Access Level" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Access</SelectItem>
-                                <SelectItem value="read">Read Only</SelectItem>
-                                <SelectItem value="write">Read/Write</SelectItem>
-                                <SelectItem value="full">Full Access</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox id="analytics" />
-                              <Label htmlFor="analytics">Analytics & Reports</Label>
-                            </div>
-                            <Select defaultValue="read">
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue placeholder="Access Level" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Access</SelectItem>
-                                <SelectItem value="read">Read Only</SelectItem>
-                                <SelectItem value="write">Read/Write</SelectItem>
-                                <SelectItem value="full">Full Access</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox id="security" />
-                              <Label htmlFor="security">Security & Compliance</Label>
-                            </div>
-                            <Select defaultValue="none">
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue placeholder="Access Level" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Access</SelectItem>
-                                <SelectItem value="read">Read Only</SelectItem>
-                                <SelectItem value="write">Read/Write</SelectItem>
-                                <SelectItem value="full">Full Access</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox id="admin-management" />
-                              <Label htmlFor="admin-management">Admin Management</Label>
-                            </div>
-                            <Select defaultValue="none">
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue placeholder="Access Level" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Access</SelectItem>
-                                <SelectItem value="read">Read Only</SelectItem>
-                                <SelectItem value="write">Read/Write</SelectItem>
-                                <SelectItem value="full">Full Access</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit">Create Role</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <CardDescription>Define and manage administrator roles and permissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Shield className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <h3 className="font-medium">Super Admin</h3>
-                          <p className="text-xs text-muted-foreground">Full access to all system features</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Role
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Permissions
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Users className="mr-2 h-4 w-4" />
-                            View Assigned Users
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge variant="secondary" className="text-xs">
-                        User Management
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Content Management
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Analytics
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Security
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Admin Management
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-5 w-5 text-purple-600" />
-                        <div>
-                          <h3 className="font-medium">Content Manager</h3>
-                          <p className="text-xs text-muted-foreground">Manage blog posts, resources, and events</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Role
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Permissions
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Users className="mr-2 h-4 w-4" />
-                            View Assigned Users
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge variant="secondary" className="text-xs">
-                        Content Management
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Event Promotion
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Blog Management
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-5 w-5 text-amber-600" />
-                        <div>
-                          <h3 className="font-medium">Support Admin</h3>
-                          <p className="text-xs text-muted-foreground">Handle user support and feedback</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Role
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Permissions
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Users className="mr-2 h-4 w-4" />
-                            View Assigned Users
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge variant="secondary" className="text-xs">
-                        User Management
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Feedback Management
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Support Tools
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Activity Logs Tab */}
-        <TabsContent value="activity-logs" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Activities</CardTitle>
-                <BarChart className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
+                <Shield className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1,248</div>
-                <p className="text-xs text-muted-foreground">+124 from last week</p>
+                <div className="text-2xl font-bold">
+                  {adminUsers.filter((user) => user.role === "Super Admin" && user.status === "Active").length}
+                </div>
+                <p className="text-xs text-muted-foreground">Users with full system access</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Admins Today</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Custom Roles</CardTitle>
+                <UserCog className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">Out of 24 total administrators</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Security Events</CardTitle>
-                <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">Requires attention</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Content Changes</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">42</div>
-                <p className="text-xs text-muted-foreground">In the last 24 hours</p>
+                <div className="text-2xl font-bold">
+                  {
+                    adminRoles.filter(
+                      (role) =>
+                        !["Super Admin", "Content Manager", "Support Admin", "Analytics Admin"].includes(role.name),
+                    ).length
+                  }
+                </div>
+                <p className="text-xs text-muted-foreground">User-defined admin roles</p>
               </CardContent>
             </Card>
           </div>
@@ -800,855 +742,221 @@ export default function AdminRoles() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Administrator Activity Log</CardTitle>
-                <Button variant="outline" size="sm">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Export Logs
+                <CardTitle>Role Management</CardTitle>
+                <Button onClick={handleCreateRole}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Role
                 </Button>
               </div>
-              <CardDescription>Track and monitor administrator activities across the platform</CardDescription>
+              <CardDescription>Define and manage administrator roles and permissions</CardDescription>
               <div className="flex items-center space-x-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search activities..."
-                  value={searchLogs}
-                  onChange={(e) => setSearchLogs(e.target.value)}
+                  placeholder="Search roles..."
+                  value={searchRoles}
+                  onChange={(e) => setSearchRoles(e.target.value)}
                   className="h-8 w-[200px] lg:w-[300px]"
                 />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="ml-auto h-8 gap-1">
-                      <Filter className="h-3.5 w-3.5" />
-                      <span>Filter</span>
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Checkbox id="user-actions" className="mr-2" />
-                      <label htmlFor="user-actions">User Management</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Checkbox id="content-actions" className="mr-2" />
-                      <label htmlFor="content-actions">Content Changes</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Checkbox id="security-actions" className="mr-2" />
-                      <label htmlFor="security-actions">Security Actions</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Checkbox id="system-actions" className="mr-2" />
-                      <label htmlFor="system-actions">System Changes</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Filter by Admin</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Checkbox id="super-admins" className="mr-2" />
-                      <label htmlFor="super-admins">Super Admins</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Checkbox id="content-managers" className="mr-2" />
-                      <label htmlFor="content-managers">Content Managers</label>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Checkbox id="support-admins" className="mr-2" />
-                      <label htmlFor="support-admins">Support Admins</label>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Administrator</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead className="text-right">Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">Jane Doe</div>
+              <div className="space-y-4">
+                {filteredRoles.length > 0 ? (
+                  filteredRoles.map((role) => (
+                    <div key={role.id} className="rounded-lg border p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Shield className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <h3 className="font-medium">{role.name}</h3>
+                            <p className="text-xs text-muted-foreground">{role.description}</p>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditRole(role)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Role
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Permissions
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Users className="mr-2 h-4 w-4" />
+                              View Assigned Users
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteRole(role.id)}>
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete Role
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                    </TableCell>
-                    <TableCell>Created new admin user</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                        Admin Management
-                      </Badge>
-                    </TableCell>
-                    <TableCell>192.168.1.105</TableCell>
-                    <TableCell>Just now</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>JS</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">John Smith</div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {role.permissions.map((permission, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {permission}
+                          </Badge>
+                        ))}
                       </div>
-                    </TableCell>
-                    <TableCell>Published new blog post</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-50">
-                        Content Management
-                      </Badge>
-                    </TableCell>
-                    <TableCell>192.168.1.107</TableCell>
-                    <TableCell>1 hour ago</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>AK</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">Alex Kim</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>Responded to user feedback</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-50">
-                        Support
-                      </Badge>
-                    </TableCell>
-                    <TableCell>192.168.1.112</TableCell>
-                    <TableCell>2 hours ago</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">Jane Doe</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>Modified security settings</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-50">
-                        Security
-                      </Badge>
-                    </TableCell>
-                    <TableCell>192.168.1.105</TableCell>
-                    <TableCell>3 hours ago</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>MP</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">Maria Perez</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>Generated analytics report</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50">
-                        Analytics
-                      </Badge>
-                    </TableCell>
-                    <TableCell>192.168.1.118</TableCell>
-                    <TableCell>Yesterday</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">No roles found</div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Alerts</CardTitle>
-                <CardDescription>Recent security-related activities that may require attention</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-4 rounded-lg border p-3">
-                      <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
-                      <div>
-                        <div className="font-medium">Multiple failed login attempts</div>
-                        <div className="text-sm text-muted-foreground">
-                          5 failed attempts for admin account "john.smith"
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">2 hours ago</div>
-                        <Button variant="outline" size="sm" className="mt-2">
-                          <Eye className="mr-2 h-3.5 w-3.5" />
-                          Investigate
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-4 rounded-lg border p-3">
-                      <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
-                      <div>
-                        <div className="font-medium">Permission changes detected</div>
-                        <div className="text-sm text-muted-foreground">
-                          Admin role "Content Manager" permissions modified
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">Yesterday</div>
-                        <Button variant="outline" size="sm" className="mt-2">
-                          <Eye className="mr-2 h-3.5 w-3.5" />
-                          Review Changes
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-4 rounded-lg border p-3">
-                      <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
-                      <div>
-                        <div className="font-medium">Unusual login location</div>
-                        <div className="text-sm text-muted-foreground">
-                          Admin "maria.perez" logged in from new location
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">2 days ago</div>
-                        <Button variant="outline" size="sm" className="mt-2">
-                          <Eye className="mr-2 h-3.5 w-3.5" />
-                          Verify
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Activity Notifications</CardTitle>
-                <CardDescription>Configure how you want to be notified about admin activities</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="new-admin">New Administrator Created</Label>
-                      <p className="text-xs text-muted-foreground">When a new administrator account is created</p>
-                    </div>
-                    <Switch id="new-admin" defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="permission-changes">Permission Changes</Label>
-                      <p className="text-xs text-muted-foreground">When admin roles or permissions are modified</p>
-                    </div>
-                    <Switch id="permission-changes" defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="security-events">Security Events</Label>
-                      <p className="text-xs text-muted-foreground">Failed logins, unusual locations, etc.</p>
-                    </div>
-                    <Switch id="security-events" defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="content-changes">Content Changes</Label>
-                      <p className="text-xs text-muted-foreground">When content is published or modified</p>
-                    </div>
-                    <Switch id="content-changes" />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="daily-summary">Daily Activity Summary</Label>
-                      <p className="text-xs text-muted-foreground">Receive a daily summary of all admin activities</p>
-                    </div>
-                    <Switch id="daily-summary" defaultChecked />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Team Collaboration Tab */}
-        <TabsContent value="team-collaboration" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">18</div>
-                <p className="text-xs text-muted-foreground">5 due today</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team Messages</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">32</div>
-                <p className="text-xs text-muted-foreground">8 unread messages</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming Meetings</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">Next: Team Sync (1 hour)</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">24</div>
-                <p className="text-xs text-muted-foreground">8 currently online</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-7">
-            {/* Task Management */}
-            <Card className="md:col-span-4">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Task Management</CardTitle>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" />
-                        New Task
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[525px]">
-                      <DialogHeader>
-                        <DialogTitle>Create New Task</DialogTitle>
-                        <DialogDescription>Assign a new task to team members</DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="task-title" className="text-right">
-                            Title
-                          </Label>
-                          <Input id="task-title" placeholder="Task title" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="task-description" className="text-right">
-                            Description
-                          </Label>
-                          <Input id="task-description" placeholder="Task description" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="task-assignee" className="text-right">
-                            Assignee
-                          </Label>
-                          <Select>
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select team member" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="jane-doe">Jane Doe</SelectItem>
-                              <SelectItem value="john-smith">John Smith</SelectItem>
-                              <SelectItem value="alex-kim">Alex Kim</SelectItem>
-                              <SelectItem value="maria-perez">Maria Perez</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="task-priority" className="text-right">
-                            Priority
-                          </Label>
-                          <Select>
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="low">Low</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="task-due-date" className="text-right">
-                            Due Date
-                          </Label>
-                          <Input id="task-due-date" type="date" className="col-span-3" />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit">Create Task</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <CardDescription>Manage and assign tasks to team members</CardDescription>
-                <div className="flex items-center space-x-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
+          {/* Admin Role Form Dialog */}
+          <Dialog open={isRoleFormOpen} onOpenChange={setIsRoleFormOpen}>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>{roleFormMode === "create" ? "Create New Role" : "Edit Role"}</DialogTitle>
+                <DialogDescription>
+                  {roleFormMode === "create"
+                    ? "Define a new administrator role with specific permissions."
+                    : "Update role details and permissions."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="role-name" className="text-right">
+                    Role Name
+                  </Label>
                   <Input
-                    placeholder="Search tasks..."
-                    value={searchTasks}
-                    onChange={(e) => setSearchTasks(e.target.value)}
-                    className="h-8 w-[200px] lg:w-[300px]"
+                    id="role-name"
+                    placeholder="e.g. Event Manager"
+                    className="col-span-3"
+                    value={currentRole.name}
+                    onChange={(e) => setCurrentRole({ ...currentRole, name: e.target.value })}
                   />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="ml-auto h-8 gap-1">
-                        <Filter className="h-3.5 w-3.5" />
-                        <span>Filter</span>
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Checkbox id="todo" className="mr-2" />
-                        <label htmlFor="todo">To Do</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="in-progress" className="mr-2" />
-                        <label htmlFor="in-progress">In Progress</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="review" className="mr-2" />
-                        <label htmlFor="review">In Review</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="completed" className="mr-2" />
-                        <label htmlFor="completed">Completed</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Checkbox id="high" className="mr-2" />
-                        <label htmlFor="high">High</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="medium" className="mr-2" />
-                        <label htmlFor="medium">Medium</label>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Checkbox id="low" className="mr-2" />
-                        <label htmlFor="low">Low</label>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Assignee</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <div className="font-medium">Update user verification process</div>
-                        <div className="text-xs text-muted-foreground">Improve security checks</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                            <AvatarFallback>JD</AvatarFallback>
-                          </Avatar>
-                          <div>Jane Doe</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-50">
-                          In Progress
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-50">
-                          High
-                        </Badge>
-                      </TableCell>
-                      <TableCell>Tomorrow</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Task
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Mark Complete
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <MessageSquare className="mr-2 h-4 w-4" />
-                              Add Comment
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash className="mr-2 h-4 w-4" />
-                              Delete Task
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <div className="font-medium">Create monthly analytics report</div>
-                        <div className="text-xs text-muted-foreground">For executive team review</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                            <AvatarFallback>MP</AvatarFallback>
-                          </Avatar>
-                          <div>Maria Perez</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                          To Do
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-50">
-                          Medium
-                        </Badge>
-                      </TableCell>
-                      <TableCell>Next week</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Task
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Mark Complete
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <MessageSquare className="mr-2 h-4 w-4" />
-                              Add Comment
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash className="mr-2 h-4 w-4" />
-                              Delete Task
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <div className="font-medium">Review content moderation queue</div>
-                        <div className="text-xs text-muted-foreground">Clear backlog of pending items</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                            <AvatarFallback>JS</AvatarFallback>
-                          </Avatar>
-                          <div>John Smith</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-50">
-                          In Review
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                          Low
-                        </Badge>
-                      </TableCell>
-                      <TableCell>Today</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Task
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Mark Complete
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <MessageSquare className="mr-2 h-4 w-4" />
-                              Add Comment
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash className="mr-2 h-4 w-4" />
-                              Delete Task
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Team Communication */}
-            <Card className="md:col-span-3">
-              <CardHeader>
-                <CardTitle>Team Communication</CardTitle>
-                <CardDescription>Internal messaging and collaboration tools</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">Team Chat</div>
-                      <Badge>8 unread</Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Real-time messaging for quick team communication
-                    </p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Open Chat
-                    </Button>
-                  </div>
-
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">Team Calendar</div>
-                      <Badge>3 upcoming</Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">Schedule and manage team meetings and events</p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      View Calendar
-                    </Button>
-                  </div>
-
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">Document Collaboration</div>
-                      <Badge>5 shared</Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">Shared documents and collaborative editing</p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Open Documents
-                    </Button>
-                  </div>
-
-                  <div className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">Announcements</div>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                        New
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">Important team-wide announcements and updates</p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      <Bell className="mr-2 h-4 w-4" />
-                      View Announcements
-                    </Button>
-                  </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="role-description" className="text-right">
+                    Description
+                  </Label>
+                  <Input
+                    id="role-description"
+                    placeholder="Brief description of role responsibilities"
+                    className="col-span-3"
+                    value={currentRole.description}
+                    onChange={(e) => setCurrentRole({ ...currentRole, description: e.target.value })}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Members</CardTitle>
-                <CardDescription>View and manage your admin team members</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Jane Doe</div>
-                        <div className="text-sm text-muted-foreground">Super Admin</div>
-                      </div>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Online</Badge>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                        <AvatarFallback>JS</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">John Smith</div>
-                        <div className="text-sm text-muted-foreground">Content Manager</div>
-                      </div>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Online</Badge>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                        <AvatarFallback>AK</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Alex Kim</div>
-                        <div className="text-sm text-muted-foreground">Support Admin</div>
-                      </div>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Online</Badge>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                        <AvatarFallback>MP</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Maria Perez</div>
-                        <div className="text-sm text-muted-foreground">Analytics Admin</div>
-                      </div>
-                    </div>
-                    <Badge className="bg-gray-100 text-gray-800">Offline</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Message</CardTitle>
-                <CardDescription>Send a message to team members</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="recipients">Recipients</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select recipients" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Team Members</SelectItem>
-                        <SelectItem value="super-admins">Super Admins</SelectItem>
-                        <SelectItem value="content-managers">Content Managers</SelectItem>
-                        <SelectItem value="support-admins">Support Admins</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="Message subject" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <textarea
-                      id="message"
-                      placeholder="Type your message here..."
-                      className="h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                <Separator />
+                <h3 className="font-medium">Permission Groups</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="user-management"
+                      checked={currentRole.permissions.includes("User Management")}
+                      onCheckedChange={() => togglePermission("User Management")}
                     />
+                    <Label htmlFor="user-management">User Management</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="urgent" />
-                    <Label htmlFor="urgent">Mark as urgent</Label>
+                    <Checkbox
+                      id="content-management"
+                      checked={currentRole.permissions.includes("Content Management")}
+                      onCheckedChange={() => togglePermission("Content Management")}
+                    />
+                    <Label htmlFor="content-management">Content Management</Label>
                   </div>
-                  <Button className="w-full">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Send Message
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="analytics"
+                      checked={currentRole.permissions.includes("Analytics")}
+                      onCheckedChange={() => togglePermission("Analytics")}
+                    />
+                    <Label htmlFor="analytics">Analytics & Reports</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="security"
+                      checked={currentRole.permissions.includes("Security")}
+                      onCheckedChange={() => togglePermission("Security")}
+                    />
+                    <Label htmlFor="security">Security & Compliance</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="admin-management"
+                      checked={currentRole.permissions.includes("Admin Management")}
+                      onCheckedChange={() => togglePermission("Admin Management")}
+                    />
+                    <Label htmlFor="admin-management">Admin Management</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="event-promotion"
+                      checked={currentRole.permissions.includes("Event Promotion")}
+                      onCheckedChange={() => togglePermission("Event Promotion")}
+                    />
+                    <Label htmlFor="event-promotion">Event Promotion</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="blog-management"
+                      checked={currentRole.permissions.includes("Blog Management")}
+                      onCheckedChange={() => togglePermission("Blog Management")}
+                    />
+                    <Label htmlFor="blog-management">Blog Management</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="feedback-management"
+                      checked={currentRole.permissions.includes("Feedback Management")}
+                      onCheckedChange={() => togglePermission("Feedback Management")}
+                    />
+                    <Label htmlFor="feedback-management">Feedback Management</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="support-tools"
+                      checked={currentRole.permissions.includes("Support Tools")}
+                      onCheckedChange={() => togglePermission("Support Tools")}
+                    />
+                    <Label htmlFor="support-tools">Support Tools</Label>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsRoleFormOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveRole}>{roleFormMode === "create" ? "Create Role" : "Update Role"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Role Confirmation Dialog */}
+          <AlertDialog open={deleteRoleDialogOpen} onOpenChange={setDeleteRoleDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this role and may affect users assigned to
+                  it.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteRole} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-
