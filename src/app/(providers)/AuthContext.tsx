@@ -60,19 +60,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
         console.log("Logged in user:", loggedInUser);
-        // if(loggedInUser?.role==="JOBSEEKER"){
-        //   router.push("/job-seeker/dashboard");
-        // }else{
-        //   router.push("/employer/dashboard");
-        // }
-        // router.push("/");
+
+        // Check if the viewport is mobile
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+          router.push("/mobile/dashboard");
+        } else if (loggedInUser?.role === "JOBSEEKER") {
+          router.push("/job-seeker/dashboard");
+        } else {
+          router.push("/employer/dashboard");
+        }
+
         toast.success("Login successful");
       } else {
-        // toast.error(data.message||"Login failed");
         throw new Error(data.message || "Login failed");
       }
     } catch (error) {
-      toast.error(error?.message||"Login failed");
+      toast.error(error?.message || "Login failed");
       console.error("Login error:", error);
     }
   };
