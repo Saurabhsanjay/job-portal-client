@@ -21,10 +21,12 @@ import {
   Pencil,
   Loader2,
   MoreVertical,
+  User,
 } from "lucide-react"
 import Link from "next/link"
 import { useApiGet } from "@/hooks/use-api-query"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/app/(providers)/AuthContext"
 
 // Job type definition based on your API response
 interface Job {
@@ -52,6 +54,7 @@ export default function SavedJobs() {
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined)
   const [locationFilter, setLocationFilter] = useState("all")
   const [titleFilter, setTitleFilter] = useState("all")
+  const { user } = useAuth()
 
   // Create a query string with the filter parameters
   const buildQueryString = () => {
@@ -82,7 +85,7 @@ export default function SavedJobs() {
 
   // Use the query string in the API call
   const queryString = buildQueryString()
-  const endpoint = `jobs/get-jobs${queryString ? `?${queryString}` : ""}`
+  const endpoint = `jobs/get-jobs?userId=${user?.id}&${queryString ? `?${queryString}` : ""}`
 
   const {
     data: jobsData,
