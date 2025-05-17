@@ -12,7 +12,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRegisterCandidate } from "@/services/userService";
 // import { useToast } from "@/hooks/use-toast";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const candidateSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -29,12 +29,15 @@ const candidateSchema = z.object({
 });
 
 type CandidateFormValues = z.infer<typeof candidateSchema>;
+export type UserType = "candidate" | "recruiter";
+
 
 export default function CandidateForm() {
   const [showPassword, setShowPassword] = useState(false);
   const registerMutation = useRegisterCandidate();
-  // const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const userTypeParam = searchParams.get("userType") as UserType || "candidate";
 
   const {
     control,
@@ -55,13 +58,9 @@ export default function CandidateForm() {
 
   useEffect(() => {
     if (registerMutation.isSuccess) {
-      // toast({
-      //   title: "Success",
-      //   description: "Company account created successfully!",
-      // });
       toast.success("Company account created successfully!");
       reset();
-      router.push("/auth/login");
+      router.push(`/auth/login?userType=${userTypeParam}`);
     }
   }, [registerMutation.isSuccess]);
 

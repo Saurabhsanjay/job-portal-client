@@ -11,18 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Backpack,
-  BriefcaseBusiness,
   EyeIcon,
   EyeOffIcon,
   Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import Image from "next/image";
-// import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/app/(providers)/AuthContext";
-// import { useToast } from "@/hooks/use-toast";
-import toast from "react-hot-toast";
 
 // Define the user types
 export type UserType = "candidate" | "recruiter";
@@ -40,15 +35,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userType, setUserType] = useState<UserType>("candidate");
   const [loginError, setLoginError] = useState<string | null>(null);
-
-  const router = useRouter();
   const searchParams = useSearchParams();
-  // const { toast } = useToast();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const error = searchParams.get("error");
+  const userTypeParam = searchParams.get("userType") as UserType || "candidate";
   const { login } = useAuth();
+  const router = useRouter();
+  
 
   const {
     register,
@@ -64,67 +56,17 @@ export default function LoginForm() {
     },
   });
 
-  // Show error toast if there's an error in the URL
-  // useEffect(() => {
-  //   if (error) {
-  //     setLoginError("Authentication failed. Please try again.");
-  //     toast({
-  //       title: "Error",
-  //       description: "Authentication failed. Please try again.",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // }, [error, toast]);
-
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError(null);
-
-    // try {
-    //   const result = await signIn("credentials", {
-    //     email: data.email,
-    //     password: data.password,
-    //     isRecruiter: userType === "recruiter" ? "true" : "false",
-    //     redirect: false,
-    //   });
-
-    //   if (result?.error) {
-    //     setLoginError(result.error);
-    //     toast({
-    //       title: "Login Failed",
-    //       description: result.error,
-    //       variant: "destructive",
-    //     });
-    //   } else if (result?.ok) {
-    //     toast({
-    //       title: "Success",
-    //       description: "You have been logged in successfully!",
-    //     });
-    //     // router.push(callbackUrl);
-    //     router.refresh(); // Refresh to update auth state
-    //   }
-    // } catch (error: any) {
-    //   const errorMessage =
-    //     error.message || "An unexpected error occurred. Please try again.";
-    //   setLoginError(errorMessage);
-    //   toast({
-    //     title: "Error",
-    //     description: errorMessage,
-    //     variant: "destructive",
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
     await login(data?.email, data?.password);
-    // console.log("response------->", response)
-    // if(response?.status==="SUCCESS"){
-    //   console.log("came inside if")
-    //   toast.success("Login Successful")
-    // }else if(response?.status==="error"){
-    //   console.log("came inside else")
-    //   toast.error(response?.message||"Something Went Wrong")
-    // }
     setIsLoading(false);
+    if(userTypeParam === "candidate") {
+      router.push("/job-seeker/dashboard");
+    }
+    else {
+      router.push("/employer/dashboard");
+    }
   };
 
   return (
@@ -139,31 +81,6 @@ export default function LoginForm() {
         <CardHeader className="space-y-4 pb-2">
           <div className="flex items-center justify-center py-2">
             <Image src="/logo.jpeg" alt="Recruit-G" width={140} height={70} className="h-10 object-contain" />
-          </div>
-
-          <div className="flex items-center justify-center gap-3 p-1 bg-gray-50 rounded-lg">
-            <Button
-              className={`flex-1 transition-all duration-200 ${
-                userType === "candidate"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "bg-transparent text-gray-600 hover:bg-gray-100"
-              }`}
-              onClick={() => setUserType("candidate")}
-              type="button"
-            >
-              <BriefcaseBusiness size={18} className="mr-2" /> Candidate
-            </Button>
-            <Button
-              className={`flex-1 transition-all duration-200 ${
-                userType === "recruiter"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-transparent text-gray-600 hover:bg-gray-100"
-              }`}
-              onClick={() => setUserType("recruiter")}
-              type="button"
-            >
-              <Backpack size={18} className="mr-2" /> Recruiter
-            </Button>
           </div>
         </CardHeader>
 
@@ -276,7 +193,7 @@ export default function LoginForm() {
             variant="outline"
             className="w-full h-11 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
             type="button"
-            onClick={() => signIn("google", { callbackUrl })}
+            onClick={() => signIn("google")}
             disabled={isLoading}
           >
             <svg
@@ -302,7 +219,7 @@ export default function LoginForm() {
           <p className="text-center text-sm text-gray-600">
             Don&apos;t have an account?{" "}
             <a
-              href="/auth/register"
+              href={`/auth/register?userType=${userTypeParam}`}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors"
             >
               Register

@@ -12,7 +12,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRegisterRecruiter } from "@/services/userService";
 // import { useToast } from "@/hooks/use-toast";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 const recruiterSchema = z.object({
@@ -29,12 +29,14 @@ const recruiterSchema = z.object({
 });
 
 type RecruiterFormValues = z.infer<typeof recruiterSchema>;
+export type UserType = "candidate" | "recruiter";
 
 export default function RecruiterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  // const { toast } = useToast();
   const registerMutation = useRegisterRecruiter();
+  const searchParams = useSearchParams();
+  const userTypeParam = searchParams.get("userType") as UserType || "candidate";
 
   const {
     control,
@@ -55,13 +57,9 @@ export default function RecruiterForm() {
   // Handle successful registration
   useEffect(() => {
     if (registerMutation.isSuccess) {
-      // toast({
-      //   title: "Success",
-      //   description: "Company account created successfully!",
-      // });
       toast.success("Company account created successfully!");
       reset();
-        router.push("/auth/login");
+      router.push(`/auth/login?userType=${userTypeParam}`);
     }
   }, [registerMutation.isSuccess, router, reset]);
 

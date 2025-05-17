@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Footer from "./(containers)/footer/Footer";
-// import Navbar from "./(containers)/navbar/Navbar";
 import { getServerSession } from "next-auth/next";
-import { SessionProvider } from "@/app/(providers)/SessionProvider";
 import ReactQueryProvider from "@/app/(providers)/ReactQueryProvider";
 import { ThemeProvider } from "./(providers)/ThemeProvider";
 import { AuthProvider } from "./(providers)/AuthContext";
 import Navbar from "./(containers)/navbar/Navbar";
 import ProtectedRoute from "@/hooks/ProtectedRoute";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,8 +30,8 @@ export default async function RootLayout({
   console.log("session", session);
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased overflow-hidden`}>
-      <Toaster position="top-center" reverseOrder={false} />
+      <body className={`${inter.variable} antialiased`}>
+        <Toaster position="top-center" reverseOrder={false} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -41,19 +39,13 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            
-        {/* <SessionProvider session={session}> */}
-          {/* <Navbar /> */}
-          <ReactQueryProvider>
-            <ProtectedRoute>
-            {children}
-            </ProtectedRoute>
-          </ReactQueryProvider>
-          <Footer />
-        {/* </SessionProvider> */}
-        </AuthProvider>
+            <Navbar />
+            <ReactQueryProvider>
+              <ProtectedRoute>{children}</ProtectedRoute>
+            </ReactQueryProvider>
+            <Footer />
+          </AuthProvider>
         </ThemeProvider>
-
       </body>
     </html>
   );

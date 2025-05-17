@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 const PUBLIC_ROUTES = ["/", "/auth/login", "/auth/register"];
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useContext(AuthContext)!;
+  const { user,loading } = useContext(AuthContext)!;
   console.log("user----->", user);
   const router = useRouter();
   const pathname = usePathname(); // Get the current route
@@ -47,6 +47,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }
   }, [user, loading, pathname, router]);
 
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -56,7 +57,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
           <p className="text-center text-lg mt-2">Loading...</p>
         </div>
       </div>
-    );
+    ); 
   }
 
   return <>{children}</>;

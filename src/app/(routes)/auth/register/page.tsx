@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Backpack, BriefcaseBusiness } from "lucide-react";
 import Image from "next/image";
 import CandidateForm from "./candidate-form";
 import RecruiterForm from "./recruiter-form";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchParams } from "next/navigation";
 
 export type UserType = "candidate" | "recruiter";
 
 export default function RegisterForm() {
-  const [userType, setUserType] = useState<UserType>("candidate");
-  const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const userTypeParam = searchParams.get("userType") as UserType || "candidate";
+  console.log("userTypeParam", userTypeParam);
 
   return (
     <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden">
@@ -39,41 +38,18 @@ export default function RegisterForm() {
               className="h-8"
             />
           </div>
-          <div className="flex items-center space-x-2 py-2 justify-around">
-            {!isMobile && (
-              <Button
-                className={`${
-                  userType === "candidate"
-                    ? "bg-green-600"
-                    : "bg-gray-200 text-gray-700"
-                } text-white hover:bg-blue-700`}
-                onClick={() => setUserType("candidate")}
-              >
-                <BriefcaseBusiness size={18} className="mr-2" /> Candidate
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                className={`${
-                  userType === "recruiter"
-                    ? "bg-blue-600"
-                    : "bg-gray-200 text-gray-700"
-                } text-white hover:bg-green-700`}
-                onClick={() => setUserType("recruiter")}
-              >
-                <Backpack size={18} className="mr-2" /> Recruiter
-              </Button>
-            )}
-          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {userType === "candidate" ? <CandidateForm /> : <RecruiterForm />}
+          {userTypeParam === "candidate" ? <CandidateForm /> : <RecruiterForm />}
         </CardContent>
         <p className="text-center text-sm text-muted-foreground p-4">
           Already have an account?{" "}
-          <a href="/auth/login" className="text-blue-600 hover:text-blue-700">
+            <a
+            href={`/auth/login?userType=${userTypeParam}`}
+            className="text-blue-600 hover:text-blue-700"
+            >
             Sign in
-          </a>
+            </a>
         </p>
       </Card>
     </div>
