@@ -18,6 +18,8 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
 export interface AutomationsResponse {
   status: string
   statusCode: number
@@ -353,7 +355,7 @@ export default function AutomationSetupPage() {
       }
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/employee-automation/create-employee-automation`,
+        `${API_BASE_URL}/api/employee-automation/create-employee-automation`,
         payload,
       )
 

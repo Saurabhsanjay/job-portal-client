@@ -21,6 +21,9 @@ import type { EmployerProfile, EmployerProfileResponse } from "@/types/api"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAuth } from "@/app/(providers)/AuthContext"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
+
 // Validation schema using zod
 const benefitSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -153,7 +156,7 @@ export default function CompanyProfile() {
 
         // Send to server
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-profile-picture?userId=${user?.id}`,
+          `${API_BASE_URL}/api/users/upload-profile-picture?userId=${user?.id}`,
           formData,
           {
             headers: {

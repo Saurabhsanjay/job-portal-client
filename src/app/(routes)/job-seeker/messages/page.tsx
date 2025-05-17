@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 // import { useSession } from "next-auth/react";
 import { useAuth } from "@/app/(providers)/AuthContext";
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 interface Message {
   id: number;
   content: string;
@@ -38,8 +38,7 @@ interface Conversation {
   timestamp: string;
   messages: Message[];
 }
-
-const WS_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/ws`;
+const WS_URL = `${API_BASE_URL}/ws`;
 
 // const userIds = [
 //   "677a5abca1c88d37c860cd0d",
@@ -242,7 +241,7 @@ export default function Messages() {
     const fetchConversations = async () => {
       if(!currentUser) return;
       const conversationData = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`,
+        `${API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`,
       );
       console.log("Conversation Data:", conversationData?.data?.data);
 

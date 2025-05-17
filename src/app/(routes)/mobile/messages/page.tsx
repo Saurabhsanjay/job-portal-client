@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 import { useAuth } from "@/app/(providers)/AuthContext";
 
+
 interface Message {
   id: number;
   content: string;
@@ -43,8 +44,8 @@ interface Conversation {
   timestamp: string;
   messages: Message[];
 }
-
-const WS_URL = `ws://${process.env.NEXT_PUBLIC_API_BASE_URL}/ws`;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+const WS_URL = `ws://${API_BASE_URL}/ws`;
 
 type MessageResponse = {
   _id: string;
@@ -159,7 +160,7 @@ export default function MobileMessages() {
       setIsLoading(true);
       try {
         const conversationData = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`
+          `${API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`
         );
 
         const transformedData = transformMessages(

@@ -38,6 +38,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useApiGet, useApiPost, useApiPut, useApiDelete } from "@/hooks/use-api-query"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
+
 // Types
 interface EmailCampaign {
   _id: string
@@ -115,7 +118,7 @@ export default function EmailCampaigns() {
 
   const handleEditCampaign = async (campaignId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email_campaign/get-email_campaign/${campaignId}`)
+      const response = await fetch(`${API_BASE_URL}/api/email_campaign/get-email_campaign/${campaignId}`)
       const data = await response.json()
       if (data.status === "SUCCESS") {
         setCurrentCampaign({

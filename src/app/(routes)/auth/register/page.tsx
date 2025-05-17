@@ -12,7 +12,6 @@ export type UserType = "candidate" | "recruiter";
 export default function RegisterForm() {
   const searchParams = useSearchParams();
   const userTypeParam = searchParams.get("userType") as UserType || "candidate";
-  console.log("userTypeParam", userTypeParam);
 
   return (
     <div className="relative min-h-fit md:min-h-screen flex items-center justify-center overflow-hidden">

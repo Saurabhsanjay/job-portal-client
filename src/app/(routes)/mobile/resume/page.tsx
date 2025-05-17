@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import toast from "react-hot-toast";
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 interface UserProfile {
   data: {
     jobSeekerDetails: {
@@ -115,7 +115,7 @@ export default function MobileResume() {
     // Make the Axios request
     axios
       .post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-resume?userId=${user?.id}&isVerified=${isVerified}&isPublic=${isPublic}`,
+        `${API_BASE_URL}/api/users/upload-resume?userId=${user?.id}&isVerified=${isVerified}&isPublic=${isPublic}`,
         formData,
         {
           headers: {
