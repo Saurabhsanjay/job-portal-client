@@ -60,7 +60,7 @@ const handler = NextAuth({
           console.log("Attempting login with:", credentials.email);
 
           // Make the API call
-          const res = await fetch("http://localhost:8080/api/users/login", {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
             method: "POST",
             body: JSON.stringify(payload),
             headers: { "Content-Type": "application/json" },
