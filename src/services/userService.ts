@@ -13,7 +13,6 @@ type CandidateData = {
 };
 
 export const registerCandidate = async (userData: CandidateData) => {
-  console.log("Registering candidate with data::::::::::", userData);
   const response = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: "POST",
     headers: {

@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
 // Define the structure of the API response based on your actual response
 interface LoginResponse {
   status: string;
@@ -60,7 +62,7 @@ const handler = NextAuth({
           console.log("Attempting login with:", credentials.email);
 
           // Make the API call
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
+          const res = await fetch(`${API_BASE_URL}/api/users/login`, {
             method: "POST",
             body: JSON.stringify(payload),
             headers: { "Content-Type": "application/json" },

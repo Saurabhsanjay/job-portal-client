@@ -45,9 +45,9 @@ export default async function RootLayout({
         {/* <SessionProvider session={session}> */}
           {/* <Navbar /> */}
           <ReactQueryProvider>
-            {/* <ProtectedRoute> */}
+            <ProtectedRoute>
             {children}
-            {/* </ProtectedRoute> */}
+            </ProtectedRoute>
           </ReactQueryProvider>
           <Footer />
         {/* </SessionProvider> */}
