@@ -115,9 +115,8 @@ export default function EmailCampaigns() {
 
   const handleEditCampaign = async (campaignId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/email_campaign/get-email_campaign/${campaignId}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email_campaign/get-email_campaign/${campaignId}`)
       const data = await response.json()
-
       if (data.status === "SUCCESS") {
         setCurrentCampaign({
           campaignName: data.data.campaignName,

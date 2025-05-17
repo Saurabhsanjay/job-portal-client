@@ -39,7 +39,7 @@ interface Conversation {
   messages: Message[];
 }
 
-const WS_URL = "ws://localhost:8080/ws";
+const WS_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/ws`;
 
 // const userIds = [
 //   "677a5abca1c88d37c860cd0d",
@@ -242,7 +242,7 @@ export default function Messages() {
     const fetchConversations = async () => {
       if(!currentUser) return;
       const conversationData = await axios.get(
-        `http://localhost:8080/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`,
       );
       console.log("Conversation Data:", conversationData?.data?.data);
 

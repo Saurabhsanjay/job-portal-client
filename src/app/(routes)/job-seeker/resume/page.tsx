@@ -125,7 +125,7 @@ export default function Resume() {
     // Make the Axios request
     axios
       .post(
-        `http://localhost:8080/api/users/upload-resume?userId=${user?.id}&isVerified=${isVerified}&isPublic=${isPublic}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-resume?userId=${user?.id}&isVerified=${isVerified}&isPublic=${isPublic}`,
         formData,
         config,
       )

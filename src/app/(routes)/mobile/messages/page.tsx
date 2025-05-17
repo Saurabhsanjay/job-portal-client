@@ -44,7 +44,7 @@ interface Conversation {
   messages: Message[];
 }
 
-const WS_URL = "ws://localhost:8080/ws";
+const WS_URL = `ws://${process.env.NEXT_PUBLIC_API_BASE_URL}/ws`;
 
 type MessageResponse = {
   _id: string;
@@ -159,7 +159,7 @@ export default function MobileMessages() {
       setIsLoading(true);
       try {
         const conversationData = await axios.get(
-          `http://localhost:8080/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/messages/get-messages-by-roomid?joinedRoomId=${currentUser}`
         );
 
         const transformedData = transformMessages(

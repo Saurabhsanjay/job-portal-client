@@ -406,7 +406,7 @@ export default function Profile() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/users/upload-profile-picture?userId=${user?.id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-profile-picture?userId=${user?.id}`,
         formData,
         config
       );
