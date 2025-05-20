@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">recruit-g</string>
+    <string name="title_activity_main">recruit-g</string>
+    <string name="package_name">com.recruitg.app</string>
+    <string name="custom_url_scheme">com.recruitg.app</string>
+</resources>

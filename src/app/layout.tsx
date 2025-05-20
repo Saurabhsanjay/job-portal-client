@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Footer from "./(containers)/footer/Footer";
 import { getServerSession } from "next-auth/next";
@@ -10,11 +9,6 @@ import Navbar from "./(containers)/navbar/Navbar";
 import ProtectedRoute from "@/hooks/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,7 +24,7 @@ export default async function RootLayout({
   console.log("session", session);
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+      <body>
         <Toaster position="top-center" reverseOrder={false} />
         <ThemeProvider
           attribute="class"
