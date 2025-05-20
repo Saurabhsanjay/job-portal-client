@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import Image from "next/image";
 import { useAuth } from "@/app/(providers)/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define the user types
 export type UserType = "candidate" | "recruiter";
@@ -40,6 +41,8 @@ export default function LoginForm() {
   const userTypeParam = searchParams.get("userType") as UserType || "candidate";
   const { login } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile()
+  
   
 
   const {
@@ -59,13 +62,19 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError(null);
-    await login(data?.email, data?.password);
-    setIsLoading(false);
-    if(userTypeParam === "candidate") {
-      router.push("/job-seeker/dashboard");
-    }
-    else {
-      router.push("/employer/dashboard");
+    try {
+      await login(data?.email, data?.password);
+      if (isMobile) {
+        router.push("/mobile/dashboard");
+      } else if (userTypeParam === "candidate") {
+        router.push("/job-seeker/dashboard");
+      } else {
+        router.push("/employer/dashboard");
+      }
+    } catch (error) {
+      setLoginError("Login failed. Please check your credentials and try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

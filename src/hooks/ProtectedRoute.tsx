@@ -5,11 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { AuthContext } from "@/app/(providers)/AuthContext";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_ROUTES = ["/", "/auth/login", "/auth/register"];
+const PUBLIC_ROUTES = ["/", "/jobseeker", "/recruiter", "/about", "/contact", "/blog", "/faq", "/privacy-policy", "/terms_conditions",   "/auth/login", "/auth/register"];
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user,loading } = useContext(AuthContext)!;
-  console.log("user----->", user);
   const router = useRouter();
   const pathname = usePathname(); // Get the current route
 
