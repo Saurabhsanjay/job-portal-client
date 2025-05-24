@@ -13,6 +13,7 @@ import { Search, MapPin, Briefcase, Users, FileText, Building, Loader2 } from 'l
 import { motion } from "framer-motion"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
+import Image from 'next/image'
 
 type SearchFormData = {
   query: string
@@ -52,7 +53,7 @@ export default function HeroSection() {
       <div className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl" />
       <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-gradient-to-tl from-blue-200/30 to-purple-200/30 rounded-full blur-3xl" />
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-start mb-12">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -60,7 +61,8 @@ export default function HeroSection() {
               transition={{ duration: 0.5 }}
               className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6 leading-tight"
             >
-              Join us & Explore <span className="text-blue-600">Thousands</span> of Jobs
+              Join us & Explore <span className="text-blue-600">Thousands</span>{" "}
+              of Jobs
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -105,7 +107,10 @@ export default function HeroSection() {
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <SelectTrigger className="border-none shadow-none focus:ring-0 p-0 h-auto">
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
@@ -132,7 +137,7 @@ export default function HeroSection() {
                         Searching...
                       </>
                     ) : (
-                      'Find Jobs'
+                      "Find Jobs"
                     )}
                   </Button>
                 </div>
@@ -148,10 +153,18 @@ export default function HeroSection() {
             className="grid grid-cols-2 sm:grid-cols-4 gap-8"
           >
             {[
-              { icon: Briefcase, number: "97,216", label: "Jobs" },
-              { icon: Users, number: "4,782", label: "Members" },
-              { icon: FileText, number: "5,322", label: "Resume" },
-              { icon: Building, number: "6,329", label: "Company" }
+              { image: "/job.png", number: "97,216", label: "Jobs" },
+              {
+                image: "/members.png",
+                number: "4,782",
+                label: "Members",
+              },
+              { image: "/resume.png", number: "5,322", label: "Resume" },
+              {
+                image: "/company.png",
+                number: "6,329",
+                label: "Company",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
@@ -160,19 +173,27 @@ export default function HeroSection() {
                 transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
                 className="text-center group cursor-pointer"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 mb-4 group-hover:bg-blue-100 group-hover:scale-110 transition-all duration-300 shadow-md group-hover:shadow-lg">
-                  <stat.icon className="h-8 w-8 text-blue-600" />
+                <div className="inline-flex items-center justify-center mb-4 group-hover:bg-blue-100 group-hover:scale-110 transition-all duration-300 rounded-full shadow-md group-hover:shadow-lg">
+                  <Image
+                  src={stat.image}
+                  alt={stat.label}
+                  width={64}
+                  height={64}
+                  className="p-2 rounded-full h-16 w-16 object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 group-hover:text-gray-900 transition-colors">{stat.label}</div>
+                <div className="text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {stat.label}
+                </div>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 

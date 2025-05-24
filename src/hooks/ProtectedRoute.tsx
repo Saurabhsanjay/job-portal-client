@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { AuthContext } from "@/app/(providers)/AuthContext";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_ROUTES = ["/", "/jobseeker", "/recruiter", "/about", "/contact", "/blog", "/faq", "/privacy-policy", "/terms_conditions",   "/auth/login", "/auth/register"];
+const PUBLIC_ROUTES = ["/", "/jobseeker", "/recruiter", "/about", "/contact", "/blog", "/faq", "/privacy-policy", "/terms_conditions",   "/auth/login", "/auth/register", '/post-job', "/job-listings"];
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user,loading } = useContext(AuthContext)!;
@@ -22,8 +22,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (loading) return;
-
-    // Redirect unauthenticated users
     if (!user && !PUBLIC_ROUTES.includes(pathname)) {
       router.push("/auth/login");
       return;

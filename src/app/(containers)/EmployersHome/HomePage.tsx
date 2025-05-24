@@ -1,8 +1,23 @@
+"use client"
+
+import { AuthContext } from "@/app/(providers)/AuthContext";
 import { Button } from "@/components/ui/button";
 import { BriefcaseBusiness } from "lucide-react";
 import Link from "next/link";
+import { useContext } from "react";
 
-export default function EmployerHero() {
+    const EmployerHero = () => {
+          const { user,loading } = useContext(AuthContext)!;
+        
+    const handlePostJobClick = () => {
+        if (user) {
+          // User is logged in, redirect to protected employer create job page
+          return "/employer/create-job"
+        } else {
+          // User is not logged in, redirect to public post job page
+          return "/post-job"
+        }
+      }
     return (
         <div className="relative min-h-screen flex items-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
             {/* Grid pattern overlay */}
@@ -31,7 +46,7 @@ export default function EmployerHero() {
                     </p>
 
                     <div className="mt-8 sm:mt-12 animate-bounce">
-                    <Link href="/auth/register" className="flex-shrink-0">
+                    <Link  href={handlePostJobClick()} className="flex-shrink-0">
                         <Button
                             size="lg"
                             className="bg-blue-600 px-6 sm:px-8 text-sm sm:text-lg rounded-xl font-semibold text-white hover:bg-blue-700 transition-all hover:scale-105"
@@ -68,3 +83,5 @@ export default function EmployerHero() {
         </div>
     );
 }
+
+export default EmployerHero
