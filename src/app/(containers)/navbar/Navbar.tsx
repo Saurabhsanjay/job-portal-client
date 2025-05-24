@@ -56,6 +56,8 @@ const Navbar = () => {
     "/faq",
     "/privacy-policy",
     "/terms_conditions",
+    "/legalities",
+    "/dataProtection",
   ]
 
   if (!allowedPaths.includes(pathname)) return null

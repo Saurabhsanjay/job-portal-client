@@ -44,7 +44,7 @@ export default function PostAJob() {
                     </div>
 
                     <div className="flex gap-4 pt-4 ">
-                <Link href="/auth/register" className="flex-shrink-0">
+                <Link href="/post-job" className="flex-shrink-0">
                         <Button
                             size="lg"
                             className="bg-blue-600  hover:bg-blue-700 text-white px-8 rounded-md"

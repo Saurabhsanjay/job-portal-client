@@ -19,7 +19,7 @@ export default function Footer() {
     pathname === "/blog" ||
     pathname === "/faq" ||
     pathname === "/privacy-policy" ||
-    pathname === "/terms_conditions"
+    pathname === "/terms_conditions" || pathname === "/legalities" || pathname === "/dataProtection"
   )
     return (
       <footer className="bg-[#2563eb] text-white">
@@ -175,7 +175,8 @@ export default function Footer() {
                 {[
                   { label: "Privacy Policy", link: "/privacy-policy" },
                   { label: "Terms & Conditions", link: "/terms_conditions" },
-                  { label: "Support", link: "/contact" },
+                  { label: "Legalities", link: "/legalities" },
+                  { label: "Data Protection", link: "/dataProtection" }
                 ].map((item, index) => (
                   <Link
                     key={index}
