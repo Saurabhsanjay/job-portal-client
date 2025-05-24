@@ -1,19 +1,14 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Search, MapPin, Briefcase, Users, FileText, Building, Loader2 } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search, MapPin, Briefcase, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
-import Image from 'next/image'
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 type SearchFormData = {
   query: string
@@ -23,25 +18,41 @@ type SearchFormData = {
 
 export default function HeroSection() {
   const [isSearching, setIsSearching] = useState(false)
+  const router = useRouter()
   const { register, handleSubmit, control } = useForm<SearchFormData>({
     defaultValues: {
-      query: '',
-      location: '',
-      category: 'all'
-    }
+      query: "",
+      location: "",
+      category: "all",
+    },
   })
 
   const onSubmit = async (data: SearchFormData) => {
     setIsSearching(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Search data:', data)
-      toast.success('Search completed successfully!')
-      // Here you would typically redirect to search results page
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // Build query parameters
+      const params = new URLSearchParams()
+
+      if (data.query.trim()) {
+        params.set("keywords", data.query.trim())
+      }
+
+      if (data.location.trim()) {
+        params.set("location", data.location.trim())
+      }
+
+      if (data.category && data.category !== "all") {
+        params.set("category", data.category)
+      }
+
+      // Redirect to job listings with search parameters
+      const queryString = params.toString()
+      const url = queryString ? `/job-listings?${queryString}` : "/job-listings"
+
+      router.push(url)
+      toast.success("Redirecting to job listings...")
     } catch (error) {
-      toast.error('Failed to perform search. Please try again.')
+      toast.error("Failed to perform search. Please try again.")
     } finally {
       setIsSearching(false)
     }
@@ -86,16 +97,16 @@ export default function HeroSection() {
                   <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 mr-3 flex-shrink-0 transition-colors" />
                   <input
                     type="text"
-                    placeholder="Job title,keywords..."
+                    placeholder="Job title, keywords, or company"
                     className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-500"
-                    {...register("query", { required: true })}
+                    {...register("query")}
                   />
                 </div>
                 <div className="flex-1 flex items-center px-6 py-4 border-b md:border-b-0 md:border-r border-gray-200 group focus-within:bg-gray-50 transition-colors">
                   <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 mr-3 flex-shrink-0 transition-colors" />
                   <input
                     type="text"
-                    placeholder="City or postcode"
+                    placeholder="City, state, or country"
                     className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-500"
                     {...register("location")}
                   />
@@ -106,19 +117,20 @@ export default function HeroSection() {
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <SelectTrigger className="border-none shadow-none focus:ring-0 p-0 h-auto">
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Categories</SelectItem>
-                          <SelectItem value="tech">Technology</SelectItem>
-                          <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="marketing">Marketing</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="IT Software Jobs">Technology</SelectItem>
+                          <SelectItem value="Design">Design</SelectItem>
+                          <SelectItem value="Marketing Jobs">Marketing</SelectItem>
+                          <SelectItem value="Finance">Finance</SelectItem>
+                          <SelectItem value="Sales Jobs">Sales</SelectItem>
+                          <SelectItem value="HR">Human Resources</SelectItem>
+                          <SelectItem value="Education">Education</SelectItem>
+                          <SelectItem value="Health Care">Healthcare</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -126,6 +138,7 @@ export default function HeroSection() {
                 </div>
                 <div className="p-2 md:p-0 flex items-center justify-center">
                   <Button
+                    type="submit"
                     size="lg"
                     className="w-full md:w-auto px-4 md:px-8 py-3 md:py-8 bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 rounded-xl md:rounded-l-none md:rounded-r-2xl shadow-lg hover:shadow-xl"
                     disabled={isSearching}
@@ -174,25 +187,22 @@ export default function HeroSection() {
               >
                 <div className="inline-flex items-center justify-center mb-4 group-hover:bg-blue-100 group-hover:scale-110 transition-all duration-300 rounded-full shadow-md group-hover:shadow-lg">
                   <Image
-                  src={stat.image}
-                  alt={stat.label}
-                  width={64}
-                  height={64}
-                  className="p-2 rounded-full h-16 w-16 object-cover group-hover:scale-110 transition-transform duration-300"
+                    src={stat.image || "/placeholder.svg"}
+                    alt={stat.label}
+                    width={64}
+                    height={64}
+                    className="p-2 rounded-full h-16 w-16 object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 group-hover:text-gray-900 transition-colors">
-                  {stat.label}
-                </div>
+                <div className="text-gray-600 group-hover:text-gray-900 transition-colors">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </div>
     </div>
-  );
+  )
 }
-
