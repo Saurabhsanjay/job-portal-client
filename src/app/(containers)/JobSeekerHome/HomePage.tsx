@@ -53,7 +53,7 @@ export default function HeroSection() {
       <div className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl" />
       <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-gradient-to-tl from-blue-200/30 to-purple-200/30 rounded-full blur-3xl" />
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-start mb-12">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -61,16 +61,15 @@ export default function HeroSection() {
               transition={{ duration: 0.5 }}
               className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6 leading-tight"
             >
-              Join us & Explore <span className="text-blue-600">Thousands</span>{" "}
-              of Jobs
+              Connecting Talent with  <span className="text-blue-600">Opportunity</span>{" "}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-xl text-gray-600 mb-8"
+              className="text-xl text-gray-600 mb-8 text-center"
             >
-              Find Jobs, Employment & Career Opportunities
+              Discover your perfect job opportunity today with Recruit-G.
             </motion.p>
           </div>
 

@@ -26,34 +26,16 @@ export default function Footer() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Company Info */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 flex flex-col justify-center">
               <Link href="/" className="flex items-center">
                 <Image
                   src="/recruitg.png"
                   alt="Recruit-G"
-                  width={100}
-                  height={10}
+                  width={140}
+                  height={40}
+                  className="h-8 w-auto transition-transform duration-200 group-hover:scale-105"
                 />
               </Link>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-blue-200 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-sm text-blue-100">Call us</h4>
-                    <p className="text-base font-semibold">+91 99108158430</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-blue-200 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm leading-relaxed">
-                    FIRST FLOOR, WZ-73, B1 Rd, Nangli Jalib, Janakpuri, New Delhi, Delhi, 110058
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-blue-200 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm">info@recruit-g.com</p>
-                </div>
-              </div>
             </div>
 
             {/* For Candidates */}

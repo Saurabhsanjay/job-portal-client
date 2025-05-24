@@ -100,13 +100,15 @@ export default function LoginForm() {
           <CardHeader className="text-center pb-4">
             {/* Logo */}
             <div className="flex justify-center mb-3">
-              <Image
-                src="/logo.jpeg"
-                alt="Recruit-G"
-                width={120}
-                height={32}
-                className="h-8 w-auto"
-              />
+                  <div className="bg-blue-600 rounded-lg p-2">
+                           <Image
+                             src="/recruitg.png"
+                             alt="Recruit-G"
+                             width={140}
+                               height={40}
+                               className="h-6 w-auto transition-transform duration-200 group-hover:scale-105"
+                           />
+                           </div>
             </div>
 
             {/* Page Type Indicator */}

@@ -80,7 +80,7 @@ const Navbar = () => {
                   alt="Recruit-G"
                   width={140}
                   height={40}
-                  className="h-28 w-auto transition-transform duration-200 group-hover:scale-105"
+                  className="h-6 w-auto transition-transform duration-200 group-hover:scale-105"
                 />
               </Link>
 
@@ -121,9 +121,9 @@ const Navbar = () => {
                 </Button>
               </Link>
               <Link href={!isRecruiterPage ? "/recruiter" : "/"}>
-                <Button className="bg-blue-700 text-white hover:bg-blue-800 font-medium shadow-sm hover:shadow-md transition-all duration-200 border border-blue-600 hover:border-blue-700">
+                <Button className="bg-blue-100 text-blue-900 hover:bg-blue-200 font-medium shadow-sm hover:shadow-md transition-all duration-200 border border-blue-600 hover:border-blue-700">
                   <BriefcaseBusiness size={18} className="mr-2" />
-                  {!isRecruiterPage ? "Post a Job" : "Find a Job"}
+                  {!isRecruiterPage ? "Employer" : "Find a Job"}
                 </Button>
               </Link>
             </div>

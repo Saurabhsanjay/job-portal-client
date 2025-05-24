@@ -14,8 +14,6 @@ interface JobListProps {
 }
 
 function JobListComponent({ jobs, isLoading, error, onSaveJob, onApplyJob }: JobListProps) {
-
-  console.log("jobs   ----joblist", jobs)
   // Show loading state
   if (isLoading) {
     return (

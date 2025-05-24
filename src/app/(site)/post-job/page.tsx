@@ -741,14 +741,9 @@ export default function PublicJobForm() {
 
           {/* Submit Section */}
           <div className="flex justify-end gap-4 pt-6">
-            <Link href="/">
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </Link>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700 px-8">
               <Briefcase className="mr-2 h-4 w-4" />
-              Post Job
+              Publish
             </Button>
           </div>
         </form>

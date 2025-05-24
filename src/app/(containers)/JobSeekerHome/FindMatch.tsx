@@ -27,7 +27,7 @@ export default function FindMatch() {
             recruiters in a targeted company to broaden your network.
           </p>
 
-          <Link href="/job-listings">
+          <Link href="/">
             <Button className="bg-[#1e2b58] hover:bg-[#2a3b6e] text-white px-8 py-5 rounded-xl text-lg">
               Discover More
             </Button>
