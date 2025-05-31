@@ -32,6 +32,7 @@ import {
   Briefcase,
   Building,
   GraduationCap,
+  FileUser,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
@@ -399,19 +400,13 @@ export default function UserManagement() {
                               <DropdownMenuItem className="flex items-center gap-2">
                                 <Edit className="h-4 w-4" /> Edit Profile
                               </DropdownMenuItem>
-                              {/* <DropdownMenuItem className="flex items-center gap-2">
-                                <Mail className="h-4 w-4" /> Send Message
-                              </DropdownMenuItem> */}
+                              <DropdownMenuItem className="flex items-center gap-2">
+                                <FileUser className="h-4 w-4" /> Download Resume
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" /> Manage Complaints
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              {/* {user.status !== "Verified" ? (
-                                <DropdownMenuItem className="flex items-center gap-2">
-                                  <CheckCircle className="h-4 w-4" /> Verify Profile
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem className="flex items-center gap-2">
-                                  <XCircle className="h-4 w-4" /> Revoke Verification
-                                </DropdownMenuItem>
-                              )} */}
                               <DropdownMenuItem className="flex items-center gap-2 text-destructive">
                                 <UserX className="h-4 w-4" /> Suspend Account
                               </DropdownMenuItem>
@@ -442,57 +437,6 @@ export default function UserManagement() {
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Verification</CardTitle>
-                <CardDescription>Verify job seeker profiles and credentials</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg" />
-                        <AvatarFallback>SW</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Sarah Williams</div>
-                        <div className="text-sm text-muted-foreground">Pending Verification</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <XCircle className="h-4 w-4 mr-1" /> Reject
-                      </Button>
-                      <Button size="sm">
-                        <CheckCircle className="h-4 w-4 mr-1" /> Verify
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg" />
-                        <AvatarFallback>RJ</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Robert Johnson</div>
-                        <div className="text-sm text-muted-foreground">Pending Verification</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <XCircle className="h-4 w-4 mr-1" /> Reject
-                      </Button>
-                      <Button size="sm">
-                        <CheckCircle className="h-4 w-4 mr-1" /> Verify
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card>
               <CardHeader>

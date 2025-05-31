@@ -145,13 +145,26 @@ export default function AdminDashboard() {
 
         <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Successful Placements</CardTitle>
+            <CardTitle className="text-sm font-medium">Pending Verification</CardTitle>
             <CheckCircle className="h-4 w-4 text-purple-100" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">386</div>
             <div className="flex justify-between items-center text-xs">
               <span>24 this week</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Flagged or Reported Jobs</CardTitle>
+            <CheckCircle className="h-4 w-4 text-purple-100" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">45</div>
+            <div className="flex justify-between items-center text-xs">
+              <span>4 this week</span>
             </div>
           </CardContent>
         </Card>

@@ -38,15 +38,16 @@ import { Notifications } from "@/app/(containers)/notifications/Notifications"
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: BarChart3, current: true },
   { name: "User Management", href: "/admin/user-management", icon: Users, current: false },
+  { name: "Job Management", href: "/admin/job-management", icon: BookOpen, current: false },
+  { name: "Document Compliance", href: "/admin/document-compliance", icon: LineChart, current: false },
   { name: "Email Campaigns", href: "/admin/email-campaigns", icon: Mail, current: false },
-  // { name: "Placement Analytics", href: "/admin/placement-analytics", icon: LineChart, current: false },
+  { name: "Application Insights", href: "/admin/application-insights", icon: FileText, current: false },
+  // { name: "Notifications", href: "/admin/notifications-alerts", icon: Bell, current: false },
   // { name: "Placement Dashboard", href: "/admin/placement-dashboard", icon: Layout, current: false },
   // { name: "Skill Development", href: "/admin/skill-development", icon: BookOpen, current: false },
-  // { name: "Reports & Insights", href: "/admin/insights-reports", icon: FileText, current: false },
-  // { name: "Notifications", href: "/admin/notifications-alerts", icon: Bell, current: false },
   { name: "Content Management", href: "/admin/content-management", icon: FileCode, current: false },
-  // { name: "Security & Compliance", href: "/admin/security-compliance", icon: ShieldCheck, current: false },
   { name: "Admin Roles", href: "/admin/admin-roles", icon: UserCog, current: false },
+  { name: "Support Tickets", href: "/admin/support-tickets", icon: ShieldCheck, current: false },
 ]
 
 const secondaryNavigation = [
