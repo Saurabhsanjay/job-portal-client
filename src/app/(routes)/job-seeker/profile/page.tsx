@@ -9,7 +9,7 @@ import { MultiSelect } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Upload } from 'lucide-react'
+import { Loader2, Upload } from "lucide-react"
 import { useEffect, useState } from "react"
 import Education from "./_components/Education"
 import WorkExperience from "./_components/WorkExperience"
@@ -187,13 +187,6 @@ export default function Profile() {
     // Work Experience
     hasWorkExperience: z.boolean(),
 
-    // Education Details - Mandatory fields
-    highestQualification: z.string().min(1, "Highest qualification is required"),
-    specialization: z.string().min(1, "Specialization is required"),
-    universityInstitute: z.string().min(1, "University/Institute is required"),
-    yearOfPassing: z.string().min(1, "Year of passing is required"),
-    marksCGPA: z.string().min(1, "Marks/CGPA is required"),
-
     // Key Skills - Mandatory
     skills: z.array(z.string()).min(1, "At least one skill is required"),
 
@@ -215,7 +208,7 @@ export default function Profile() {
       )
       .min(1, "At least one language is required"),
 
-    // Resume & Documentation - Update these fields
+    // Resume & Documentation
     uploadResume: z.string().nullable().optional(),
     uploadPhoto: z.string().nullable().optional(),
     uploadCertificates: z.string().nullable().optional(),
@@ -342,63 +335,75 @@ export default function Profile() {
     event: React.ChangeEvent<HTMLInputElement>,
     type: "uploadResume" | "uploadPhoto" | "uploadCertificates",
   ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-  
-    const formData = new FormData();
-    formData.append("file", file);
-  
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append("file", file)
+
     const config = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    };
-  
+    }
+
     try {
       // Fix the API endpoint URL construction
-      let endpoint = "";
-      switch(type) {
+      let endpoint = ""
+      switch (type) {
         case "uploadResume":
-          endpoint = "upload-resume";
-          break;
+          endpoint = "upload-resume"
+          break
         case "uploadPhoto":
-          endpoint = "upload-photo";
-          break;
+          endpoint = "upload-photo"
+          break
         case "uploadCertificates":
-          endpoint = "upload-certificates";
-          break;
+          endpoint = "upload-certificates"
+          break
       }
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${endpoint}?userId=${user?.id}`,
         formData,
         config,
-      );
-  
+      )
+
       if (response?.data?.status === "SUCCESS") {
-        toast.success(`${type.replace("upload", "")} uploaded successfully`);
-        const fileUrl = response.data?.data?.fileUrl || response.data?.data?.[type] || file.name;
+        toast.success(`${type.replace("upload", "")} uploaded successfully`)
+        const fileUrl = response.data?.data?.fileUrl || response.data?.data?.[type] || file.name
 
         // Store response value in different states based on type
         if (type === "uploadResume") {
-          setUploadResume(fileUrl);
+          setUploadResume(fileUrl)
         } else if (type === "uploadPhoto") {
-          setUploadPhoto(fileUrl);
+          setUploadPhoto(fileUrl)
         } else if (type === "uploadCertificates") {
-          setUploadCertificates(fileUrl);
+          setUploadCertificates(fileUrl)
         }
       }
     } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      toast.error(`Failed to upload ${type.replace("upload", "")}`);
+      console.error(`Error uploading ${type}:`, error)
+      toast.error(`Failed to upload ${type.replace("upload", "")}`)
     }
-  };
-  
+  }
 
   const profileMutation = useApiPut()
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     console.log("Form submitted with data:", data)
+    // Check if education data exists
+    if (educations.length === 0) {
+      toast.error("Please add at least one education entry")
+      return
+    }
+
+    // Check if languages are properly filled
+    const validLanguages = languagesProficiency.filter((lang) => lang.language && lang.proficiency)
+    if (validLanguages.length === 0) {
+      toast.error("Please add at least one language with proficiency")
+      return
+    }
+
     setIsSubmitting(true)
 
     // Split full name into first and last name
@@ -454,7 +459,7 @@ export default function Profile() {
           shiftPreference: data.shiftPreference,
           jobLevel: data.jobLevel,
         },
-        languagesKnown: data.languagesKnown,
+        languagesKnown: validLanguages,
         resumeDocumentation: {
           uploadResume: uploadResume || "",
           uploadPhoto: uploadPhoto || "",
@@ -472,7 +477,7 @@ export default function Profile() {
       },
     }
 
-    console.log("Payload being sent:", payload); // Add this for debugging
+    console.log("Payload being sent:", payload)
 
     profileMutation.mutate(
       {
@@ -491,7 +496,7 @@ export default function Profile() {
         },
         onError: (error) => {
           setIsSubmitting(false)
-          console.error("Form submission error:", error); // Add this for debugging
+          console.error("Form submission error:", error)
           toast.error(error?.message || "Something went wrong")
         },
       },
@@ -892,7 +897,6 @@ export default function Profile() {
       {hasWorkExperience && <WorkExperience experiences={experiences} setExperiences={setExperiences} />}
         </Card>
 
-
       <Education educations={educations} setEducations={setEducations} />
 
         {/* Key Skills */}
@@ -1134,36 +1138,36 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Upload Resume - Mandatory */}
               <div className="space-y-1">
-          <Label htmlFor="uploadResume">Upload Resume</Label>
-          <Input
-            id="uploadResume"
-            type="file"
-            accept=".pdf"
-            onChange={(event) => handleFileUpload(event, "uploadResume")}
-          />
+                <Label htmlFor="uploadResume">Upload Resume</Label>
+                <Input
+                  id="uploadResume"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(event) => handleFileUpload(event, "uploadResume")}
+                />
               </div>
 
               {/* Upload Photo */}
               <div className="space-y-1">
-          <Label htmlFor="uploadPhoto">Upload Photo</Label>
-          <Input
-            id="uploadPhoto"
-            type="file"
-            accept="image/*"
-            onChange={(event) => handleFileUpload(event, "uploadPhoto")}
-          />
+                <Label htmlFor="uploadPhoto">Upload Photo</Label>
+                <Input
+                  id="uploadPhoto"
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => handleFileUpload(event, "uploadPhoto")}
+                />
               </div>
 
               {/* Upload Certificates */}
               <div className="space-y-1">
-          <Label htmlFor="uploadCertificates">Upload Certificates</Label>
-          <Input
-            id="uploadCertificates"
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            multiple
-            onChange={(event) => handleFileUpload(event, "uploadCertificates")}
-          />
+                <Label htmlFor="uploadCertificates">Upload Certificates</Label>
+                <Input
+                  id="uploadCertificates"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(event) => handleFileUpload(event, "uploadCertificates")}
+                />
               </div>
             </div>
           </div>

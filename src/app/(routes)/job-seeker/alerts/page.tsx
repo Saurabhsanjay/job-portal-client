@@ -123,18 +123,11 @@ export default function JobAlerts() {
     `job-alerts-for-jobseekers/get-job-alerts/${user?.id}`
   );
 
-  console.log("jobAlertData-------->", jobAlertData);
-
   const toggleAlert = (id: string,flag: boolean) => {
-    // setAlerts(
-    //   alerts.map((alert) =>
-    //     alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
-    //   )
-    // );
     updateJobAlertMutation.mutate(
       {
         endpoint: `job-alerts-for-jobseekers/update-job-alerts/${id}`,
-        payload: {isActive: flag}, // Replace with actual payload
+        payload: {isActive: flag},
         invalidateQueries: [["update-job-alert"]],
       },
       {
@@ -160,18 +153,6 @@ export default function JobAlerts() {
 
     if (!newAlertTitle.trim()) return;
 
-    // const newAlert = {
-    //   id: Math.max(0, ...alerts.map((a) => a.id)) + 1,
-    //   title: newAlertTitle,
-    //   location: "Remote",
-    //   salary: "Competitive",
-    //   companies: [],
-    //   frequency: "Daily",
-    //   isActive: true,
-    // };
-
-    // setAlerts([...alerts, newAlert]);
-
     const payload: JobPostPayload = {
       userId: user?.id || "", // Replace with actual user ID
       title: newAlertTitle,
@@ -187,7 +168,7 @@ export default function JobAlerts() {
         onSuccess: (response) => {
           if (response.data) {
             toast.success("Job alert created successfully");
-            // refetch()
+            refetch()
           } else if (response.error) {
             toast.error(response.error.message);
           }
@@ -198,12 +179,8 @@ export default function JobAlerts() {
       }
     );
     refetch()
-    // Reset form and close modal
     setNewAlertTitle("");
     setIsModalOpen(false);
-
-    // Here you would typically call your API
-    // Example: useApiPost("/api/job-alerts", { title: newAlertTitle })
   };
 
   const handleDelete=()=>{
@@ -216,7 +193,7 @@ export default function JobAlerts() {
         onSuccess: (response) => {
           if (response.data) {
             toast.success("Job alert deleted successfully");
-            // refetch()
+            refetch()
           } else if (response.error) {
             toast.error(response.error.message);
           }
