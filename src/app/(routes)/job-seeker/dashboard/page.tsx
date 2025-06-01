@@ -412,6 +412,7 @@ export default function Dashboard() {
             subtext: "5 new this week",
             icon: Briefcase,
             color: "blue",
+            link: "/job-seeker/applied-jobs",
           },
           {
             title: "Job Alerts",
@@ -419,6 +420,7 @@ export default function Dashboard() {
             subtext: "142 new alerts",
             icon: Bell,
             color: "purple",
+            link: "/job-seeker/alerts",
           },
           {
             title: "Messages",
@@ -426,6 +428,7 @@ export default function Dashboard() {
             subtext: "12 unread",
             icon: MessageSquare,
             color: "red",
+            link: "/job-seeker/messages",
           },
           {
             title: "Shortlisted",
@@ -433,11 +436,13 @@ export default function Dashboard() {
             subtext: "8 new opportunities",
             icon: Bookmark,
             color: "green",
+            link: "/job-seeker/shortlisted-jobs",
           },
         ].map((item, index) => (
           <Card
             key={index}
-            className={`bg-white border-l-4 border-${item.color}-500 shadow-sm hover:shadow-md transition-shadow rounded-xl`}
+            className={`bg-white cursor-pointer border-l-4 border-${item.color}-500 shadow-sm hover:shadow-md transition-shadow rounded-xl`}
+            onClick={() => router.push(item.link)}
           >
             <CardHeader className="flex flex-row items-center justify-between py-4">
               <CardTitle className="text-base font-medium text-gray-700">
