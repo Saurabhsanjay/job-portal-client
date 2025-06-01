@@ -189,7 +189,7 @@ export default function SavedJobs() {
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filters
               </Button>
-              <Link prefetch={false} href="/employer/jobs/create-job">
+              <Link prefetch={false} href="/employer/job-post">
                 <Button variant="default">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Add New Job
