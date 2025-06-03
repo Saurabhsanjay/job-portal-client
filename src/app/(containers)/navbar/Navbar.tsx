@@ -87,7 +87,7 @@ const Navbar = () => {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden lg:block ml-12">
+              {/* <div className="hidden lg:block ml-12">
                 <NavigationMenu>
                   <NavigationMenuList className="gap-2">
                     {navItems.map((item) => (
@@ -108,7 +108,7 @@ const Navbar = () => {
                     ))}
                   </NavigationMenuList>
                 </NavigationMenu>
-              </div>
+              </div> */}
             </div>
 
             {/* Desktop Action Buttons */}
@@ -147,21 +147,23 @@ const Navbar = () => {
                   <SheetHeader className="text-left pb-6 border-b border-gray-100">
                     <SheetTitle className="flex items-center justify-between">
                       <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Image
-                          src="/placeholder.svg?height=32&width=120&text=Recruit-G"
-                          alt="Recruit-G"
-                          width={120}
-                          height={32}
-                          className="h-8 w-auto"
-                        />
+                         <div className="bg-blue-600 rounded-lg p-2">
+                                                  <Image
+                                                    src="/recruitg.png"
+                                                    alt="Recruit-G"
+                                                    width={140}
+                                                      height={40}
+                                                      className="h-6 w-auto transition-transform duration-200 group-hover:scale-105"
+                                                  />
+                                                  </div>
                       </Link>
                       <SheetClose asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <X className="h-4 w-4" />
+                          {/* <X className="h-4 w-4" /> */}
                         </Button>
                       </SheetClose>
                     </SheetTitle>
-                    <SheetDescription className="text-gray-600">Navigate through our platform</SheetDescription>
+                    <SheetDescription className="text-gray-600"></SheetDescription>
                   </SheetHeader>
 
                   <nav className="flex flex-col gap-2 mt-6">
@@ -190,7 +192,7 @@ const Navbar = () => {
                             variant="outline"
                             className="w-full justify-start text-[#2563eb] border-[#2563eb] hover:bg-blue-50"
                           >
-                            <BriefcaseBusiness size={18} className="mr-2" />
+                            <BriefcaseBusiness size={18} className="m-2" />
                             Login / Register
                           </Button>
                         </Link>

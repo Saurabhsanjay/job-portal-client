@@ -18,7 +18,10 @@ type SearchFormData = {
 
 export default function HeroSection() {
   const [isSearching, setIsSearching] = useState(false)
+  const [locationList, setLocationList] = useState<string[]>([])
   const router = useRouter()
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
   const { register, handleSubmit, control } = useForm<SearchFormData>({
     defaultValues: {
       query: "",
@@ -26,6 +29,31 @@ export default function HeroSection() {
       category: "all",
     },
   })
+
+  const fetchLocations = async (query: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/locations/list?search=${encodeURIComponent(query)}`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch locations")
+      }
+      const data = await response.json()
+      setLocationList(data || [])
+    } catch (error) {
+      console.error("Error fetching locations:", error)
+      toast.error("Failed to fetch locations. Please try again.")
+    }
+  }
+  // Handle location input change
+  const handleLocationChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    if (value.trim()) {
+      await fetchLocations(value)
+    } else {
+      setLocationList([]) // Clear locations if input is empty
+      setLocationList(["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]) // Default locations
+    }
+  }
+  
 
   const onSubmit = async (data: SearchFormData) => {
     setIsSearching(true)
@@ -108,7 +136,9 @@ export default function HeroSection() {
                     type="text"
                     placeholder="City, state, or country"
                     className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-500"
-                    {...register("location")}
+                    {...register("location", {
+                      onChange: handleLocationChange,
+                    })}
                   />
                 </div>
                 <div className="flex-1 flex items-center px-6 py-4 border-b md:border-b-0 md:border-r border-gray-200 group focus-within:bg-gray-50 transition-colors">

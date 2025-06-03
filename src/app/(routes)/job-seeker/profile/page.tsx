@@ -159,7 +159,6 @@ export default function Profile() {
   const [experiences, setExperiences] = useState([])
   const [languagesProficiency, setLanguagesProficiency] = useState([{ language: "", proficiency: "" }])
   const [uploadResume, setUploadResume] = useState<string | null>(null)
-  const [uploadPhoto, setUploadPhoto] = useState<string | null>(null)
   const [uploadCertificates, setUploadCertificates] = useState<string | null>(null)
 
   // Enhanced form validation schema
@@ -210,7 +209,6 @@ export default function Profile() {
 
     // Resume & Documentation
     uploadResume: z.string().nullable().optional(),
-    uploadPhoto: z.string().nullable().optional(),
     uploadCertificates: z.string().nullable().optional(),
 
     // Social & Portfolio Links
@@ -253,7 +251,6 @@ export default function Profile() {
       skills: [],
       preferredIndustry: [],
       uploadResume: "",
-      uploadPhoto: "",
       uploadCertificates: "",
     },
   })
@@ -264,14 +261,25 @@ export default function Profile() {
   useEffect(() => {
     if (profileData) {
       const data = profileData?.data
+
       setEducations(data?.jobSeekerDetails?.education || [])
       setExperiences(data?.jobSeekerDetails?.professionalExperience || [])
-      // Reset form with existing data
-      reset({
+
+      // Set hasWorkExperience based on whether there are experiences
+      const hasExp = (data?.jobSeekerDetails?.professionalExperience || []).length > 0
+      setHasWorkExperience(hasExp)
+
+      // Set willingToRelocate from the API data
+      setWillingToRelocate(data?.jobSeekerDetails?.locationDetails?.willingToRelocate || false)
+
+      const formData = {
         fullName: `${data?.personalDetails?.firstName || ""} ${data?.personalDetails?.lastName || ""}`.trim(),
         email: data?.personalDetails?.email || "",
         mobileNo: data?.personalDetails?.phoneNumber?.number || "",
-        dateOfBirth: data?.personalDetails?.dateOfBirth || "",
+        alternateMobileNo: data?.personalDetails?.alternateMobileNo || "",
+        dateOfBirth: data?.personalDetails?.dateOfBirth
+          ? new Date(data.personalDetails.dateOfBirth).toISOString().split("T")[0]
+          : "",
         gender: data?.personalDetails?.gender || "",
         maritalStatus: data?.personalDetails?.maritalStatus || "",
         physicalDisability: data?.personalDetails?.physicalDisability || "",
@@ -281,8 +289,12 @@ export default function Profile() {
         preferredJobLocations: data?.jobSeekerDetails?.locationDetails?.preferredJobLocations || [],
         profileHeadline: data?.jobSeekerDetails?.professionalSummary?.profileHeadline || "",
         professionalSummary: data?.jobSeekerDetails?.professionalSummary?.professionalSummary || "",
+        hasWorkExperience: hasExp,
         skills: data?.jobSeekerDetails?.keySkills || [],
-        preferredIndustry: data?.jobSeekerDetails?.jobPreferences?.preferredIndustry || [],
+        preferredIndustry:
+          data?.jobSeekerDetails?.jobPreferences?.preferredIndustries ||
+          data?.jobSeekerDetails?.jobPreferences?.preferredIndustry ||
+          [],
         preferredJobRole: data?.jobSeekerDetails?.jobPreferences?.preferredJobRole || "",
         expectedSalary: data?.jobSeekerDetails?.jobPreferences?.expectedSalary || 0,
         preferredJobType: data?.jobSeekerDetails?.jobPreferences?.preferredJobType || "",
@@ -292,21 +304,37 @@ export default function Profile() {
         linkedinProfile: data?.jobSeekerDetails?.socialPortfolioLinks?.linkedinProfile || "",
         portfolio: data?.jobSeekerDetails?.socialPortfolioLinks?.portfolio || "",
         personalWebsite: data?.jobSeekerDetails?.socialPortfolioLinks?.personalWebsite || "",
-      })
+      }
 
-      setProfileImage(data?.personalDetails?.profilePicture || null)
-      setUploadResume(data?.jobSeekerDetails?.resumeDocumentation?.uploadResume || null)
-      setUploadPhoto(data?.jobSeekerDetails?.resumeDocumentation?.uploadPhoto || null)
-      setUploadCertificates(data?.jobSeekerDetails?.resumeDocumentation?.uploadCertificates || null)
+
+      // Use setTimeout to ensure the reset happens after component re-render
+      setTimeout(() => {
+        reset(formData)
+        console.log("Form reset completed")
+      }, 100)
+
+      // Synchronize multi-select state variables with form data
+      setSelectedSkills(data?.jobSeekerDetails?.keySkills || [])
+      setSelectedIndustries(
+        data?.jobSeekerDetails?.jobPreferences?.preferredIndustries ||
+          data?.jobSeekerDetails?.jobPreferences?.preferredIndustry ||
+          [],
+      )
+      setLanguagesProficiency(data?.jobSeekerDetails?.languagesKnown || [{ language: "", proficiency: "" }])
+
+      setProfileImage(data?.jobSeekerDetails?.resumeDocmentation?.uploadPhoto || null)
+      setUploadResume(data?.jobSeekerDetails?.resumeDocmentation?.uploadResume || null)
+      setUploadCertificates(data?.jobSeekerDetails?.resumeDocmentation?.uploadCertificates || null)
     }
   }, [profileData, reset])
 
-  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, typeofFile: string) => {
     const file = event.target.files?.[0]
     if (!file) return
 
     const formData = new FormData()
     formData.append("file", file)
+    formData.append("typeofFile", typeofFile)
 
     const config = {
       headers: {
@@ -316,74 +344,18 @@ export default function Profile() {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-profile-picture?userId=${user?.id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/upload-resume-documentation?userId=${user?.id}`,
         formData,
         config,
       )
 
       if (response?.data?.status === "SUCCESS") {
         toast.success("Profile image uploaded successfully")
-        setProfileImage(response.data?.data?.personalDetails?.profilePicture || null)
+        setProfileImage(response.data?.jobSeekerDetails?.resumeDocmentation?.uploadPhoto || null)
       }
     } catch (error) {
       console.error("Error uploading file:", error)
       toast.error("Failed to upload image")
-    }
-  }
-
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-    type: "uploadResume" | "uploadPhoto" | "uploadCertificates",
-  ) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    const formData = new FormData()
-    formData.append("file", file)
-
-    const config = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-
-    try {
-      // Fix the API endpoint URL construction
-      let endpoint = ""
-      switch (type) {
-        case "uploadResume":
-          endpoint = "upload-resume"
-          break
-        case "uploadPhoto":
-          endpoint = "upload-photo"
-          break
-        case "uploadCertificates":
-          endpoint = "upload-certificates"
-          break
-      }
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${endpoint}?userId=${user?.id}`,
-        formData,
-        config,
-      )
-
-      if (response?.data?.status === "SUCCESS") {
-        toast.success(`${type.replace("upload", "")} uploaded successfully`)
-        const fileUrl = response.data?.data?.fileUrl || response.data?.data?.[type] || file.name
-
-        // Store response value in different states based on type
-        if (type === "uploadResume") {
-          setUploadResume(fileUrl)
-        } else if (type === "uploadPhoto") {
-          setUploadPhoto(fileUrl)
-        } else if (type === "uploadCertificates") {
-          setUploadCertificates(fileUrl)
-        }
-      }
-    } catch (error) {
-      console.error(`Error uploading ${type}:`, error)
-      toast.error(`Failed to upload ${type.replace("upload", "")}`)
     }
   }
 
@@ -462,7 +434,6 @@ export default function Profile() {
         languagesKnown: validLanguages,
         resumeDocumentation: {
           uploadResume: uploadResume || "",
-          uploadPhoto: uploadPhoto || "",
           uploadCertificates: uploadCertificates || "",
         },
         socialPortfolioLinks: {
@@ -476,8 +447,6 @@ export default function Profile() {
         accountStatus: "ACTIVE",
       },
     }
-
-    console.log("Payload being sent:", payload)
 
     profileMutation.mutate(
       {
@@ -585,7 +554,7 @@ export default function Profile() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={handleProfileImageUpload}
+                    onChange={(event) => handleProfileImageUpload(event, "uploadPhoto")}
                   />
                 </div>
               </div>
@@ -607,7 +576,7 @@ export default function Profile() {
 
               {/* Mobile No - Mandatory */}
               <div className="space-y-1">
-                <Label htmlFor="mobileNo">Mobile No. (OTP Verified) *</Label>
+                <Label htmlFor="mobileNo">Mobile No.*</Label>
                 <Input
                   id="mobileNo"
                   type="tel"
@@ -661,7 +630,7 @@ export default function Profile() {
                   name="gender"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select key={`gender-${field.value}`} onValueChange={field.onChange} value={field.value || ""}>
                       <SelectTrigger className={errors?.gender ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Gender" />
                       </SelectTrigger>
@@ -685,7 +654,11 @@ export default function Profile() {
                   name="maritalStatus"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      key={`maritalStatus-${field.value}`}
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={errors?.maritalStatus ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Marital Status" />
                       </SelectTrigger>
@@ -709,7 +682,11 @@ export default function Profile() {
                   name="physicalDisability"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      key={`physicalDisability-${field.value}`}
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={errors?.physicalDisability ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Physical Disability Status" />
                       </SelectTrigger>
@@ -735,7 +712,7 @@ export default function Profile() {
                   name="visaStatus"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select key={`visaStatus-${field.value}`} onValueChange={field.onChange} value={field.value || ""}>
                       <SelectTrigger className={errors?.visaStatus ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Visa Status" />
                       </SelectTrigger>
@@ -759,7 +736,7 @@ export default function Profile() {
                   name="nationality"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select key={`nationality-${field.value}`} onValueChange={field.onChange} value={field.value || ""}>
                       <SelectTrigger className={errors?.nationality ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Nationality" />
                       </SelectTrigger>
@@ -894,10 +871,10 @@ export default function Profile() {
               />
             </div>
           </div>
-      {hasWorkExperience && <WorkExperience experiences={experiences} setExperiences={setExperiences} />}
+          {hasWorkExperience && <WorkExperience experiences={experiences} setExperiences={setExperiences} />}
         </Card>
 
-      <Education educations={educations} setEducations={setEducations} />
+        <Education educations={educations} setEducations={setEducations} />
 
         {/* Key Skills */}
         <Card className="p-6 mt-6">
@@ -915,7 +892,7 @@ export default function Profile() {
                       setSelectedSkills(values)
                       field.onChange(values)
                     }}
-                    value={selectedSkills}
+                    value={field.value || []}
                     placeholder="Select skills by suggestion based"
                     variant="inverted"
                     animation={0}
@@ -946,7 +923,7 @@ export default function Profile() {
                         setSelectedIndustries(values)
                         field.onChange(values)
                       }}
-                      value={selectedIndustries}
+                      value={field.value || []}
                       placeholder="Select preferred industries"
                       variant="inverted"
                       animation={0}
@@ -991,7 +968,11 @@ export default function Profile() {
                   name="preferredJobType"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      key={`preferredJobType-${field.value}`}
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={errors?.preferredJobType ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Job Type" />
                       </SelectTrigger>
@@ -1015,7 +996,11 @@ export default function Profile() {
                   name="shiftPreference"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      key={`shiftPreference-${field.value}`}
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={errors?.shiftPreference ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Shift Preference" />
                       </SelectTrigger>
@@ -1039,7 +1024,7 @@ export default function Profile() {
                   name="jobLevel"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select key={`jobLevel-${field.value}`} onValueChange={field.onChange} value={field.value || ""}>
                       <SelectTrigger className={errors?.jobLevel ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select Job Level" />
                       </SelectTrigger>
@@ -1135,7 +1120,7 @@ export default function Profile() {
         <Card className="p-6 mt-6">
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Resume & Documentation</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Upload Resume - Mandatory */}
               <div className="space-y-1">
                 <Label htmlFor="uploadResume">Upload Resume</Label>
@@ -1143,18 +1128,7 @@ export default function Profile() {
                   id="uploadResume"
                   type="file"
                   accept=".pdf"
-                  onChange={(event) => handleFileUpload(event, "uploadResume")}
-                />
-              </div>
-
-              {/* Upload Photo */}
-              <div className="space-y-1">
-                <Label htmlFor="uploadPhoto">Upload Photo</Label>
-                <Input
-                  id="uploadPhoto"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => handleFileUpload(event, "uploadPhoto")}
+                  onChange={(event) => handleProfileImageUpload(event, "uploadResume")}
                 />
               </div>
 
@@ -1166,7 +1140,7 @@ export default function Profile() {
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   multiple
-                  onChange={(event) => handleFileUpload(event, "uploadCertificates")}
+                  onChange={(event) => handleProfileImageUpload(event, "uploadCertificates")}
                 />
               </div>
             </div>
@@ -1196,8 +1170,6 @@ export default function Profile() {
           </div>
         </Card>
       </form>
-
-
     </div>
   )
 }
